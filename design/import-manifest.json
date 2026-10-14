@@ -1,0 +1,47 @@
+{
+  "imported_at": "2026-10-14",
+  "source_archive": "Guandan mobile redesign.zip",
+  "archive_sha256": "82f8fec118080c10e8cc1ad3718f66d713c4141b1a755149859e9226e0a40283",
+  "files": [
+    {
+      "path": "00 目录.dc.html",
+      "sha256": "b21a0b7c93e911fdfd6d13f7029ca1c9dc9085355afb9d93522a1b61b2b95c41",
+      "bytes": 3511
+    },
+    {
+      "path": "Guandan Prototype.dc.html",
+      "sha256": "fd0fc70a2a94ed1f3679b3545b9a80be2166703bf1209b06d74e6a979a7e776a",
+      "bytes": 7071
+    },
+    {
+      "path": "Guandan Redesign Spec.dc.html",
+      "sha256": "0af133840d1f9a127d98b179310a62846344deed2883614eb4a598cc7eaa0e3b",
+      "bytes": 102422
+    },
+    {
+      "path": "Guandan Table States.dc.html",
+      "sha256": "e48181046a4e1f5305a042541c19598c0f6b3f9019b3f186c679853abb629299",
+      "bytes": 9626
+    },
+    {
+      "path": "Guandan Table.dc.html",
+      "sha256": "0bfe2af148c1622e6abf553f9b61f531064f9b257fbcacf7777a7ea58b841daa",
+      "bytes": 83219
+    },
+    {
+      "path": "Guandan Visual Direction.dc.html",
+      "sha256": "576093163a836647ab70b23cde8e04d4ccea8f1731762c89986063e7a498ad06",
+      "bytes": 113172
+    },
+    {
+      "path": "README.md",
+      "sha256": "7f218c2b61be50763b6a09eb769368ca4a73486d2d8b9bd0cc4d112d3bc70be9",
+      "bytes": 3214
+    },
+    {
+      "path": "support.js",
+      "sha256": "8fe7df74405f3c55f49b7249c74ea1397e65d07dea2b1bd3b4a489bec2e28cbe",
+      "bytes": 69150
+    }
+  ]
+}

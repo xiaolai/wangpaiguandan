@@ -1,0 +1,52 @@
+[
+  {
+    "path": "uploads/guandan-ui-design-reference-20261013/screenshots/09-host-lobby.png",
+    "sha256": "9a63410a9b04ff2374ff6d0795886e8b543aa7e0184843cdebba408207898940",
+    "origin": "Earlier baseline emulator screenshot package; not in the supplied ZIP"
+  },
+  {
+    "path": "uploads/guandan-ui-design-reference-20261013/screenshots/12-table-host.png",
+    "sha256": "d0ef3ca1437e3a08ed8492840e199296ff614edef6a9e116c7624842415a5095",
+    "origin": "Earlier baseline emulator screenshot package; not in the supplied ZIP"
+  },
+  {
+    "path": "uploads/guandan-ui-design-reference-20261013/screenshots/16-invalid-selection.png",
+    "sha256": "f21a16f1aec4109b4cbdaea3069f08ebf4416e822175298c0d233f5e745dfd3d",
+    "origin": "Earlier baseline emulator screenshot package; not in the supplied ZIP"
+  },
+  {
+    "path": "uploads/guandan-ui-design-reference-20261013/screenshots/19-table-landscape.png",
+    "sha256": "13d50b0d4dbdee17817d1a07ef5c2892b8dc69aa4b31ec41bce9941291294da1",
+    "origin": "Earlier baseline emulator screenshot package; not in the supplied ZIP"
+  },
+  {
+    "path": "uploads/guandan-ui-design-reference-20261013/screenshots/22-reconnect-timeout.png",
+    "sha256": "f1ed7881205b78c80b9f243b8279116e535994088d9c2c407fc81b8337e7144e",
+    "origin": "Earlier baseline emulator screenshot package; not in the supplied ZIP"
+  },
+  {
+    "path": "uploads/guandan-ui-design-reference-20261013/screenshots/23-client-search-no-room.png",
+    "sha256": "beee1649820e076e2db1a6cfb49b793d6ecb92d0514fd9189bf7afecb1c6e4df",
+    "origin": "Earlier baseline emulator screenshot package; not in the supplied ZIP"
+  },
+  {
+    "path": "uploads/guandan-ui-design-reference-20261013/screenshots/32-hand-scrolled-wildcards.png",
+    "sha256": "4c208c39b2ccbd5d8f1af8d0d15f249273bf93525671839693a179edd63317fd",
+    "origin": "Earlier baseline emulator screenshot package; not in the supplied ZIP"
+  },
+  {
+    "path": "uploads/guandan-ui-design-reference-20261013/screenshots/37-bomb-hand-stack.png",
+    "sha256": "85e97ec61017a233b1462fa3534156718b7a000ec7af25f2775ed1846e865194",
+    "origin": "Earlier baseline emulator screenshot package; not in the supplied ZIP"
+  },
+  {
+    "path": "uploads/guandan-ui-design-reference-20261013/screenshots/41-table-small-phone.png",
+    "sha256": "c62c60adbef2c6cb6e7ac246f3dcebdf7192152380d35bb03896fedb85009ae5",
+    "origin": "Earlier baseline emulator screenshot package; not in the supplied ZIP"
+  },
+  {
+    "path": "uploads/guandan-ui-design-reference-20261013/screenshots/42-table-large-text.png",
+    "sha256": "83a74f477c1b18c7d29fbf4c9ae4ba0b6963054390748199684543b829e692ca",
+    "origin": "Earlier baseline emulator screenshot package; not in the supplied ZIP"
+  }
+]

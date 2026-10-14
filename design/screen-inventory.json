@@ -1,0 +1,252 @@
+[
+  {
+    "id": "A1",
+    "title": "首页",
+    "state": "default"
+  },
+  {
+    "id": "A2",
+    "title": "首次打开 · 无昵称",
+    "state": "empty"
+  },
+  {
+    "id": "A3",
+    "title": "单人练习 · 发牌中",
+    "state": "loading"
+  },
+  {
+    "id": "A4",
+    "title": "设置（首页与牌桌内共用）",
+    "state": "default"
+  },
+  {
+    "id": "A5",
+    "title": "重置身份 · 确认",
+    "state": "modal"
+  },
+  {
+    "id": "B1",
+    "title": "创建牌桌",
+    "state": "default"
+  },
+  {
+    "id": "B2",
+    "title": "选择规则方案",
+    "state": "modal"
+  },
+  {
+    "id": "B3",
+    "title": "权限说明（系统弹窗前）",
+    "state": "default"
+  },
+  {
+    "id": "B4",
+    "title": "权限被拒 · Android",
+    "state": "denied"
+  },
+  {
+    "id": "B5",
+    "title": "权限被拒 · iPhone",
+    "state": "denied"
+  },
+  {
+    "id": "B6",
+    "title": "手机蓝牙已关闭",
+    "state": "error"
+  },
+  {
+    "id": "B7",
+    "title": "等待加入 · 空桌",
+    "state": "waiting"
+  },
+  {
+    "id": "B8",
+    "title": "入座申请",
+    "state": "modal"
+  },
+  {
+    "id": "B9",
+    "title": "大厅 · 有人未准备",
+    "state": "waiting"
+  },
+  {
+    "id": "B10",
+    "title": "调整座位",
+    "state": "modal"
+  },
+  {
+    "id": "C1",
+    "title": "搜索中",
+    "state": "loading"
+  },
+  {
+    "id": "C2",
+    "title": "牌桌列表",
+    "state": "default"
+  },
+  {
+    "id": "C3",
+    "title": "没有找到牌桌",
+    "state": "empty"
+  },
+  {
+    "id": "C4",
+    "title": "入座还是观看",
+    "state": "modal"
+  },
+  {
+    "id": "C5",
+    "title": "等待房主同意",
+    "state": "waiting"
+  },
+  {
+    "id": "C6",
+    "title": "被房主拒绝",
+    "state": "denied"
+  },
+  {
+    "id": "C7",
+    "title": "版本不兼容",
+    "state": "version"
+  },
+  {
+    "id": "C8",
+    "title": "座位已满",
+    "state": "empty"
+  },
+  {
+    "id": "C9",
+    "title": "连接失败",
+    "state": "error"
+  },
+  {
+    "id": "D1",
+    "title": "准备前确认规则",
+    "state": "default"
+  },
+  {
+    "id": "D2",
+    "title": "规则被修改",
+    "state": "waiting"
+  },
+  {
+    "id": "D3",
+    "title": "进贡说明",
+    "state": "default"
+  },
+  {
+    "id": "D4",
+    "title": "过 A 说明",
+    "state": "default"
+  },
+  {
+    "id": "D5",
+    "title": "发牌中",
+    "state": "loading"
+  },
+  {
+    "id": "D6",
+    "title": "抗贡通知",
+    "state": "modal"
+  },
+  {
+    "id": "R1",
+    "title": "本副结束",
+    "state": "success"
+  },
+  {
+    "id": "R2",
+    "title": "打 A 没过",
+    "state": "success"
+  },
+  {
+    "id": "R3",
+    "title": "整场结束",
+    "state": "success"
+  },
+  {
+    "id": "R4",
+    "title": "结算 · 观众视角",
+    "state": "success"
+  },
+  {
+    "id": "G1",
+    "title": "公开视图",
+    "state": "default"
+  },
+  {
+    "id": "G2",
+    "title": "选择要看的人",
+    "state": "modal"
+  },
+  {
+    "id": "G3",
+    "title": "等待同意",
+    "state": "waiting"
+  },
+  {
+    "id": "G4",
+    "title": "正在看 阿梅 的手牌",
+    "state": "success"
+  },
+  {
+    "id": "G5",
+    "title": "看牌权限被撤销",
+    "state": "denied"
+  },
+  {
+    "id": "G6",
+    "title": "被跟随的人离座",
+    "state": "error"
+  },
+  {
+    "id": "G7",
+    "title": "观看人数已满",
+    "state": "empty"
+  },
+  {
+    "id": "H1",
+    "title": "房主：玩家断线",
+    "state": "modal"
+  },
+  {
+    "id": "H2",
+    "title": "房主断开（客户端）",
+    "state": "error"
+  },
+  {
+    "id": "H3",
+    "title": "首页 · 恢复入口（房主）",
+    "state": "default"
+  },
+  {
+    "id": "H4",
+    "title": "恢复中 · 等玩家回来",
+    "state": "waiting"
+  },
+  {
+    "id": "H5",
+    "title": "回到原座位",
+    "state": "success"
+  },
+  {
+    "id": "H6",
+    "title": "存档损坏",
+    "state": "error"
+  },
+  {
+    "id": "H7",
+    "title": "存档来自新版本",
+    "state": "version"
+  },
+  {
+    "id": "H8",
+    "title": "牌桌已暂停",
+    "state": "waiting"
+  },
+  {
+    "id": "H9",
+    "title": "房主离开 · 确认",
+    "state": "modal"
+  }
+]
