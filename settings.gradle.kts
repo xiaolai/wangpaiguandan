@@ -6,4 +6,4 @@ dependencyResolutionManagement {
     repositories { google(); mavenCentral() }
 }
 rootProject.name = "WangpaiGuandan"
-include(":app", ":core")
+include(":app", ":core", ":session")

@@ -64,12 +64,12 @@ Boundary cases: no peers; one human; all seats full; duplicate names; unknown/ov
 
 | Question | Why it matters | Who decides / proposed default |
 |---|---|---|
-| First tribute-enabled profile and exact source edition? | Correct tribute ties/resistance/return and A criteria cannot be inferred from region name. | Xiaolai + knowledgeable Guandan reviewers; default select one documented event profile and state every override. |
+| First tribute-enabled profile and exact source edition? | Correct tribute ties/resistance/return and A criteria cannot be inferred from region name. | project owner + knowledgeable Guandan reviewers; default select one documented event profile and state every override. |
 | Does passing A require the team's active challenge deal; how count failures? | A03/A04 could reflect a niche policy rather than every ruleset. | Rules reviewer; proposed corrected profile requires its defined active A challenge and explicit attempt policy. |
-| Minimum phones and iOS baseline? | BLE roles and local AI budgets vary. | Device spike + Xiaolai; retain Android 8 as provisional floor, no iOS floor promise until tested. |
+| Minimum phones and iOS baseline? | BLE roles and local AI budgets vary. | Device spike + project owner; retain Android 8 as provisional floor, no iOS floor promise until tested. |
 | Existing upstream iOS client available for reuse? | License/source accessibility and interoperability are currently unverified. | Engineering research; implement native client if unavailable. |
 | Observer cap beyond two? | BLE throughput/background capacity is empirical. | Device results; initially cap at tested 4+2. |
-| Friendly versus competitive assistance defaults? | Hints/private following change table information policy. | Xiaolai; default friendly permits declared hints, competitive disables live hints/private following. |
+| Friendly versus competitive assistance defaults? | Hints/private following change table information policy. | project owner; default friendly permits declared hints, competitive disables live hints/private following. |
 | Baseline AI strength adequate with humans? | Legal correctness alone does not make a good partner. | Paired evaluation + human sessions; no highest-strength claim without evidence. |
 
 These do not block the audit/ledger. They gate the dependent implementation slices; independent build/core/transport characterization proceeds first.

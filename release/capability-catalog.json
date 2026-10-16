@@ -1,0 +1,220 @@
+{
+  "schema": 1,
+  "about": "WI-12 capability catalog (GDN-046, GDN-110): what this build may claim, each claim with the recorded evidence behind it. Store text and in-app help must not claim more. CapabilityCatalogTest checks every entry: evidence files exist (a 'jvm-test' or 'emulator-test' is a test source with @Test; a 'device-record' is a filled result under dev-docs/evidence/ containing 'Outcome: PASS'); profiles match the packaged rules/profiles/ files by id, version and hash; a provisional profile is never 'release', and a 'release' profile cites a signed decision under dev-docs/decisions/ naming its exact id, version and hash; Bluetooth and iPhone need a device record before they may be listed. 'notYetEvidenced' names the procedures still owed; nothing in it may be claimed.",
+  "profiles": [
+    {
+      "id": "P1-base-v1",
+      "kind": "base",
+      "version": "1.0.0",
+      "hash": "72aac50223ea0feb844027d8c99e24554a1510c1b3d41dcc4c55db621de7de31",
+      "status": "release",
+      "signedDecision": "dev-docs/decisions/G1a-base-rules.md",
+      "provenance": [
+        "rules/base-v1.md",
+        "rules/sources/g1a-clause-check.md",
+        "rules/sources/competitive-rules-2022-trial-gansu-excerpt.md",
+        "rules/README.md",
+        "dev-docs/decisions/G1a-base-rules.md"
+      ],
+      "fixtures": [
+        "core/src/test/resources/fixtures/rules/golden-v1.json",
+        "rules/golden/README.md"
+      ],
+      "evidence": [
+        {
+          "kind": "jvm-test",
+          "path": "core/src/test/kotlin/cn/wpgd/app/core/rules/GoldenCaseTest.kt"
+        },
+        {
+          "kind": "jvm-test",
+          "path": "core/src/test/kotlin/cn/wpgd/app/core/rules/RuleProfileTest.kt"
+        },
+        {
+          "kind": "jvm-test",
+          "path": "core/src/test/kotlin/cn/wpgd/app/core/rules/CombinationTest.kt"
+        },
+        {
+          "kind": "jvm-test",
+          "path": "core/src/test/kotlin/cn/wpgd/app/core/rules/BombOrderTest.kt"
+        },
+        {
+          "kind": "jvm-test",
+          "path": "core/src/test/kotlin/cn/wpgd/app/core/rules/WildcardDeclarationTest.kt"
+        },
+        {
+          "kind": "jvm-test",
+          "path": "core/src/test/kotlin/cn/wpgd/app/core/rules/LegalActionOracleTest.kt"
+        },
+        {
+          "kind": "jvm-test",
+          "path": "core/src/test/kotlin/cn/wpgd/app/core/rules/LargeBombCountOracleTest.kt"
+        }
+      ],
+      "pendingOptions": [
+        "bomb.maxSize"
+      ],
+      "unsupported": [
+        "Signed by the project owner alone (2026-10-16), checked against the abridged 2022 trial text only; the printed 2017 and 2022 rule books were not checked and no Guandan rules reviewer signed (dev-docs/decisions/G1a-base-rules.md).",
+        "bomb.maxSize depends on D2, left as the stated default (9- and 10-card bombs legal) and still pending a full-edition source check.",
+        "D11 (whether the reposted national texts are faithful) is left as the stated default.",
+        "Only base-v1 is offered; no other regional or house variant is supported.",
+        "Custom profiles and timed formats are not supported (M2, WI-13)."
+      ]
+    },
+    {
+      "id": "M1-match-v1",
+      "kind": "match",
+      "version": "1.0.0",
+      "hash": "832431cd63641b9812c9e146f7f4a0b48271548c9c6eca0fbe550f6fe2391715",
+      "status": "release",
+      "signedDecision": "dev-docs/decisions/G1b-match-profile.md",
+      "provenance": [
+        "rules/match-v1.md",
+        "rules/sources/competitive-rules-2022-trial-gansu-excerpt.md",
+        "rules/README.md",
+        "dev-docs/decisions/G1b-match-profile.md"
+      ],
+      "fixtures": [
+        "core/src/test/kotlin/cn/wpgd/app/core/match/MatchSpecTest.kt"
+      ],
+      "evidence": [
+        {
+          "kind": "jvm-test",
+          "path": "core/src/test/kotlin/cn/wpgd/app/core/match/SettlementTest.kt"
+        },
+        {
+          "kind": "jvm-test",
+          "path": "core/src/test/kotlin/cn/wpgd/app/core/match/TributeTest.kt"
+        },
+        {
+          "kind": "jvm-test",
+          "path": "core/src/test/kotlin/cn/wpgd/app/core/match/ReturnTributeTest.kt"
+        },
+        {
+          "kind": "jvm-test",
+          "path": "core/src/test/kotlin/cn/wpgd/app/core/match/ResistanceTest.kt"
+        },
+        {
+          "kind": "jvm-test",
+          "path": "core/src/test/kotlin/cn/wpgd/app/core/match/OpeningLeadTest.kt"
+        },
+        {
+          "kind": "jvm-test",
+          "path": "core/src/test/kotlin/cn/wpgd/app/core/match/PassingATest.kt"
+        },
+        {
+          "kind": "jvm-test",
+          "path": "core/src/test/kotlin/cn/wpgd/app/core/match/CardCountReportingTest.kt"
+        },
+        {
+          "kind": "jvm-test",
+          "path": "core/src/test/kotlin/cn/wpgd/app/core/match/MatchSimulationTest.kt"
+        }
+      ],
+      "pendingOptions": [],
+      "unsupported": [
+        "Signed by the project owner alone (2026-10-16), checked against the abridged 2022 trial text only; no Guandan rules reviewer signed the decisions D25-D40 or the fixture list (dev-docs/decisions/G1b-match-profile.md).",
+        "Every decision D25-D40 of rules/match-v1.md is adopted at its stated default (tribute, return, resistance, opening lead, level gains, passing-A failure counting, card-count reporting, early double-up settlement).",
+        "Only match-v1 is offered; no published event rule document has been adopted as the match profile.",
+        "Custom profiles and timed formats are not supported (M2, WI-13)."
+      ]
+    }
+  ],
+  "transports": [
+    {
+      "id": "in-process",
+      "claim": "Solo play against three AI seats in one process, with no network, discovery or radio (GDN-005).",
+      "evidence": [
+        {
+          "kind": "jvm-test",
+          "path": "app/src/test/kotlin/cn/wpgd/app/owner/SoloDealEndToEndTest.kt"
+        },
+        {
+          "kind": "jvm-test",
+          "path": "app/src/test/kotlin/cn/wpgd/app/room/SoloNeedsNoNetworkTest.kt"
+        },
+        {
+          "kind": "emulator-test",
+          "path": "app/src/androidTest/kotlin/cn/wpgd/app/SoloDealEndToEndUiTest.kt"
+        }
+      ],
+      "notYetEvidenced": [
+        "HP-1: a full solo match on a physical phone in airplane mode with Bluetooth and Wi-Fi off."
+      ]
+    },
+    {
+      "id": "lan",
+      "claim": "Rooms on the same Wi-Fi network over TCP with NSD discovery, verified over loopback sockets on one device and in one JVM; not yet between phones.",
+      "evidence": [
+        {
+          "kind": "jvm-test",
+          "path": "app/src/test/kotlin/cn/wpgd/app/lan/LanRoomTest.kt"
+        },
+        {
+          "kind": "jvm-test",
+          "path": "app/src/test/kotlin/cn/wpgd/app/lan/LanSocketTransportTest.kt"
+        },
+        {
+          "kind": "emulator-test",
+          "path": "app/src/androidTest/kotlin/cn/wpgd/app/lan/LanLoopbackSessionTest.kt"
+        }
+      ],
+      "notYetEvidenced": [
+        "HP-2: four phones plus two spectators over LAN, full match (no capacity or multi-device claim).",
+        "NsdRoomDirectory (Android discovery) has no automated test."
+      ]
+    }
+  ],
+  "platforms": [
+    {
+      "id": "android",
+      "minSdk": 26,
+      "claim": "Android app; automated tests ran on the JVM and on an API 36 emulator only.",
+      "evidence": [
+        {
+          "kind": "emulator-test",
+          "path": "app/src/androidTest/kotlin/cn/wpgd/app/SessionOwnerLifecycleTest.kt"
+        },
+        {
+          "kind": "emulator-test",
+          "path": "app/src/androidTest/kotlin/cn/wpgd/app/RequestedPermissionsTest.kt"
+        }
+      ],
+      "notYetEvidenced": [
+        "G5: no supported device matrix is signed; no physical phone and no Android version below 36 has been tested.",
+        "HP-8: OEM interruption matrix."
+      ]
+    }
+  ],
+  "ai": [
+    {
+      "policy": "baseline-heuristic",
+      "version": "1.0.0",
+      "claim": "Offline baseline AI; zero illegal actions in the gate corpus; measured only against a random-legal opponent (not against people).",
+      "evidence": [
+        {
+          "kind": "jvm-test",
+          "path": "core/src/test/kotlin/cn/wpgd/app/core/ai/PairedEvaluationTest.kt"
+        },
+        {
+          "kind": "jvm-test",
+          "path": "core/src/test/kotlin/cn/wpgd/app/core/ai/InformationBoundaryTest.kt"
+        }
+      ],
+      "notYetEvidenced": [
+        "HP-5: human partner sessions.",
+        "p95 decision time on the named minimum Android device."
+      ]
+    }
+  ],
+  "omissions": [
+    {
+      "id": "bluetooth",
+      "reason": "No device record: the G5 device spike and HP-3 have not been run (dev-docs/ble-device-spike.md). The bleTransport flag is off by default."
+    },
+    {
+      "id": "iphone",
+      "reason": "Gate G3 decided a native Swift core (dev-docs/decisions/G3-iphone-architecture.md), but only a package skeleton exists (ios/GuandanCore); the rules engine is not ported and no iPhone has run anything (WI-11)."
+    }
+  ]
+}
