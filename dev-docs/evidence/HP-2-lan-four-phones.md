@@ -21,7 +21,9 @@ on emulators: host, three players and up to two watchers, a whole match over rea
 player killed and restarted mid-match rejoining its seat by its pinned ticket, codes compared before
 every approval, watchers checked against every player's hand, and the final result compared on all
 devices. Results: `HP-2-emulator-run-<stamp>.md` and `.json` in this folder. They are emulator
-evidence and do not count as an HP-2 pass.
+evidence and do not count as an HP-2 pass. The first two runs (2026-10-16) had one watcher on one
+Mac; `HP-2-emulator-run-2026-10-17-000550` ran all six across two Mac minis (host and three players
+on one, both watchers on the other, dialling the host's relay across the real LAN).
 
 Rooms are found two ways: LAN discovery (NSD) and join by address (按地址加入: the joiner types
 the address and port the host's lobby shows; same code comparison, approval and G2 pinning).
@@ -29,7 +31,7 @@ Emulators each sit behind their own NAT, so the emulator run uses join by addres
 
 | Part of HP-2 | Emulator run | Still owed on phones |
 |---|---|---|
-| Four players complete a match over TCP, two watchers attached | Yes (emulators, adb-forwarded sockets) | Real Wi-Fi radio, OEM power management, Wi-Fi power save |
+| Four players complete a match over TCP, two watchers attached | Yes (emulators; adb-forwarded sockets, the watchers across a real LAN between two Macs) | Real Wi-Fi radio, OEM power management, Wi-Fi power save |
 | Joining: code compared on both screens, host approves | Yes (code read from both devices' screen state) | People comparing codes by eye |
 | A player's connection lost, back to its own seat without approval | Yes (whole emulator or app process killed, then restarted) | Step 8 (Wi-Fi off 20 s) on a phone |
 | Watchers never hold a hand without consent | Yes for the no-follow case (state and screen semantics vs. every hand) | Step 7 (follow, deny, revoke, second request) |

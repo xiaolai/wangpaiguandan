@@ -91,11 +91,45 @@ relay accepts only the listed source addresses. Allow incoming TCP on that port 
 firewall for the duration of the run. `--restart-mode emulator` works only for local emulators;
 use `process` for remote ones (or restart the remote emulator by hand on that Mac).
 
+**Start remote emulators from an SSH session that stays open for the whole run.** On macOS 27 a
+process started over SSH can open connections to other machines on the LAN only while that SSH
+session lives; once the session ends, every LAN address except the gateway answers `No route to
+host` (most likely macOS Local Network privacy, with no one at the screen to allow it). Emulators
+started with `emulators.sh start` from a session that then closed could not reach the relay; the
+same emulators started from a session kept open could. Keep it open, for example:
+
+```sh
+ssh <watchers-mac> 'source ~/wpgd-env.sh; cd <repo>; tools/e2e/emulators.sh start wpgd-e:5554 wpgd-f:5556 </dev/null; while sleep 60; do :; done' &
+```
+
+The JSON record counts `relayConnections`, `relayRejected` (source not in `--relay-allow`) and
+`relayTargetErrors` (the forwarded host port did not answer): zero connections and zero rejections
+means nothing reached the relay at all.
+
+**Host and players on a remote Mac too.** The host must be on the adb server of the machine running
+the script, so with every device on two remote Macs (host and players on one, watchers on the other)
+run the script on the players' Mac (copy the repository there, method B) and give it the watchers'
+adb server. When that Mac cannot SSH to the other, chain the tunnel through the Mac you are at:
+
+```sh
+ssh -f -N -L 127.0.0.1:5039:127.0.0.1:5037 <watchers-mac>     # watchers' adb server here as 5039
+ssh -f -N -R 127.0.0.1:5039:127.0.0.1:5039 <players-mac>      # ... and on the players' Mac as 5039
+ssh <players-mac> 'cd wangpaiguandan && python3 -I tools/e2e/run_e2e.py --host emulator-5560 \
+  --player emulator-5562 --player emulator-5564 --player emulator-5566 \
+  --watcher emulator-5554@5039 --watcher emulator-5556@5039 \
+  --host-address <players-mac LAN address> --relay-allow <watchers-mac LAN address> \
+  --restart-seat EAST --restart-mode emulator --restart-avd wpgd-b'
+```
+
+LAN addresses given to `--host-address` and `--relay-allow` are written to the evidence files as
+`<host-mac-lan-address>` and `<remote-mac-lan-address-N>`; the console log keeps the real ones.
+
 **B. Run everything on one remote Mac.** Copy the repository and run the same-machine commands
 there:
 
 ```sh
-rsync -a --delete --exclude build --exclude .gradle --exclude '*/build' ./ <mac>:wangpaiguandan/
+# tar, not macOS rsync (an earlier copy with it failed without saying so); NUL-separated names keep non-ASCII paths
+git ls-files -z --cached --others --exclude-standard | COPYFILE_DISABLE=1 tar -c --null -T - -f - .git | ssh <mac> 'mkdir -p wangpaiguandan && tar -xf - -C wangpaiguandan'
 ssh <mac> 'cd wangpaiguandan && ./gradlew :app:assembleDebug :app:assembleDebugAndroidTest && python3 -I tools/e2e/run_e2e.py ...'
 ```
 

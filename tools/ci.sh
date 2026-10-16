@@ -43,6 +43,9 @@ step "Golden rule cases: regenerate, then audit (audit fails on any FAIL)"
 python3 -I tools/golden/build.py "$repo"
 python3 -I tools/golden/audit.py "$repo" | grep -E "^(cases|FAIL|consistency problems|quotes checked)"
 
+step "End-to-end harness (tools/e2e): report writing keeps LAN addresses out of the evidence files"
+python3 -I -m unittest discover -s tools/e2e 2>&1 | tail -n 3
+
 step "iPhone Swift core skeleton (G3, ios/GuandanCore): builds, and its conformance tests read the shared fixtures"
 # The rules engine is not ported (WI-11); these tests only check that every shared fixture is found and parses.
 if command -v swift >/dev/null 2>&1; then

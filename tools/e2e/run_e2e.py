@@ -24,6 +24,7 @@ import datetime as dt
 import json
 import os
 import platform
+import re
 import shlex
 import socket
 import subprocess
@@ -185,9 +186,14 @@ class Device:
 class Relay:
     """TCP relay on this machine's LAN address to the adb-forwarded host port (cross-machine runs)."""
 
+    CONNECT_TIMEOUT = 5.0
+
     def __init__(self, bind, port, target_port, allow):
         self.server = socket.create_server((bind, port))
-        self.target_port, self.allow, self.connections = target_port, set(allow), 0
+        self.port = self.server.getsockname()[1]
+        self.target = ("127.0.0.1", target_port)
+        # Refused sources are counted apart: zero connections must say whether nothing arrived or the allow-list refused it.
+        self.allow, self.connections, self.rejected, self.target_errors = set(allow), 0, 0, 0
         threading.Thread(target=self.loop, daemon=True).start()
 
     def loop(self):
@@ -197,12 +203,15 @@ class Relay:
             except OSError:
                 return
             if self.allow and addr[0] not in self.allow:
+                self.rejected += 1
                 c.close()
                 continue
             self.connections += 1
             try:
-                t = socket.create_connection(("127.0.0.1", self.target_port), timeout=5)
+                t = socket.create_connection(self.target, timeout=self.CONNECT_TIMEOUT)
+                t.settimeout(None)  # the timeout is for connecting only: a quiet table must not drop the link
             except OSError:
+                self.target_errors += 1
                 c.close()
                 continue
             for a, b in ((c, t), (t, c)):
@@ -486,6 +495,8 @@ def main():
                 d.proc.kill()
         if relay:
             record["relayConnections"] = relay.connections
+            record["relayRejected"] = relay.rejected
+            record["relayTargetErrors"] = relay.target_errors
             relay.close()
         timings["total_s"] = round(time.time() - t0, 1)
         record["timings"] = timings
@@ -493,7 +504,7 @@ def main():
         record["reason"] = reason
         record["devices"] = {d.name: {"serial": d.serial, "remoteAdb": d.remote, "dial": d.dial, **d.info} for d in devices}
         record["logs"] = os.path.relpath(logdir, REPO)
-        write_outputs(a.out, stamp, record)
+        write_outputs(a.out, stamp, record, lan_placeholders(a.host_address, a.relay_allow))
     return 0 if outcome == "PASS" else 1
 
 
@@ -604,9 +615,29 @@ def privacy(players, watchers, samples, results):
     }
 
 
-def write_outputs(out, stamp, record):
+def lan_placeholders(host_address, relay_allow):
+    """Placeholders for the LAN addresses of a cross-machine run: evidence files are committed, private addresses are not."""
+    mapping = {}
+    if host_address:
+        mapping[host_address] = "<host-mac-lan-address>"
+    for i, addr in enumerate(x for x in relay_allow if x not in mapping):
+        mapping[addr] = f"<remote-mac-lan-address-{i + 1}>"
+    return mapping
+
+
+def redact(text, mapping):
+    # Whole addresses only: 192.0.2.15 must not match the start of 192.0.2.150.
+    for addr, placeholder in mapping.items():
+        text = re.sub(r"(?<![\w.])" + re.escape(addr) + r"(?![\w])", placeholder, text)
+    return text
+
+
+def write_outputs(out, stamp, record, redactions):
     os.makedirs(out, exist_ok=True)
     base = os.path.join(out, f"HP-2-emulator-run-{stamp}")
+    if redactions:
+        record = json.loads(redact(json.dumps(record, ensure_ascii=False), redactions))
+        record["redacted"] = sorted(redactions.values())
     with open(base + ".json", "w") as f:
         json.dump(record, f, ensure_ascii=False, indent=2)
         f.write("\n")
