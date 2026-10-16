@@ -1,0 +1,28 @@
+{
+  "id": "P1-base-v1",
+  "version": "1.0.0",
+  "displayName": "P1 (base-v1, signed 2026-10-16)",
+  "provisional": false,
+  "sourceRefs": [
+    "rules/base-v1.md (signed 2026-10-16 by the project owner; gate G1a)",
+    "dev-docs/decisions/G1a-base-rules.md"
+  ],
+  "options": {
+    "bomb.maxSize": 10,
+    "sequence.wrapAroundA": false,
+    "sequence.jokersAllowed": false,
+    "joker.bigSmallIsPair": false,
+    "joker.pairInTripleWithPair": true,
+    "tripleWithPair.sameRankPair": false,
+    "straightFlush.playableAsStraight": false,
+    "wildcard.flushRunAsStraight": true,
+    "wildcard.alwaysDeclared": true,
+    "wildcard.aloneMayStandIn": false,
+    "sequence.aceLowRanksLowest": true,
+    "sequence.wrapRanksByLastCard": true,
+    "sequence.jokersWrap": false,
+    "joker.bigSmallPairRanksAsSmall": true,
+    "wildcard.ambiguousNeedsDeclaration": true,
+    "wildcard.straySuitRejected": true
+  }
+}

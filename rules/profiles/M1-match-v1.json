@@ -1,0 +1,30 @@
+{
+  "id": "M1-match-v1",
+  "version": "1.0.0",
+  "displayName": "M1 (match-v1, signed 2026-10-16)",
+  "provisional": false,
+  "sourceRefs": [
+    "rules/match-v1.md (signed 2026-10-16 by the project owner; gate G1b)",
+    "dev-docs/decisions/G1b-match-profile.md"
+  ],
+  "options": {
+    "passingA.requireDealAtA": true,
+    "passingA.minGain": 2,
+    "passingA.maxFailures": null,
+    "passingA.resetLevel": 2,
+    "passingA.opponentWinCounts": true,
+    "passingA.interruptionResets": false,
+    "tribute.equalRankChoice": "player",
+    "tribute.tieRouting": "clockwise",
+    "returnTribute.maxRank": 10,
+    "returnTribute.levelCardsByFace": false,
+    "resistance.splitBetweenPartners": true,
+    "resistance.mode": "claimed",
+    "lead.firstDeal": "cutCard",
+    "lead.afterDoubleTribute": "giverToFirst",
+    "deal.doubleUpCompletion": "endEarly",
+    "reporting.threshold": 10,
+    "reporting.answerWhenAsked": false,
+    "reporting.askThreshold": 10
+  }
+}

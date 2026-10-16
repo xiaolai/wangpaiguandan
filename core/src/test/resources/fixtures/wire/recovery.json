@@ -1,0 +1,37 @@
+{
+    "schema": 1,
+    "protocolVersion": 2,
+    "description": "WI-06: a paused or quarantined room refuses commands (not cached: a retry is judged again); a suspended room closes connections and keeps capabilities.",
+    "cases": [
+        {
+            "name": "room-paused",
+            "wire": {
+                "type": "rejection",
+                "epoch": 3,
+                "commandId": "c-8",
+                "revision": 19,
+                "code": "ROOM_PAUSED",
+                "reason": "STORAGE_FAILURE"
+            }
+        },
+        {
+            "name": "room-quarantined",
+            "wire": {
+                "type": "rejection",
+                "epoch": 3,
+                "commandId": "c-9",
+                "revision": 19,
+                "code": "ROOM_QUARANTINED",
+                "reason": "BELOW_HIGH_WATER_MARK"
+            }
+        },
+        {
+            "name": "closing-suspended",
+            "wire": {
+                "type": "closing",
+                "epoch": 3,
+                "reason": "SUSPENDED"
+            }
+        }
+    ]
+}

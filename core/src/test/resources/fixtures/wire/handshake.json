@@ -1,0 +1,154 @@
+{
+    "schema": 1,
+    "protocolVersion": 2,
+    "description": "Handshake, admission and liveness messages. hello/welcome/hello_rejected travel in PLAIN frames; the rest only sealed.",
+    "cases": [
+        {
+            "name": "hello-player",
+            "wire": {
+                "type": "hello",
+                "protocolMin": 2,
+                "protocolMax": 2,
+                "role": "PLAYER",
+                "roomId": "room-a",
+                "baseProfileHash": "1111111111111111111111111111111111111111111111111111111111111111",
+                "matchProfileHash": "2222222222222222222222222222222222222222222222222222222222222222",
+                "publicKey": "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8"
+            }
+        },
+        {
+            "name": "hello-observer",
+            "wire": {
+                "type": "hello",
+                "protocolMin": 2,
+                "protocolMax": 3,
+                "role": "OBSERVER",
+                "roomId": "room-a",
+                "baseProfileHash": "1111111111111111111111111111111111111111111111111111111111111111",
+                "matchProfileHash": "2222222222222222222222222222222222222222222222222222222222222222",
+                "publicKey": "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8"
+            }
+        },
+        {
+            "name": "welcome",
+            "wire": {
+                "type": "welcome",
+                "protocolVersion": 2,
+                "roomId": "room-a",
+                "epoch": 3,
+                "publicKey": "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8",
+                "hostKey": "ICEiIyQlJicoKSorLC0uLzAxMjM0NTY3ODk6Ozw9Pj8",
+                "nonce": "QEFCQ0RFRkdISUpLTE1OT1BRUlNUVVZXWFlaW1xdXl8",
+                "policy": {
+                    "mode": "FRIENDLY",
+                    "hints": true,
+                    "privateFollow": true
+                }
+            }
+        },
+        {
+            "name": "hello-rejected-version",
+            "wire": {
+                "type": "hello_rejected",
+                "reason": "VERSION_UNSUPPORTED",
+                "protocolMin": 2,
+                "protocolMax": 2,
+                "message": "host speaks 2..2"
+            }
+        },
+        {
+            "name": "join-seat",
+            "wire": {
+                "type": "join",
+                "epoch": 3,
+                "nickname": "south",
+                "seat": "SOUTH",
+                "replace": false,
+                "rejoinProof": null
+            }
+        },
+        {
+            "name": "join-rejoin",
+            "wire": {
+                "type": "join",
+                "epoch": 3,
+                "nickname": "south",
+                "seat": "SOUTH",
+                "replace": false,
+                "rejoinProof": "YGFiY2RlZmdoaWprbG1ub3BxcnN0dXZ3eHl6e3x9fn8"
+            }
+        },
+        {
+            "name": "join-observer",
+            "wire": {
+                "type": "join",
+                "epoch": 3,
+                "nickname": "watcher",
+                "seat": null,
+                "replace": false,
+                "rejoinProof": null
+            }
+        },
+        {
+            "name": "admission-pending",
+            "wire": {
+                "type": "admission_pending",
+                "epoch": 3
+            }
+        },
+        {
+            "name": "admitted",
+            "wire": {
+                "type": "admitted",
+                "epoch": 3,
+                "memberId": "m1",
+                "role": "PLAYER",
+                "seat": "SOUTH",
+                "capability": "ICEiIyQlJicoKSorLC0uLzAxMjM0NTY3ODk6Ozw9Pj8",
+                "digestKey": "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8"
+            }
+        },
+        {
+            "name": "admission-denied",
+            "wire": {
+                "type": "admission_denied",
+                "epoch": 3,
+                "reason": "SEAT_TAKEN"
+            }
+        },
+        {
+            "name": "closing-replaced",
+            "wire": {
+                "type": "closing",
+                "epoch": 3,
+                "reason": "REPLACED"
+            }
+        },
+        {
+            "name": "heartbeat-admitted",
+            "wire": {
+                "type": "heartbeat",
+                "epoch": 3,
+                "revision": 17,
+                "statusRevision": 2
+            }
+        },
+        {
+            "name": "heartbeat-unadmitted",
+            "wire": {
+                "type": "heartbeat",
+                "epoch": 3,
+                "revision": null,
+                "statusRevision": null
+            }
+        },
+        {
+            "name": "resync",
+            "wire": {
+                "type": "resync",
+                "epoch": 3,
+                "capability": "ICEiIyQlJicoKSorLC0uLzAxMjM0NTY3ODk6Ozw9Pj8"
+            }
+        }
+    ]
+}

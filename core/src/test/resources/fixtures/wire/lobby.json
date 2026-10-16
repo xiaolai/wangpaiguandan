@@ -1,0 +1,233 @@
+{
+    "schema": 1,
+    "protocolVersion": 2,
+    "description": "WI-09: ready (lobby only, for the settings revision the player saw), the room roster and settings inside status, and the lobby rejections.",
+    "cases": [
+        {
+            "name": "ready",
+            "wire": {
+                "type": "command",
+                "epoch": 3,
+                "capability": "ICEiIyQlJicoKSorLC0uLzAxMjM0NTY3ODk6Ozw9Pj8",
+                "commandId": "c-12",
+                "expectedRevision": 0,
+                "body": {
+                    "type": "ready",
+                    "ready": true,
+                    "settingsRevision": 2
+                }
+            }
+        },
+        {
+            "name": "not-ready",
+            "wire": {
+                "type": "command",
+                "epoch": 3,
+                "capability": "ICEiIyQlJicoKSorLC0uLzAxMjM0NTY3ODk6Ozw9Pj8",
+                "commandId": "c-13",
+                "expectedRevision": 0,
+                "body": {
+                    "type": "ready",
+                    "ready": false,
+                    "settingsRevision": 2
+                }
+            }
+        },
+        {
+            "name": "status-lobby",
+            "wire": {
+                "type": "status",
+                "epoch": 3,
+                "statusRevision": 5,
+                "grants": [],
+                "room": {
+                    "lobby": true,
+                    "paused": false,
+                    "settings": {
+                        "policy": {
+                            "mode": "FRIENDLY",
+                            "hints": true,
+                            "privateFollow": true
+                        },
+                        "graceMs": 30000,
+                        "afterGrace": "SUBSTITUTE",
+                        "afterLeave": "SUBSTITUTE"
+                    },
+                    "settingsRevision": 2,
+                    "seats": [
+                        {
+                            "seat": "SOUTH",
+                            "occupant": "HUMAN",
+                            "nickname": "south",
+                            "ready": true,
+                            "graceRemainingMs": null
+                        },
+                        {
+                            "seat": "EAST",
+                            "occupant": "ABSENT",
+                            "nickname": "east",
+                            "ready": false,
+                            "graceRemainingMs": 12500
+                        },
+                        {
+                            "seat": "NORTH",
+                            "occupant": "STAND_IN",
+                            "nickname": "north",
+                            "ready": false,
+                            "graceRemainingMs": null
+                        },
+                        {
+                            "seat": "WEST",
+                            "occupant": "AI",
+                            "nickname": null,
+                            "ready": false,
+                            "graceRemainingMs": null
+                        }
+                    ],
+                    "observers": [
+                        "watcher"
+                    ],
+                    "yourSeat": "SOUTH"
+                }
+            }
+        },
+        {
+            "name": "status-observer",
+            "wire": {
+                "type": "status",
+                "epoch": 3,
+                "statusRevision": 6,
+                "grants": [],
+                "room": {
+                    "lobby": true,
+                    "paused": false,
+                    "settings": {
+                        "policy": {
+                            "mode": "FRIENDLY",
+                            "hints": true,
+                            "privateFollow": true
+                        },
+                        "graceMs": 30000,
+                        "afterGrace": "SUBSTITUTE",
+                        "afterLeave": "SUBSTITUTE"
+                    },
+                    "settingsRevision": 2,
+                    "seats": [
+                        {
+                            "seat": "SOUTH",
+                            "occupant": "HUMAN",
+                            "nickname": "south",
+                            "ready": true,
+                            "graceRemainingMs": null
+                        },
+                        {
+                            "seat": "EAST",
+                            "occupant": "ABSENT",
+                            "nickname": "east",
+                            "ready": false,
+                            "graceRemainingMs": 12500
+                        },
+                        {
+                            "seat": "NORTH",
+                            "occupant": "STAND_IN",
+                            "nickname": "north",
+                            "ready": false,
+                            "graceRemainingMs": null
+                        },
+                        {
+                            "seat": "WEST",
+                            "occupant": "AI",
+                            "nickname": null,
+                            "ready": false,
+                            "graceRemainingMs": null
+                        }
+                    ],
+                    "observers": [
+                        "watcher"
+                    ],
+                    "yourSeat": null
+                }
+            }
+        },
+        {
+            "name": "status-paused",
+            "wire": {
+                "type": "status",
+                "epoch": 3,
+                "statusRevision": 7,
+                "grants": [],
+                "room": {
+                    "lobby": false,
+                    "paused": true,
+                    "settings": {
+                        "policy": {
+                            "mode": "FRIENDLY",
+                            "hints": true,
+                            "privateFollow": true
+                        },
+                        "graceMs": 30000,
+                        "afterGrace": "SUBSTITUTE",
+                        "afterLeave": "SUBSTITUTE"
+                    },
+                    "settingsRevision": 2,
+                    "seats": [
+                        {
+                            "seat": "SOUTH",
+                            "occupant": "HUMAN",
+                            "nickname": "south",
+                            "ready": true,
+                            "graceRemainingMs": null
+                        },
+                        {
+                            "seat": "EAST",
+                            "occupant": "ABSENT",
+                            "nickname": "east",
+                            "ready": false,
+                            "graceRemainingMs": 12500
+                        },
+                        {
+                            "seat": "NORTH",
+                            "occupant": "STAND_IN",
+                            "nickname": "north",
+                            "ready": false,
+                            "graceRemainingMs": null
+                        },
+                        {
+                            "seat": "WEST",
+                            "occupant": "AI",
+                            "nickname": null,
+                            "ready": false,
+                            "graceRemainingMs": null
+                        }
+                    ],
+                    "observers": [
+                        "watcher"
+                    ],
+                    "yourSeat": "EAST"
+                }
+            }
+        },
+        {
+            "name": "settings-changed",
+            "wire": {
+                "type": "rejection",
+                "epoch": 3,
+                "commandId": "c-12",
+                "revision": 0,
+                "code": "SETTINGS_CHANGED",
+                "reason": "settings 3"
+            }
+        },
+        {
+            "name": "not-in-lobby",
+            "wire": {
+                "type": "rejection",
+                "epoch": 3,
+                "commandId": "c-13",
+                "revision": 9,
+                "code": "NOT_IN_LOBBY",
+                "reason": "match started"
+            }
+        }
+    ]
+}

@@ -1,0 +1,7671 @@
+[
+  {
+    "id": "T01",
+    "kind": "play",
+    "description": "Single ordinary card led.",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R2.1"
+    ],
+    "setup": {
+      "level": "9",
+      "wildcards_held": [],
+      "hand": null,
+      "table": null,
+      "play": {
+        "cards": [
+          "S5"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": {
+      "legal": true,
+      "classification": {
+        "type": "single",
+        "rank": "5"
+      },
+      "exclusive": true,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": null,
+      "rejected_reason": null
+    },
+    "why": "R2.1: any one card is a single. One card fits no other type."
+  },
+  {
+    "id": "T02",
+    "kind": "play",
+    "description": "Single big joker led.",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R2.1"
+    ],
+    "setup": {
+      "level": "9",
+      "wildcards_held": [],
+      "hand": null,
+      "table": null,
+      "play": {
+        "cards": [
+          "BJ"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": {
+      "legal": true,
+      "classification": {
+        "type": "single",
+        "rank": "BJ"
+      },
+      "exclusive": true,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": null,
+      "rejected_reason": null
+    },
+    "why": "R2.1: any one card, jokers included, is a single."
+  },
+  {
+    "id": "T03",
+    "kind": "play",
+    "description": "Pair of 5s led.",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R2.2"
+    ],
+    "setup": {
+      "level": "9",
+      "wildcards_held": [],
+      "hand": null,
+      "table": null,
+      "play": {
+        "cards": [
+          "S5",
+          "D5"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": {
+      "legal": true,
+      "classification": {
+        "type": "pair",
+        "rank": "5"
+      },
+      "exclusive": true,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": null,
+      "rejected_reason": null
+    },
+    "why": "R2.2: two cards of the same rank are a pair."
+  },
+  {
+    "id": "T04",
+    "kind": "play",
+    "description": "Pair of big jokers led.",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R2.2"
+    ],
+    "setup": {
+      "level": "9",
+      "wildcards_held": [],
+      "hand": null,
+      "table": null,
+      "play": {
+        "cards": [
+          "BJ",
+          "BJ"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": {
+      "legal": true,
+      "classification": {
+        "type": "pair",
+        "rank": "BJ"
+      },
+      "exclusive": true,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": null,
+      "rejected_reason": null
+    },
+    "why": "R2.2 names two big jokers as a pair."
+  },
+  {
+    "id": "T05",
+    "kind": "play",
+    "description": "Pair of small jokers led.",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R2.2"
+    ],
+    "setup": {
+      "level": "9",
+      "wildcards_held": [],
+      "hand": null,
+      "table": null,
+      "play": {
+        "cards": [
+          "LJ",
+          "LJ"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": {
+      "legal": true,
+      "classification": {
+        "type": "pair",
+        "rank": "LJ"
+      },
+      "exclusive": true,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": null,
+      "rejected_reason": null
+    },
+    "why": "R2.2 names two small jokers as a pair."
+  },
+  {
+    "id": "T06",
+    "kind": "play",
+    "description": "Big joker + small joker is not a pair.",
+    "status": "default-dependent",
+    "decisions": [
+      "D3"
+    ],
+    "rules": [
+      "R2.3",
+      "R6.4",
+      "R1.5"
+    ],
+    "setup": {
+      "level": "9",
+      "wildcards_held": [],
+      "hand": null,
+      "table": null,
+      "play": {
+        "cards": [
+          "LJ",
+          "BJ"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": {
+      "legal": false,
+      "classification": null,
+      "exclusive": false,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": null,
+      "rejected_reason": "no_combination"
+    },
+    "why": "R2.3: big and small joker are different ranks (R1.5), so not a pair; R6.4 lists no other two-joker play. Both rows are defaults under D3."
+  },
+  {
+    "id": "T07",
+    "kind": "play",
+    "description": "Triple of 5s led.",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R2.4"
+    ],
+    "setup": {
+      "level": "9",
+      "wildcards_held": [],
+      "hand": null,
+      "table": null,
+      "play": {
+        "cards": [
+          "S5",
+          "D5",
+          "C5"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": {
+      "legal": true,
+      "classification": {
+        "type": "triple",
+        "rank": "5"
+      },
+      "exclusive": true,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": null,
+      "rejected_reason": null
+    },
+    "why": "R2.4: three cards of one rank."
+  },
+  {
+    "id": "T08",
+    "kind": "play",
+    "description": "Triple with pair (555 + KK) led.",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R2.5",
+      "R2.15"
+    ],
+    "setup": {
+      "level": "9",
+      "wildcards_held": [],
+      "hand": null,
+      "table": null,
+      "play": {
+        "cards": [
+          "S5",
+          "D5",
+          "C5",
+          "SK",
+          "DK"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": {
+      "legal": true,
+      "classification": {
+        "type": "triple_with_pair",
+        "rank": "5"
+      },
+      "exclusive": true,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": null,
+      "rejected_reason": null
+    },
+    "why": "R2.5: one triple plus one pair, five cards. Its rank is the triple's rank (R2.15 compares the triple only)."
+  },
+  {
+    "id": "T09",
+    "kind": "play",
+    "description": "Triple with one extra card (555 + K) is illegal.",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R2.5",
+      "R4.1"
+    ],
+    "setup": {
+      "level": "9",
+      "wildcards_held": [],
+      "hand": null,
+      "table": null,
+      "play": {
+        "cards": [
+          "S5",
+          "D5",
+          "C5",
+          "SK"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": {
+      "legal": false,
+      "classification": null,
+      "exclusive": false,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": null,
+      "rejected_reason": "no_combination"
+    },
+    "why": "R2.5 (E14): a triple may not carry one card. Four cards of two ranks are not a bomb (R4.1 needs one rank); no ordinary type has four cards."
+  },
+  {
+    "id": "T10",
+    "kind": "play",
+    "description": "Triple with two unmatched cards (555 + K + Q) is illegal.",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R2.5"
+    ],
+    "setup": {
+      "level": "9",
+      "wildcards_held": [],
+      "hand": null,
+      "table": null,
+      "play": {
+        "cards": [
+          "S5",
+          "D5",
+          "C5",
+          "SK",
+          "SQ"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": {
+      "legal": false,
+      "classification": null,
+      "exclusive": false,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": null,
+      "rejected_reason": "no_combination"
+    },
+    "why": "R2.5 (E14): a triple may not carry two cards of different ranks. Five cards over three ranks fit no straight, bomb or straight flush either."
+  },
+  {
+    "id": "T11",
+    "kind": "play",
+    "description": "Five 7s (777 + 77) read as triple-with-pair is not offered; only the 5-card bomb reading exists.",
+    "status": "default-dependent",
+    "decisions": [
+      "D8"
+    ],
+    "rules": [
+      "R2.6",
+      "R4.1"
+    ],
+    "setup": {
+      "level": "9",
+      "wildcards_held": [],
+      "hand": null,
+      "table": null,
+      "play": {
+        "cards": [
+          "S7",
+          "S7",
+          "D7",
+          "C7",
+          "H7"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": {
+      "legal": true,
+      "classification": {
+        "type": "bomb",
+        "rank": "7"
+      },
+      "exclusive": true,
+      "bomb_size": 5,
+      "straight_flush": false,
+      "beats_table": null,
+      "rejected_reason": null
+    },
+    "why": "R4.1: five cards of one rank are a bomb (sourced). R2.6 default (D8): the same cards are not also a triple-with-pair, so the bomb is the only reading."
+  },
+  {
+    "id": "T12",
+    "kind": "play",
+    "description": "Straight of five mixed-suit cards 3-4-5-6-7.",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R2.8",
+      "R5.1"
+    ],
+    "setup": {
+      "level": "9",
+      "wildcards_held": [],
+      "hand": null,
+      "table": null,
+      "play": {
+        "cards": [
+          "S3",
+          "D4",
+          "C5",
+          "S6",
+          "D7"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": {
+      "legal": true,
+      "classification": {
+        "type": "straight",
+        "ranks": [
+          "3",
+          "4",
+          "5",
+          "6",
+          "7"
+        ]
+      },
+      "exclusive": true,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": null,
+      "rejected_reason": null
+    },
+    "why": "R2.8: exactly five single cards of consecutive ranks, any suits. Mixed suits, so not a straight flush (R5.1)."
+  },
+  {
+    "id": "T13",
+    "kind": "play",
+    "description": "Four consecutive singles 3-4-5-6 are illegal.",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R2.8"
+    ],
+    "setup": {
+      "level": "9",
+      "wildcards_held": [],
+      "hand": null,
+      "table": null,
+      "play": {
+        "cards": [
+          "S3",
+          "D4",
+          "C5",
+          "S6"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": {
+      "legal": false,
+      "classification": null,
+      "exclusive": false,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": null,
+      "rejected_reason": "no_combination"
+    },
+    "why": "R2.8: a straight is exactly five cards; four is illegal. No other type has four mixed ranks."
+  },
+  {
+    "id": "T14",
+    "kind": "play",
+    "description": "Six consecutive singles 3-4-5-6-7-8 are illegal.",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R2.8"
+    ],
+    "setup": {
+      "level": "9",
+      "wildcards_held": [],
+      "hand": null,
+      "table": null,
+      "play": {
+        "cards": [
+          "S3",
+          "D4",
+          "C5",
+          "S6",
+          "D7",
+          "C8"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": {
+      "legal": false,
+      "classification": null,
+      "exclusive": false,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": null,
+      "rejected_reason": "no_combination"
+    },
+    "why": "R2.8 (E16 'five and only five'): six is illegal. Six singles are not pairs or triples."
+  },
+  {
+    "id": "T15",
+    "kind": "play",
+    "description": "Three consecutive pairs 33-44-55.",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R2.9"
+    ],
+    "setup": {
+      "level": "9",
+      "wildcards_held": [],
+      "hand": null,
+      "table": null,
+      "play": {
+        "cards": [
+          "S3",
+          "D3",
+          "S4",
+          "D4",
+          "S5",
+          "D5"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": {
+      "legal": true,
+      "classification": {
+        "type": "consecutive_pairs",
+        "ranks": [
+          "3",
+          "4",
+          "5"
+        ]
+      },
+      "exclusive": true,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": null,
+      "rejected_reason": null
+    },
+    "why": "R2.9: exactly three pairs of consecutive ranks."
+  },
+  {
+    "id": "T16",
+    "kind": "play",
+    "description": "Two consecutive pairs 33-44 are illegal.",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R2.9",
+      "R4.1"
+    ],
+    "setup": {
+      "level": "9",
+      "wildcards_held": [],
+      "hand": null,
+      "table": null,
+      "play": {
+        "cards": [
+          "S3",
+          "D3",
+          "S4",
+          "D4"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": {
+      "legal": false,
+      "classification": null,
+      "exclusive": false,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": null,
+      "rejected_reason": "no_combination"
+    },
+    "why": "R2.9 (E19 names 33 44 as illegal). Not a bomb: two ranks (R4.1)."
+  },
+  {
+    "id": "T17",
+    "kind": "play",
+    "description": "Four consecutive pairs 33-44-55-66 are illegal.",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R2.9"
+    ],
+    "setup": {
+      "level": "9",
+      "wildcards_held": [],
+      "hand": null,
+      "table": null,
+      "play": {
+        "cards": [
+          "S3",
+          "D3",
+          "S4",
+          "D4",
+          "S5",
+          "D5",
+          "S6",
+          "D6"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": {
+      "legal": false,
+      "classification": null,
+      "exclusive": false,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": null,
+      "rejected_reason": "no_combination"
+    },
+    "why": "R2.9 (E19): four or more consecutive pairs are illegal."
+  },
+  {
+    "id": "T18",
+    "kind": "play",
+    "description": "Two consecutive triples 333-444.",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R2.10"
+    ],
+    "setup": {
+      "level": "9",
+      "wildcards_held": [],
+      "hand": null,
+      "table": null,
+      "play": {
+        "cards": [
+          "S3",
+          "D3",
+          "C3",
+          "S4",
+          "D4",
+          "C4"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": {
+      "legal": true,
+      "classification": {
+        "type": "consecutive_triples",
+        "ranks": [
+          "3",
+          "4"
+        ]
+      },
+      "exclusive": true,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": null,
+      "rejected_reason": null
+    },
+    "why": "R2.10: exactly two triples of consecutive ranks."
+  },
+  {
+    "id": "T19",
+    "kind": "play",
+    "description": "Three consecutive triples JJJ-QQQ-KKK are illegal.",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R2.10"
+    ],
+    "setup": {
+      "level": "9",
+      "wildcards_held": [],
+      "hand": null,
+      "table": null,
+      "play": {
+        "cards": [
+          "SJ",
+          "DJ",
+          "CJ",
+          "SQ",
+          "DQ",
+          "CQ",
+          "SK",
+          "DK",
+          "CK"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": {
+      "legal": false,
+      "classification": null,
+      "exclusive": false,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": null,
+      "rejected_reason": "no_combination"
+    },
+    "why": "R2.10 (E21 uses this exact example): three or more consecutive triples are illegal."
+  },
+  {
+    "id": "T20",
+    "kind": "play",
+    "description": "Straight flush: spades 3-4-5-6-7.",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R5.1"
+    ],
+    "setup": {
+      "level": "9",
+      "wildcards_held": [],
+      "hand": null,
+      "table": null,
+      "play": {
+        "cards": [
+          "S3",
+          "S4",
+          "S5",
+          "S6",
+          "S7"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": {
+      "legal": true,
+      "classification": {
+        "type": "straight_flush",
+        "ranks": [
+          "3",
+          "4",
+          "5",
+          "6",
+          "7"
+        ],
+        "suit": "S"
+      },
+      "exclusive": false,
+      "bomb_size": null,
+      "straight_flush": true,
+      "beats_table": null,
+      "rejected_reason": null
+    },
+    "why": "R5.1: a straight whose five cards share one suit. Whether it also has an ordinary-straight reading is D9 (see F20); this case does not claim exclusivity."
+  },
+  {
+    "id": "T21",
+    "kind": "play",
+    "description": "Four jokers led.",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R6.1"
+    ],
+    "setup": {
+      "level": "9",
+      "wildcards_held": [],
+      "hand": null,
+      "table": null,
+      "play": {
+        "cards": [
+          "LJ",
+          "LJ",
+          "BJ",
+          "BJ"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": {
+      "legal": true,
+      "classification": {
+        "type": "four_jokers"
+      },
+      "exclusive": true,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": null,
+      "rejected_reason": null
+    },
+    "why": "R6.1: both big jokers and both small jokers played together."
+  },
+  {
+    "id": "T22",
+    "kind": "play",
+    "description": "Three jokers (two small + one big) are illegal.",
+    "status": "default-dependent",
+    "decisions": [
+      "D3"
+    ],
+    "rules": [
+      "R6.4",
+      "R1.5"
+    ],
+    "setup": {
+      "level": "9",
+      "wildcards_held": [],
+      "hand": null,
+      "table": null,
+      "play": {
+        "cards": [
+          "LJ",
+          "LJ",
+          "BJ"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": {
+      "legal": false,
+      "classification": null,
+      "exclusive": false,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": null,
+      "rejected_reason": "no_combination"
+    },
+    "why": "R6.4 default (D3): three jokers are not a play. Not a triple: small and big joker are different ranks (R1.5)."
+  },
+  {
+    "id": "T23",
+    "kind": "play",
+    "description": "Triple with a pair of big jokers (333 + BJ BJ).",
+    "status": "default-dependent",
+    "decisions": [
+      "D3"
+    ],
+    "rules": [
+      "R2.7",
+      "R2.5"
+    ],
+    "setup": {
+      "level": "9",
+      "wildcards_held": [],
+      "hand": null,
+      "table": null,
+      "play": {
+        "cards": [
+          "S3",
+          "D3",
+          "C3",
+          "BJ",
+          "BJ"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": {
+      "legal": true,
+      "classification": {
+        "type": "triple_with_pair",
+        "rank": "3"
+      },
+      "exclusive": true,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": null,
+      "rejected_reason": null
+    },
+    "why": "R2.7 default (D3): a same-kind joker pair may be the attached pair. Rank is the triple's (3)."
+  },
+  {
+    "id": "T24",
+    "kind": "play",
+    "description": "A joker inside a straight (10-J-Q-K + big joker) is illegal.",
+    "status": "default-dependent",
+    "decisions": [
+      "D4"
+    ],
+    "rules": [
+      "R2.11"
+    ],
+    "setup": {
+      "level": "9",
+      "wildcards_held": [],
+      "hand": null,
+      "table": null,
+      "play": {
+        "cards": [
+          "S10",
+          "DJ",
+          "CQ",
+          "SK",
+          "BJ"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": {
+      "legal": false,
+      "classification": null,
+      "exclusive": false,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": null,
+      "rejected_reason": "no_combination"
+    },
+    "why": "R2.11 default (D4): jokers may not be part of a straight."
+  },
+  {
+    "id": "BS01",
+    "kind": "play",
+    "description": "4-card bomb of 6s.",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R4.1"
+    ],
+    "setup": {
+      "level": "9",
+      "wildcards_held": [],
+      "hand": null,
+      "table": null,
+      "play": {
+        "cards": [
+          "S6",
+          "D6",
+          "C6",
+          "H6"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": {
+      "legal": true,
+      "classification": {
+        "type": "bomb",
+        "rank": "6"
+      },
+      "exclusive": true,
+      "bomb_size": 4,
+      "straight_flush": false,
+      "beats_table": null,
+      "rejected_reason": null
+    },
+    "why": "R4.1: four cards of one rank."
+  },
+  {
+    "id": "BS02",
+    "kind": "play",
+    "description": "5-card bomb of 8s.",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R4.1"
+    ],
+    "setup": {
+      "level": "9",
+      "wildcards_held": [],
+      "hand": null,
+      "table": null,
+      "play": {
+        "cards": [
+          "S8",
+          "S8",
+          "D8",
+          "C8",
+          "H8"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": {
+      "legal": true,
+      "classification": {
+        "type": "bomb",
+        "rank": "8"
+      },
+      "exclusive": false,
+      "bomb_size": 5,
+      "straight_flush": false,
+      "beats_table": null,
+      "rejected_reason": null
+    },
+    "why": "R4.1: five cards of one rank are a bomb. Not claimed exclusive: whether 888+88 is also a triple-with-pair is D8 (see T11)."
+  },
+  {
+    "id": "BS03",
+    "kind": "play",
+    "description": "6-card bomb of Js.",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R4.1"
+    ],
+    "setup": {
+      "level": "9",
+      "wildcards_held": [],
+      "hand": null,
+      "table": null,
+      "play": {
+        "cards": [
+          "SJ",
+          "SJ",
+          "DJ",
+          "DJ",
+          "CJ",
+          "HJ"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": {
+      "legal": true,
+      "classification": {
+        "type": "bomb",
+        "rank": "J"
+      },
+      "exclusive": true,
+      "bomb_size": 6,
+      "straight_flush": false,
+      "beats_table": null,
+      "rejected_reason": null
+    },
+    "why": "R4.1: six cards of one rank. Six same-rank cards are not consecutive pairs or triples (ranks must differ)."
+  },
+  {
+    "id": "BS04",
+    "kind": "play",
+    "description": "7-card bomb of Qs.",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R4.1"
+    ],
+    "setup": {
+      "level": "9",
+      "wildcards_held": [],
+      "hand": null,
+      "table": null,
+      "play": {
+        "cards": [
+          "SQ",
+          "SQ",
+          "DQ",
+          "DQ",
+          "CQ",
+          "CQ",
+          "HQ"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": {
+      "legal": true,
+      "classification": {
+        "type": "bomb",
+        "rank": "Q"
+      },
+      "exclusive": true,
+      "bomb_size": 7,
+      "straight_flush": false,
+      "beats_table": null,
+      "rejected_reason": null
+    },
+    "why": "R4.1: seven cards of one rank."
+  },
+  {
+    "id": "BS05",
+    "kind": "play",
+    "description": "8-card bomb of Ks (all eight physical Ks).",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R4.1",
+      "R4.3",
+      "R1.2"
+    ],
+    "setup": {
+      "level": "9",
+      "wildcards_held": [],
+      "hand": null,
+      "table": null,
+      "play": {
+        "cards": [
+          "SK",
+          "SK",
+          "DK",
+          "DK",
+          "CK",
+          "CK",
+          "HK",
+          "HK"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": {
+      "legal": true,
+      "classification": {
+        "type": "bomb",
+        "rank": "K"
+      },
+      "exclusive": true,
+      "bomb_size": 8,
+      "straight_flush": false,
+      "beats_table": null,
+      "rejected_reason": null
+    },
+    "why": "R4.1 with R4.3: eight physical cards, the most any rank has (R1.2). At level 9, heart K is not a wildcard."
+  },
+  {
+    "id": "BS06",
+    "kind": "play",
+    "description": "Wildcard completes a 4-card bomb (666 + heart 2 at level 2).",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R4.2",
+      "R7.2"
+    ],
+    "setup": {
+      "level": "2",
+      "wildcards_held": [
+        "H2"
+      ],
+      "hand": null,
+      "table": null,
+      "play": {
+        "cards": [
+          "S6",
+          "D6",
+          "C6",
+          "H2"
+        ],
+        "declaration": [
+          {
+            "card": "H2",
+            "as_rank": "6"
+          }
+        ]
+      }
+    },
+    "expected": {
+      "legal": true,
+      "classification": {
+        "type": "bomb",
+        "rank": "6"
+      },
+      "exclusive": false,
+      "bomb_size": 4,
+      "straight_flush": false,
+      "beats_table": null,
+      "rejected_reason": null
+    },
+    "why": "R4.2 gives this exact example (E35): three 6s + one wildcard are a four-card bomb of 6s."
+  },
+  {
+    "id": "BS07",
+    "kind": "play",
+    "description": "Two wildcards complete a 4-card bomb (66 + both heart 2s).",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R4.2",
+      "R7.2"
+    ],
+    "setup": {
+      "level": "2",
+      "wildcards_held": [
+        "H2",
+        "H2"
+      ],
+      "hand": null,
+      "table": null,
+      "play": {
+        "cards": [
+          "S6",
+          "D6",
+          "H2",
+          "H2"
+        ],
+        "declaration": [
+          {
+            "card": "H2",
+            "as_rank": "6"
+          },
+          {
+            "card": "H2",
+            "as_rank": "6"
+          }
+        ]
+      }
+    },
+    "expected": {
+      "legal": true,
+      "classification": {
+        "type": "bomb",
+        "rank": "6"
+      },
+      "exclusive": false,
+      "bomb_size": 4,
+      "straight_flush": false,
+      "beats_table": null,
+      "rejected_reason": null
+    },
+    "why": "R7.2: each wildcard may stand for any non-joker card; R4.2: wildcards count toward size. 2 + 2 = 4 cards of 6."
+  },
+  {
+    "id": "BS08",
+    "kind": "play",
+    "description": "Level-rank bomb using a wildcard as its natural self (999 + heart 9 at level 9).",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R4.1",
+      "R4.2",
+      "R7.5"
+    ],
+    "setup": {
+      "level": "9",
+      "wildcards_held": [
+        "H9"
+      ],
+      "hand": null,
+      "table": null,
+      "play": {
+        "cards": [
+          "S9",
+          "D9",
+          "C9",
+          "H9"
+        ],
+        "declaration": [
+          {
+            "card": "H9",
+            "as_rank": "9"
+          }
+        ]
+      }
+    },
+    "expected": {
+      "legal": true,
+      "classification": {
+        "type": "bomb",
+        "rank": "9"
+      },
+      "exclusive": false,
+      "bomb_size": 4,
+      "straight_flush": false,
+      "beats_table": null,
+      "rejected_reason": null
+    },
+    "why": "R7.5: the wildcard is also a level card and may count as itself; four 9s are a bomb (R4.1, R4.2)."
+  },
+  {
+    "id": "BS09",
+    "kind": "play",
+    "description": "9-card bomb: eight physical 7s + one wildcard (level 2).",
+    "status": "default-dependent",
+    "decisions": [
+      "D2"
+    ],
+    "rules": [
+      "R4.5"
+    ],
+    "setup": {
+      "level": "2",
+      "wildcards_held": [
+        "H2"
+      ],
+      "hand": null,
+      "table": null,
+      "play": {
+        "cards": [
+          "S7",
+          "S7",
+          "D7",
+          "D7",
+          "C7",
+          "C7",
+          "H7",
+          "H7",
+          "H2"
+        ],
+        "declaration": [
+          {
+            "card": "H2",
+            "as_rank": "7"
+          }
+        ]
+      }
+    },
+    "expected": {
+      "legal": true,
+      "classification": {
+        "type": "bomb",
+        "rank": "7"
+      },
+      "exclusive": false,
+      "bomb_size": 9,
+      "straight_flush": false,
+      "beats_table": null,
+      "rejected_reason": null
+    },
+    "why": "R4.5 default (D2): 8 physical + 1 wildcard is a legal 9-card bomb. No source names a 9-card bomb."
+  },
+  {
+    "id": "BS10",
+    "kind": "play",
+    "description": "9-card bomb: seven physical 7s + both wildcards (level 2).",
+    "status": "default-dependent",
+    "decisions": [
+      "D2"
+    ],
+    "rules": [
+      "R4.5"
+    ],
+    "setup": {
+      "level": "2",
+      "wildcards_held": [
+        "H2",
+        "H2"
+      ],
+      "hand": null,
+      "table": null,
+      "play": {
+        "cards": [
+          "S7",
+          "S7",
+          "D7",
+          "D7",
+          "C7",
+          "C7",
+          "H7",
+          "H2",
+          "H2"
+        ],
+        "declaration": [
+          {
+            "card": "H2",
+            "as_rank": "7"
+          },
+          {
+            "card": "H2",
+            "as_rank": "7"
+          }
+        ]
+      }
+    },
+    "expected": {
+      "legal": true,
+      "classification": {
+        "type": "bomb",
+        "rank": "7"
+      },
+      "exclusive": false,
+      "bomb_size": 9,
+      "straight_flush": false,
+      "beats_table": null,
+      "rejected_reason": null
+    },
+    "why": "R4.5 default (D2): 7 physical + 2 wildcards is a legal 9-card bomb."
+  },
+  {
+    "id": "BS11",
+    "kind": "play",
+    "description": "10-card bomb: eight physical 7s + both wildcards (level 2).",
+    "status": "default-dependent",
+    "decisions": [
+      "D2"
+    ],
+    "rules": [
+      "R4.4",
+      "R4.6"
+    ],
+    "setup": {
+      "level": "2",
+      "wildcards_held": [
+        "H2",
+        "H2"
+      ],
+      "hand": null,
+      "table": null,
+      "play": {
+        "cards": [
+          "S7",
+          "S7",
+          "D7",
+          "D7",
+          "C7",
+          "C7",
+          "H7",
+          "H7",
+          "H2",
+          "H2"
+        ],
+        "declaration": [
+          {
+            "card": "H2",
+            "as_rank": "7"
+          },
+          {
+            "card": "H2",
+            "as_rank": "7"
+          }
+        ]
+      }
+    },
+    "expected": {
+      "legal": true,
+      "classification": {
+        "type": "bomb",
+        "rank": "7"
+      },
+      "exclusive": false,
+      "bomb_size": 10,
+      "straight_flush": false,
+      "beats_table": null,
+      "rejected_reason": null
+    },
+    "why": "R4.4 (template only, D2): 8 + both wildcards = 10 cards, the largest bomb (R4.6, D2)."
+  },
+  {
+    "id": "SQ01",
+    "kind": "play",
+    "description": "A-low straight A-2-3-4-5 (level 9).",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R2.8",
+      "R3.1",
+      "R3.2"
+    ],
+    "setup": {
+      "level": "9",
+      "wildcards_held": [],
+      "hand": null,
+      "table": null,
+      "play": {
+        "cards": [
+          "SA",
+          "D2",
+          "C3",
+          "S4",
+          "D5"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": {
+      "legal": true,
+      "classification": {
+        "type": "straight",
+        "ranks": [
+          "A",
+          "2",
+          "3",
+          "4",
+          "5"
+        ]
+      },
+      "exclusive": true,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": null,
+      "rejected_reason": null
+    },
+    "why": "R3.1: A may count as 1; R3.2 names A-2-3-4-5 as legal."
+  },
+  {
+    "id": "SQ02",
+    "kind": "play",
+    "description": "A-high straight 10-J-Q-K-A (level 9).",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R2.8",
+      "R3.1",
+      "R3.2"
+    ],
+    "setup": {
+      "level": "9",
+      "wildcards_held": [],
+      "hand": null,
+      "table": null,
+      "play": {
+        "cards": [
+          "S10",
+          "DJ",
+          "CQ",
+          "SK",
+          "DA"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": {
+      "legal": true,
+      "classification": {
+        "type": "straight",
+        "ranks": [
+          "10",
+          "J",
+          "Q",
+          "K",
+          "A"
+        ]
+      },
+      "exclusive": true,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": null,
+      "rejected_reason": null
+    },
+    "why": "R3.2 names 10-J-Q-K-A as legal."
+  },
+  {
+    "id": "SQ03",
+    "kind": "play",
+    "description": "A-low consecutive pairs AA-22-33 (level 9).",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R2.9",
+      "R3.1",
+      "R3.2"
+    ],
+    "setup": {
+      "level": "9",
+      "wildcards_held": [],
+      "hand": null,
+      "table": null,
+      "play": {
+        "cards": [
+          "SA",
+          "DA",
+          "S2",
+          "D2",
+          "S3",
+          "D3"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": {
+      "legal": true,
+      "classification": {
+        "type": "consecutive_pairs",
+        "ranks": [
+          "A",
+          "2",
+          "3"
+        ]
+      },
+      "exclusive": true,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": null,
+      "rejected_reason": null
+    },
+    "why": "R3.2 names AA2233 as legal."
+  },
+  {
+    "id": "SQ04",
+    "kind": "play",
+    "description": "A-high consecutive pairs QQ-KK-AA (level 9).",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R2.9",
+      "R3.2"
+    ],
+    "setup": {
+      "level": "9",
+      "wildcards_held": [],
+      "hand": null,
+      "table": null,
+      "play": {
+        "cards": [
+          "SQ",
+          "DQ",
+          "SK",
+          "DK",
+          "SA",
+          "DA"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": {
+      "legal": true,
+      "classification": {
+        "type": "consecutive_pairs",
+        "ranks": [
+          "Q",
+          "K",
+          "A"
+        ]
+      },
+      "exclusive": true,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": null,
+      "rejected_reason": null
+    },
+    "why": "R3.2 names QQKKAA as legal."
+  },
+  {
+    "id": "SQ05",
+    "kind": "play",
+    "description": "A-low consecutive triples AAA-222 (level 9).",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R2.10",
+      "R3.1",
+      "R3.2"
+    ],
+    "setup": {
+      "level": "9",
+      "wildcards_held": [],
+      "hand": null,
+      "table": null,
+      "play": {
+        "cards": [
+          "SA",
+          "DA",
+          "CA",
+          "S2",
+          "D2",
+          "C2"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": {
+      "legal": true,
+      "classification": {
+        "type": "consecutive_triples",
+        "ranks": [
+          "A",
+          "2"
+        ]
+      },
+      "exclusive": true,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": null,
+      "rejected_reason": null
+    },
+    "why": "R3.2 names AAA222 as legal."
+  },
+  {
+    "id": "SQ06",
+    "kind": "play",
+    "description": "A-high consecutive triples KKK-AAA (level 9).",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R2.10",
+      "R3.2"
+    ],
+    "setup": {
+      "level": "9",
+      "wildcards_held": [],
+      "hand": null,
+      "table": null,
+      "play": {
+        "cards": [
+          "SK",
+          "DK",
+          "CK",
+          "SA",
+          "DA",
+          "CA"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": {
+      "legal": true,
+      "classification": {
+        "type": "consecutive_triples",
+        "ranks": [
+          "K",
+          "A"
+        ]
+      },
+      "exclusive": true,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": null,
+      "rejected_reason": null
+    },
+    "why": "R3.2 names KKKAAA as legal."
+  },
+  {
+    "id": "SQ07",
+    "kind": "play",
+    "description": "J-Q-K-A-2 at level 2 is illegal.",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R3.3"
+    ],
+    "setup": {
+      "level": "2",
+      "wildcards_held": [],
+      "hand": null,
+      "table": null,
+      "play": {
+        "cards": [
+          "SJ",
+          "DQ",
+          "CK",
+          "SA",
+          "D2"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": {
+      "legal": false,
+      "classification": null,
+      "exclusive": false,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": null,
+      "rejected_reason": "no_combination"
+    },
+    "why": "R3.3 (E29): when 2 is the level card, J-Q-K-A-2 is not a straight. D2 is a level card but not a wildcard (only heart 2s are)."
+  },
+  {
+    "id": "SQ08",
+    "kind": "play",
+    "description": "KK-AA-22 at level 2 is illegal.",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R3.3"
+    ],
+    "setup": {
+      "level": "2",
+      "wildcards_held": [],
+      "hand": null,
+      "table": null,
+      "play": {
+        "cards": [
+          "SK",
+          "DK",
+          "SA",
+          "DA",
+          "S2",
+          "D2"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": {
+      "legal": false,
+      "classification": null,
+      "exclusive": false,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": null,
+      "rejected_reason": "no_combination"
+    },
+    "why": "R3.3 (E28): when 2 is the level card, KK AA 22 cannot be played."
+  },
+  {
+    "id": "SQ09",
+    "kind": "play",
+    "description": "22-33-44 at level 2 is legal (level card at natural rank).",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R3.5",
+      "R2.9"
+    ],
+    "setup": {
+      "level": "2",
+      "wildcards_held": [],
+      "hand": null,
+      "table": null,
+      "play": {
+        "cards": [
+          "S2",
+          "D2",
+          "S3",
+          "D3",
+          "S4",
+          "D4"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": {
+      "legal": true,
+      "classification": {
+        "type": "consecutive_pairs",
+        "ranks": [
+          "2",
+          "3",
+          "4"
+        ]
+      },
+      "exclusive": true,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": null,
+      "rejected_reason": null
+    },
+    "why": "R3.5 (E28: 'only 22 33 44'): a level card in a sequence counts at its natural rank."
+  },
+  {
+    "id": "SQ10",
+    "kind": "play",
+    "description": "AA-22-33 at level 2 is legal.",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R3.2",
+      "R3.5",
+      "R2.9"
+    ],
+    "setup": {
+      "level": "2",
+      "wildcards_held": [],
+      "hand": null,
+      "table": null,
+      "play": {
+        "cards": [
+          "SA",
+          "DA",
+          "S2",
+          "D2",
+          "S3",
+          "D3"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": {
+      "legal": true,
+      "classification": {
+        "type": "consecutive_pairs",
+        "ranks": [
+          "A",
+          "2",
+          "3"
+        ]
+      },
+      "exclusive": true,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": null,
+      "rejected_reason": null
+    },
+    "why": "E28 (cited by R3.2/R3.5): at level 2, AA may be played as AA 22 33. A counts as 1, the 2s at natural rank."
+  },
+  {
+    "id": "SQ11",
+    "kind": "play",
+    "description": "Wrap-around K-A-2-3-4 (level 9) is illegal by default.",
+    "status": "default-dependent",
+    "decisions": [
+      "D1"
+    ],
+    "rules": [
+      "R3.4"
+    ],
+    "setup": {
+      "level": "9",
+      "wildcards_held": [],
+      "hand": null,
+      "table": null,
+      "play": {
+        "cards": [
+          "SK",
+          "DA",
+          "C2",
+          "S3",
+          "D4"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": {
+      "legal": false,
+      "classification": null,
+      "exclusive": false,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": null,
+      "rejected_reason": "no_combination"
+    },
+    "why": "R3.4 default (D1): A is either 1 or above K, never both; no source states it."
+  },
+  {
+    "id": "SQ12",
+    "kind": "play",
+    "description": "Wrap-around Q-K-A-2-3 at level 2 is illegal by default.",
+    "status": "default-dependent",
+    "decisions": [
+      "D1"
+    ],
+    "rules": [
+      "R3.4",
+      "R3.3"
+    ],
+    "setup": {
+      "level": "2",
+      "wildcards_held": [],
+      "hand": null,
+      "table": null,
+      "play": {
+        "cards": [
+          "SQ",
+          "DK",
+          "CA",
+          "S2",
+          "D3"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": {
+      "legal": false,
+      "classification": null,
+      "exclusive": false,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": null,
+      "rejected_reason": "no_combination"
+    },
+    "why": "R3.3 only covers J-Q-K-A-2 and KK-AA-22 at level 2; Q-K-A-2-3 falls under R3.4 default (D1)."
+  },
+  {
+    "id": "SQ13",
+    "kind": "play",
+    "description": "Wrap-around KK-AA-22 at level 9 is illegal by default.",
+    "status": "default-dependent",
+    "decisions": [
+      "D1"
+    ],
+    "rules": [
+      "R3.4",
+      "R3.3"
+    ],
+    "setup": {
+      "level": "9",
+      "wildcards_held": [],
+      "hand": null,
+      "table": null,
+      "play": {
+        "cards": [
+          "SK",
+          "DK",
+          "SA",
+          "DA",
+          "S2",
+          "D2"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": {
+      "legal": false,
+      "classification": null,
+      "exclusive": false,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": null,
+      "rejected_reason": "no_combination"
+    },
+    "why": "R3.3 states KK-AA-22 only for level 2; at other levels R3.4 default (D1) applies."
+  },
+  {
+    "id": "SQ14",
+    "kind": "play",
+    "description": "Wrap-around straight flush spades K-A-2-3-4 (level 9) is illegal by default.",
+    "status": "default-dependent",
+    "decisions": [
+      "D1"
+    ],
+    "rules": [
+      "R3.4"
+    ],
+    "setup": {
+      "level": "9",
+      "wildcards_held": [],
+      "hand": null,
+      "table": null,
+      "play": {
+        "cards": [
+          "SK",
+          "SA",
+          "S2",
+          "S3",
+          "S4"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": {
+      "legal": false,
+      "classification": null,
+      "exclusive": false,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": null,
+      "rejected_reason": "no_combination"
+    },
+    "why": "R3.4 default (D1) applies to straight flushes too (section 3 covers straight flushes)."
+  },
+  {
+    "id": "SQ15",
+    "kind": "play",
+    "description": "Level card inside a straight at its natural rank: 5-6-7-8-9 at level 7.",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R3.5",
+      "R2.8"
+    ],
+    "setup": {
+      "level": "7",
+      "wildcards_held": [],
+      "hand": null,
+      "table": null,
+      "play": {
+        "cards": [
+          "S5",
+          "D6",
+          "C7",
+          "S8",
+          "D9"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": {
+      "legal": true,
+      "classification": {
+        "type": "straight",
+        "ranks": [
+          "5",
+          "6",
+          "7",
+          "8",
+          "9"
+        ]
+      },
+      "exclusive": true,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": null,
+      "rejected_reason": null
+    },
+    "why": "R3.5: a level card in a sequence counts at its natural rank, so club 7 fills the 7 slot."
+  },
+  {
+    "id": "SQ16",
+    "kind": "play",
+    "description": "Level card used above A in a straight: J-Q-K-A-7 at level 7 is illegal.",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R3.5"
+    ],
+    "setup": {
+      "level": "7",
+      "wildcards_held": [],
+      "hand": null,
+      "table": null,
+      "play": {
+        "cards": [
+          "SJ",
+          "DQ",
+          "CK",
+          "SA",
+          "D7"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": {
+      "legal": false,
+      "classification": null,
+      "exclusive": false,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": null,
+      "rejected_reason": "no_combination"
+    },
+    "why": "R3.5 (E30: only at its own rank): the 7 cannot take its raised rank above A inside a sequence."
+  },
+  {
+    "id": "SQ17",
+    "kind": "play",
+    "description": "Level cards in consecutive pairs at natural rank: 66-77-88 at level 7.",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R3.5",
+      "R2.9"
+    ],
+    "setup": {
+      "level": "7",
+      "wildcards_held": [],
+      "hand": null,
+      "table": null,
+      "play": {
+        "cards": [
+          "S6",
+          "D6",
+          "S7",
+          "D7",
+          "S8",
+          "D8"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": {
+      "legal": true,
+      "classification": {
+        "type": "consecutive_pairs",
+        "ranks": [
+          "6",
+          "7",
+          "8"
+        ]
+      },
+      "exclusive": true,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": null,
+      "rejected_reason": null
+    },
+    "why": "R3.5 (E32): a pair of level cards may join consecutive pairs in natural order."
+  },
+  {
+    "id": "SQ18",
+    "kind": "play",
+    "description": "Level cards used above A in consecutive pairs: KK-AA-77 at level 7 is illegal.",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R3.5"
+    ],
+    "setup": {
+      "level": "7",
+      "wildcards_held": [],
+      "hand": null,
+      "table": null,
+      "play": {
+        "cards": [
+          "SK",
+          "DK",
+          "SA",
+          "DA",
+          "S7",
+          "D7"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": {
+      "legal": false,
+      "classification": null,
+      "exclusive": false,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": null,
+      "rejected_reason": "no_combination"
+    },
+    "why": "R3.5: inside a sequence the level card counts only at its natural rank, so 77 is not next to AA."
+  },
+  {
+    "id": "SQ19",
+    "kind": "play",
+    "description": "Wildcard standing for the level rank in a straight flush: spade A-[2]-3-4-5 at level 2.",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R3.6",
+      "R7.4",
+      "R5.1",
+      "R3.1"
+    ],
+    "setup": {
+      "level": "2",
+      "wildcards_held": [
+        "H2"
+      ],
+      "hand": null,
+      "table": null,
+      "play": {
+        "cards": [
+          "SA",
+          "S3",
+          "S4",
+          "S5",
+          "H2"
+        ],
+        "declaration": [
+          {
+            "card": "H2",
+            "as_rank": "2",
+            "as_suit": "S"
+          }
+        ]
+      }
+    },
+    "expected": {
+      "legal": true,
+      "classification": {
+        "type": "straight_flush",
+        "ranks": [
+          "A",
+          "2",
+          "3",
+          "4",
+          "5"
+        ],
+        "suit": "S"
+      },
+      "exclusive": false,
+      "bomb_size": null,
+      "straight_flush": true,
+      "beats_table": null,
+      "rejected_reason": null
+    },
+    "why": "R7.4: a wildcard may complete a straight flush in any suit; R3.6: standing for a level card it takes the natural rank 2; R3.1: A counts as 1."
+  },
+  {
+    "id": "SQ20",
+    "kind": "play",
+    "description": "Wildcard declared as the level rank above A: J-Q-K-A-[2] at level 2 is illegal.",
+    "status": "default-dependent",
+    "decisions": [
+      "D6"
+    ],
+    "rules": [
+      "R3.3",
+      "R3.6",
+      "R7.8"
+    ],
+    "setup": {
+      "level": "2",
+      "wildcards_held": [
+        "H2"
+      ],
+      "hand": null,
+      "table": null,
+      "play": {
+        "cards": [
+          "SJ",
+          "DQ",
+          "CK",
+          "SA",
+          "H2"
+        ],
+        "declaration": [
+          {
+            "card": "H2",
+            "as_rank": "2"
+          }
+        ]
+      }
+    },
+    "expected": {
+      "legal": false,
+      "classification": null,
+      "exclusive": false,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": null,
+      "rejected_reason": "declared_reading_illegal"
+    },
+    "why": "R3.6: a wildcard standing for a level card takes the natural rank; R3.3: J-Q-K-A-2 is illegal at level 2. The cards have another legal reading (wildcard as 10), so rejecting rather than re-reading the play is R7.8 (D6)."
+  },
+  {
+    "id": "SQ21",
+    "kind": "play",
+    "description": "Wildcard at the low end of a straight: [3]-4-5-6-7 (level 2).",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R7.6",
+      "R7.4",
+      "R2.8"
+    ],
+    "setup": {
+      "level": "2",
+      "wildcards_held": [
+        "H2"
+      ],
+      "hand": null,
+      "table": null,
+      "play": {
+        "cards": [
+          "D4",
+          "C5",
+          "S6",
+          "D7",
+          "H2"
+        ],
+        "declaration": [
+          {
+            "card": "H2",
+            "as_rank": "3"
+          }
+        ]
+      }
+    },
+    "expected": {
+      "legal": true,
+      "classification": {
+        "type": "straight",
+        "ranks": [
+          "3",
+          "4",
+          "5",
+          "6",
+          "7"
+        ]
+      },
+      "exclusive": false,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": null,
+      "rejected_reason": null
+    },
+    "why": "R7.6 (E57): a wildcard at either end of a straight may be the low end."
+  },
+  {
+    "id": "SQ22",
+    "kind": "play",
+    "description": "Same cards, wildcard at the high end: 4-5-6-7-[8] (level 2).",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R7.6",
+      "R7.4",
+      "R2.8"
+    ],
+    "setup": {
+      "level": "2",
+      "wildcards_held": [
+        "H2"
+      ],
+      "hand": null,
+      "table": null,
+      "play": {
+        "cards": [
+          "D4",
+          "C5",
+          "S6",
+          "D7",
+          "H2"
+        ],
+        "declaration": [
+          {
+            "card": "H2",
+            "as_rank": "8"
+          }
+        ]
+      }
+    },
+    "expected": {
+      "legal": true,
+      "classification": {
+        "type": "straight",
+        "ranks": [
+          "4",
+          "5",
+          "6",
+          "7",
+          "8"
+        ]
+      },
+      "exclusive": false,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": null,
+      "rejected_reason": null
+    },
+    "why": "R7.6 (E57) / R7.4 (E53: 4567 + heart 2 = 45678): the wildcard may be the high end."
+  },
+  {
+    "id": "BR01",
+    "kind": "play",
+    "description": "4-card bomb beats a single ace (audit A07).",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R4.7"
+    ],
+    "setup": {
+      "level": "2",
+      "wildcards_held": [],
+      "hand": null,
+      "table": {
+        "cards": [
+          "SA"
+        ],
+        "declaration": null,
+        "classification": {
+          "type": "single",
+          "rank": "A"
+        }
+      },
+      "play": {
+        "cards": [
+          "S7",
+          "D7",
+          "C7",
+          "H7"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": {
+      "legal": true,
+      "classification": {
+        "type": "bomb",
+        "rank": "7"
+      },
+      "exclusive": false,
+      "bomb_size": 4,
+      "straight_flush": false,
+      "beats_table": true,
+      "rejected_reason": null
+    },
+    "why": "R4.7: a bomb beats every ordinary play. At level 2, heart 7 is an ordinary card."
+  },
+  {
+    "id": "BR02",
+    "kind": "play",
+    "description": "4-card bomb of 3s beats an A-high straight.",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R4.7"
+    ],
+    "setup": {
+      "level": "9",
+      "wildcards_held": [],
+      "hand": null,
+      "table": {
+        "cards": [
+          "S10",
+          "DJ",
+          "CQ",
+          "SK",
+          "DA"
+        ],
+        "declaration": null,
+        "classification": {
+          "type": "straight",
+          "ranks": [
+            "10",
+            "J",
+            "Q",
+            "K",
+            "A"
+          ]
+        }
+      },
+      "play": {
+        "cards": [
+          "S3",
+          "D3",
+          "C3",
+          "H3"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": {
+      "legal": true,
+      "classification": {
+        "type": "bomb",
+        "rank": "3"
+      },
+      "exclusive": false,
+      "bomb_size": 4,
+      "straight_flush": false,
+      "beats_table": true,
+      "rejected_reason": null
+    },
+    "why": "R4.7: card count and rank of the ordinary play do not matter."
+  },
+  {
+    "id": "BR03",
+    "kind": "play",
+    "description": "4-card bomb beats a triple-with-pair (fewer cards still beats).",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R4.7"
+    ],
+    "setup": {
+      "level": "9",
+      "wildcards_held": [],
+      "hand": null,
+      "table": {
+        "cards": [
+          "SA",
+          "DA",
+          "CA",
+          "SK",
+          "DK"
+        ],
+        "declaration": null,
+        "classification": {
+          "type": "triple_with_pair",
+          "rank": "A"
+        }
+      },
+      "play": {
+        "cards": [
+          "S4",
+          "D4",
+          "C4",
+          "H4"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": {
+      "legal": true,
+      "classification": {
+        "type": "bomb",
+        "rank": "4"
+      },
+      "exclusive": false,
+      "bomb_size": 4,
+      "straight_flush": false,
+      "beats_table": true,
+      "rejected_reason": null
+    },
+    "why": "R4.7: a bomb beats every ordinary play regardless of type."
+  },
+  {
+    "id": "BR04",
+    "kind": "play",
+    "description": "5-card bomb of 5s beats a 4-card bomb of As.",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R4.8"
+    ],
+    "setup": {
+      "level": "9",
+      "wildcards_held": [],
+      "hand": null,
+      "table": {
+        "cards": [
+          "SA",
+          "DA",
+          "CA",
+          "HA"
+        ],
+        "declaration": null,
+        "classification": {
+          "type": "bomb",
+          "rank": "A"
+        }
+      },
+      "play": {
+        "cards": [
+          "S5",
+          "S5",
+          "D5",
+          "C5",
+          "H5"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": {
+      "legal": true,
+      "classification": {
+        "type": "bomb",
+        "rank": "5"
+      },
+      "exclusive": false,
+      "bomb_size": 5,
+      "straight_flush": false,
+      "beats_table": true,
+      "rejected_reason": null
+    },
+    "why": "R4.8: between bombs, more cards wins before rank is looked at."
+  },
+  {
+    "id": "BR05",
+    "kind": "play",
+    "description": "4-card bomb of Ks beats a 4-card bomb of Qs.",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R4.8"
+    ],
+    "setup": {
+      "level": "9",
+      "wildcards_held": [],
+      "hand": null,
+      "table": {
+        "cards": [
+          "SQ",
+          "DQ",
+          "CQ",
+          "HQ"
+        ],
+        "declaration": null,
+        "classification": {
+          "type": "bomb",
+          "rank": "Q"
+        }
+      },
+      "play": {
+        "cards": [
+          "SK",
+          "DK",
+          "CK",
+          "HK"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": {
+      "legal": true,
+      "classification": {
+        "type": "bomb",
+        "rank": "K"
+      },
+      "exclusive": false,
+      "bomb_size": 4,
+      "straight_flush": false,
+      "beats_table": true,
+      "rejected_reason": null
+    },
+    "why": "R4.8: equal card counts, higher rank wins."
+  },
+  {
+    "id": "BR06",
+    "kind": "play",
+    "description": "Must not beat: 4-card bomb of Qs on a 4-card bomb of Ks.",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R4.8"
+    ],
+    "setup": {
+      "level": "9",
+      "wildcards_held": [],
+      "hand": null,
+      "table": {
+        "cards": [
+          "SK",
+          "DK",
+          "CK",
+          "HK"
+        ],
+        "declaration": null,
+        "classification": {
+          "type": "bomb",
+          "rank": "K"
+        }
+      },
+      "play": {
+        "cards": [
+          "SQ",
+          "DQ",
+          "CQ",
+          "HQ"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": {
+      "legal": false,
+      "classification": {
+        "type": "bomb",
+        "rank": "Q"
+      },
+      "exclusive": false,
+      "bomb_size": 4,
+      "straight_flush": false,
+      "beats_table": false,
+      "rejected_reason": null
+    },
+    "why": "R4.8: equal counts, lower rank loses."
+  },
+  {
+    "id": "BR07",
+    "kind": "play",
+    "description": "Must not beat: equal 4-card bombs of 8s.",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R4.8",
+      "R2.13"
+    ],
+    "setup": {
+      "level": "9",
+      "wildcards_held": [],
+      "hand": null,
+      "table": {
+        "cards": [
+          "S8",
+          "D8",
+          "C8",
+          "H8"
+        ],
+        "declaration": null,
+        "classification": {
+          "type": "bomb",
+          "rank": "8"
+        }
+      },
+      "play": {
+        "cards": [
+          "S8",
+          "D8",
+          "C8",
+          "H8"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": {
+      "legal": false,
+      "classification": {
+        "type": "bomb",
+        "rank": "8"
+      },
+      "exclusive": false,
+      "bomb_size": 4,
+      "straight_flush": false,
+      "beats_table": false,
+      "rejected_reason": null
+    },
+    "why": "R4.8 gives a winner only for more cards or higher rank; R2.13 (E25) requires each play to be bigger. Equal is not bigger."
+  },
+  {
+    "id": "BR08",
+    "kind": "play",
+    "description": "Level-card bomb beats an A bomb of the same size (level 9).",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R4.8",
+      "R1.5"
+    ],
+    "setup": {
+      "level": "9",
+      "wildcards_held": [],
+      "hand": null,
+      "table": {
+        "cards": [
+          "SA",
+          "DA",
+          "CA",
+          "HA"
+        ],
+        "declaration": null,
+        "classification": {
+          "type": "bomb",
+          "rank": "A"
+        }
+      },
+      "play": {
+        "cards": [
+          "S9",
+          "S9",
+          "D9",
+          "C9"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": {
+      "legal": true,
+      "classification": {
+        "type": "bomb",
+        "rank": "9"
+      },
+      "exclusive": false,
+      "bomb_size": 4,
+      "straight_flush": false,
+      "beats_table": true,
+      "rejected_reason": null
+    },
+    "why": "R4.8 states this case: a bomb of level cards beats a same-size bomb of As (R1.5 order)."
+  },
+  {
+    "id": "BR09",
+    "kind": "play",
+    "description": "8-card bomb of 3s beats a 7-card bomb of As.",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R4.8"
+    ],
+    "setup": {
+      "level": "9",
+      "wildcards_held": [],
+      "hand": null,
+      "table": {
+        "cards": [
+          "SA",
+          "SA",
+          "DA",
+          "DA",
+          "CA",
+          "CA",
+          "HA"
+        ],
+        "declaration": null,
+        "classification": {
+          "type": "bomb",
+          "rank": "A"
+        }
+      },
+      "play": {
+        "cards": [
+          "S3",
+          "S3",
+          "D3",
+          "D3",
+          "C3",
+          "C3",
+          "H3",
+          "H3"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": {
+      "legal": true,
+      "classification": {
+        "type": "bomb",
+        "rank": "3"
+      },
+      "exclusive": false,
+      "bomb_size": 8,
+      "straight_flush": false,
+      "beats_table": true,
+      "rejected_reason": null
+    },
+    "why": "R4.8: more cards wins."
+  },
+  {
+    "id": "BR10",
+    "kind": "play",
+    "description": "Wildcard-built bomb compares by size and rank like any bomb: 999+wildcard beats 4 As (level 9).",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R4.8",
+      "R4.2",
+      "R7.5"
+    ],
+    "setup": {
+      "level": "9",
+      "wildcards_held": [
+        "H9"
+      ],
+      "hand": null,
+      "table": {
+        "cards": [
+          "SA",
+          "DA",
+          "CA",
+          "HA"
+        ],
+        "declaration": null,
+        "classification": {
+          "type": "bomb",
+          "rank": "A"
+        }
+      },
+      "play": {
+        "cards": [
+          "S9",
+          "D9",
+          "C9",
+          "H9"
+        ],
+        "declaration": [
+          {
+            "card": "H9",
+            "as_rank": "9"
+          }
+        ]
+      }
+    },
+    "expected": {
+      "legal": true,
+      "classification": {
+        "type": "bomb",
+        "rank": "9"
+      },
+      "exclusive": false,
+      "bomb_size": 4,
+      "straight_flush": false,
+      "beats_table": true,
+      "rejected_reason": null
+    },
+    "why": "R4.2: the wildcard counts toward size (4); R7.5: as itself it is a 9, the level rank; R4.8: level beats A at equal size."
+  },
+  {
+    "id": "BR11",
+    "kind": "play",
+    "description": "9-card bomb (8 threes + wildcard) beats an 8-card bomb of As (level 2).",
+    "status": "default-dependent",
+    "decisions": [
+      "D2"
+    ],
+    "rules": [
+      "R4.5",
+      "R4.8"
+    ],
+    "setup": {
+      "level": "2",
+      "wildcards_held": [
+        "H2"
+      ],
+      "hand": null,
+      "table": {
+        "cards": [
+          "SA",
+          "SA",
+          "DA",
+          "DA",
+          "CA",
+          "CA",
+          "HA",
+          "HA"
+        ],
+        "declaration": null,
+        "classification": {
+          "type": "bomb",
+          "rank": "A"
+        }
+      },
+      "play": {
+        "cards": [
+          "S3",
+          "S3",
+          "D3",
+          "D3",
+          "C3",
+          "C3",
+          "H3",
+          "H3",
+          "H2"
+        ],
+        "declaration": [
+          {
+            "card": "H2",
+            "as_rank": "3"
+          }
+        ]
+      }
+    },
+    "expected": {
+      "legal": true,
+      "classification": {
+        "type": "bomb",
+        "rank": "3"
+      },
+      "exclusive": false,
+      "bomb_size": 9,
+      "straight_flush": false,
+      "beats_table": true,
+      "rejected_reason": null
+    },
+    "why": "R4.5 default (D2) makes the 9-card bomb legal; R4.8: more cards wins."
+  },
+  {
+    "id": "BR12",
+    "kind": "play",
+    "description": "9-card bomb of As beats a 9-card bomb of Ks (one wildcard each, level 2).",
+    "status": "default-dependent",
+    "decisions": [
+      "D2"
+    ],
+    "rules": [
+      "R4.5",
+      "R4.8"
+    ],
+    "setup": {
+      "level": "2",
+      "wildcards_held": [
+        "H2",
+        "H2"
+      ],
+      "hand": null,
+      "table": {
+        "cards": [
+          "SK",
+          "SK",
+          "DK",
+          "DK",
+          "CK",
+          "CK",
+          "HK",
+          "HK",
+          "H2"
+        ],
+        "declaration": [
+          {
+            "card": "H2",
+            "as_rank": "K"
+          }
+        ],
+        "classification": {
+          "type": "bomb",
+          "rank": "K"
+        }
+      },
+      "play": {
+        "cards": [
+          "SA",
+          "SA",
+          "DA",
+          "DA",
+          "CA",
+          "CA",
+          "HA",
+          "HA",
+          "H2"
+        ],
+        "declaration": [
+          {
+            "card": "H2",
+            "as_rank": "A"
+          }
+        ]
+      }
+    },
+    "expected": {
+      "legal": true,
+      "classification": {
+        "type": "bomb",
+        "rank": "A"
+      },
+      "exclusive": false,
+      "bomb_size": 9,
+      "straight_flush": false,
+      "beats_table": true,
+      "rejected_reason": null
+    },
+    "why": "R4.5 default (D2): both are 9-card bombs; R4.8: equal size, A above K at level 2. Each side uses one of the two heart 2s."
+  },
+  {
+    "id": "BR13",
+    "kind": "play",
+    "description": "10-card bomb of 7s beats an 8-card bomb of As (level 2).",
+    "status": "default-dependent",
+    "decisions": [
+      "D2"
+    ],
+    "rules": [
+      "R4.4",
+      "R4.8"
+    ],
+    "setup": {
+      "level": "2",
+      "wildcards_held": [
+        "H2",
+        "H2"
+      ],
+      "hand": null,
+      "table": {
+        "cards": [
+          "SA",
+          "SA",
+          "DA",
+          "DA",
+          "CA",
+          "CA",
+          "HA",
+          "HA"
+        ],
+        "declaration": null,
+        "classification": {
+          "type": "bomb",
+          "rank": "A"
+        }
+      },
+      "play": {
+        "cards": [
+          "S7",
+          "S7",
+          "D7",
+          "D7",
+          "C7",
+          "C7",
+          "H7",
+          "H7",
+          "H2",
+          "H2"
+        ],
+        "declaration": [
+          {
+            "card": "H2",
+            "as_rank": "7"
+          },
+          {
+            "card": "H2",
+            "as_rank": "7"
+          }
+        ]
+      }
+    },
+    "expected": {
+      "legal": true,
+      "classification": {
+        "type": "bomb",
+        "rank": "7"
+      },
+      "exclusive": false,
+      "bomb_size": 10,
+      "straight_flush": false,
+      "beats_table": true,
+      "rejected_reason": null
+    },
+    "why": "R4.4 (D2) makes the 10-card bomb legal; R4.8: more cards wins. A 10-card bomb can never meet a 9-card bomb in one deal: both would need a wildcard and there are only two."
+  },
+  {
+    "id": "BR14",
+    "kind": "play",
+    "description": "Four jokers beat an 8-card bomb.",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R6.2",
+      "R4.9"
+    ],
+    "setup": {
+      "level": "9",
+      "wildcards_held": [],
+      "hand": null,
+      "table": {
+        "cards": [
+          "SK",
+          "SK",
+          "DK",
+          "DK",
+          "CK",
+          "CK",
+          "HK",
+          "HK"
+        ],
+        "declaration": null,
+        "classification": {
+          "type": "bomb",
+          "rank": "K"
+        }
+      },
+      "play": {
+        "cards": [
+          "LJ",
+          "LJ",
+          "BJ",
+          "BJ"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": {
+      "legal": true,
+      "classification": {
+        "type": "four_jokers"
+      },
+      "exclusive": false,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": true,
+      "rejected_reason": null
+    },
+    "why": "R6.2: four jokers beat every other play."
+  },
+  {
+    "id": "BR15",
+    "kind": "play",
+    "description": "Must not beat: 8-card bomb on four jokers.",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R6.2",
+      "R4.9"
+    ],
+    "setup": {
+      "level": "9",
+      "wildcards_held": [],
+      "hand": null,
+      "table": {
+        "cards": [
+          "LJ",
+          "LJ",
+          "BJ",
+          "BJ"
+        ],
+        "declaration": null,
+        "classification": {
+          "type": "four_jokers"
+        }
+      },
+      "play": {
+        "cards": [
+          "SA",
+          "SA",
+          "DA",
+          "DA",
+          "CA",
+          "CA",
+          "HA",
+          "HA"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": {
+      "legal": false,
+      "classification": {
+        "type": "bomb",
+        "rank": "A"
+      },
+      "exclusive": false,
+      "bomb_size": 8,
+      "straight_flush": false,
+      "beats_table": false,
+      "rejected_reason": null
+    },
+    "why": "R6.2 / R4.9: four jokers are at the top of the order; nothing beats them."
+  },
+  {
+    "id": "BR16",
+    "kind": "play",
+    "description": "Four jokers beat a 10-card bomb (level 2).",
+    "status": "default-dependent",
+    "decisions": [
+      "D2"
+    ],
+    "rules": [
+      "R6.2",
+      "R4.4"
+    ],
+    "setup": {
+      "level": "2",
+      "wildcards_held": [
+        "H2",
+        "H2"
+      ],
+      "hand": null,
+      "table": {
+        "cards": [
+          "S7",
+          "S7",
+          "D7",
+          "D7",
+          "C7",
+          "C7",
+          "H7",
+          "H7",
+          "H2",
+          "H2"
+        ],
+        "declaration": [
+          {
+            "card": "H2",
+            "as_rank": "7"
+          },
+          {
+            "card": "H2",
+            "as_rank": "7"
+          }
+        ],
+        "classification": {
+          "type": "bomb",
+          "rank": "7"
+        }
+      },
+      "play": {
+        "cards": [
+          "LJ",
+          "LJ",
+          "BJ",
+          "BJ"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": {
+      "legal": true,
+      "classification": {
+        "type": "four_jokers"
+      },
+      "exclusive": false,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": true,
+      "rejected_reason": null
+    },
+    "why": "R6.2: four jokers beat everything; the 10-card bomb on the table exists only under R4.4 (D2)."
+  },
+  {
+    "id": "BR17",
+    "kind": "play",
+    "description": "Must not beat: 10-card bomb on four jokers (level 2).",
+    "status": "default-dependent",
+    "decisions": [
+      "D2"
+    ],
+    "rules": [
+      "R6.2",
+      "R4.4"
+    ],
+    "setup": {
+      "level": "2",
+      "wildcards_held": [
+        "H2",
+        "H2"
+      ],
+      "hand": null,
+      "table": {
+        "cards": [
+          "LJ",
+          "LJ",
+          "BJ",
+          "BJ"
+        ],
+        "declaration": null,
+        "classification": {
+          "type": "four_jokers"
+        }
+      },
+      "play": {
+        "cards": [
+          "S7",
+          "S7",
+          "D7",
+          "D7",
+          "C7",
+          "C7",
+          "H7",
+          "H7",
+          "H2",
+          "H2"
+        ],
+        "declaration": [
+          {
+            "card": "H2",
+            "as_rank": "7"
+          },
+          {
+            "card": "H2",
+            "as_rank": "7"
+          }
+        ]
+      }
+    },
+    "expected": {
+      "legal": false,
+      "classification": {
+        "type": "bomb",
+        "rank": "7"
+      },
+      "exclusive": false,
+      "bomb_size": 10,
+      "straight_flush": false,
+      "beats_table": false,
+      "rejected_reason": null
+    },
+    "why": "R6.2: four jokers are never beaten, even by the largest bomb (R4.4, D2)."
+  },
+  {
+    "id": "SF01",
+    "kind": "play",
+    "description": "Straight flush beats a 5-card bomb.",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R5.3"
+    ],
+    "setup": {
+      "level": "9",
+      "wildcards_held": [],
+      "hand": null,
+      "table": {
+        "cards": [
+          "SA",
+          "SA",
+          "DA",
+          "CA",
+          "HA"
+        ],
+        "declaration": null,
+        "classification": {
+          "type": "bomb",
+          "rank": "A"
+        }
+      },
+      "play": {
+        "cards": [
+          "S3",
+          "S4",
+          "S5",
+          "S6",
+          "S7"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": {
+      "legal": true,
+      "classification": {
+        "type": "straight_flush",
+        "ranks": [
+          "3",
+          "4",
+          "5",
+          "6",
+          "7"
+        ],
+        "suit": "S"
+      },
+      "exclusive": false,
+      "bomb_size": null,
+      "straight_flush": true,
+      "beats_table": true,
+      "rejected_reason": null
+    },
+    "why": "R5.3: a straight flush beats any bomb of 5 or fewer cards, whatever its rank."
+  },
+  {
+    "id": "SF02",
+    "kind": "play",
+    "description": "Straight flush beats a 4-card bomb.",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R5.3"
+    ],
+    "setup": {
+      "level": "9",
+      "wildcards_held": [],
+      "hand": null,
+      "table": {
+        "cards": [
+          "SK",
+          "DK",
+          "CK",
+          "HK"
+        ],
+        "declaration": null,
+        "classification": {
+          "type": "bomb",
+          "rank": "K"
+        }
+      },
+      "play": {
+        "cards": [
+          "S3",
+          "S4",
+          "S5",
+          "S6",
+          "S7"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": {
+      "legal": true,
+      "classification": {
+        "type": "straight_flush",
+        "ranks": [
+          "3",
+          "4",
+          "5",
+          "6",
+          "7"
+        ],
+        "suit": "S"
+      },
+      "exclusive": false,
+      "bomb_size": null,
+      "straight_flush": true,
+      "beats_table": true,
+      "rejected_reason": null
+    },
+    "why": "R5.3."
+  },
+  {
+    "id": "SF03",
+    "kind": "play",
+    "description": "Must not beat: 5-card bomb on a straight flush.",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R5.3",
+      "R4.9"
+    ],
+    "setup": {
+      "level": "9",
+      "wildcards_held": [],
+      "hand": null,
+      "table": {
+        "cards": [
+          "S3",
+          "S4",
+          "S5",
+          "S6",
+          "S7"
+        ],
+        "declaration": null,
+        "classification": {
+          "type": "straight_flush",
+          "ranks": [
+            "3",
+            "4",
+            "5",
+            "6",
+            "7"
+          ],
+          "suit": "S"
+        }
+      },
+      "play": {
+        "cards": [
+          "SA",
+          "SA",
+          "DA",
+          "CA",
+          "HA"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": {
+      "legal": false,
+      "classification": {
+        "type": "bomb",
+        "rank": "A"
+      },
+      "exclusive": false,
+      "bomb_size": 5,
+      "straight_flush": false,
+      "beats_table": false,
+      "rejected_reason": null
+    },
+    "why": "R5.3 / R4.9: straight flush ranks above every 5-card bomb."
+  },
+  {
+    "id": "SF04",
+    "kind": "play",
+    "description": "Must not beat: 4-card bomb on a straight flush.",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R5.3",
+      "R4.9"
+    ],
+    "setup": {
+      "level": "9",
+      "wildcards_held": [],
+      "hand": null,
+      "table": {
+        "cards": [
+          "S3",
+          "S4",
+          "S5",
+          "S6",
+          "S7"
+        ],
+        "declaration": null,
+        "classification": {
+          "type": "straight_flush",
+          "ranks": [
+            "3",
+            "4",
+            "5",
+            "6",
+            "7"
+          ],
+          "suit": "S"
+        }
+      },
+      "play": {
+        "cards": [
+          "SK",
+          "DK",
+          "CK",
+          "HK"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": {
+      "legal": false,
+      "classification": {
+        "type": "bomb",
+        "rank": "K"
+      },
+      "exclusive": false,
+      "bomb_size": 4,
+      "straight_flush": false,
+      "beats_table": false,
+      "rejected_reason": null
+    },
+    "why": "R4.9: straight flush > 4-card bomb."
+  },
+  {
+    "id": "SF05",
+    "kind": "play",
+    "description": "6-card bomb beats a straight flush.",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R5.3",
+      "R4.9"
+    ],
+    "setup": {
+      "level": "9",
+      "wildcards_held": [],
+      "hand": null,
+      "table": {
+        "cards": [
+          "H10",
+          "HJ",
+          "HQ",
+          "HK",
+          "HA"
+        ],
+        "declaration": null,
+        "classification": {
+          "type": "straight_flush",
+          "ranks": [
+            "10",
+            "J",
+            "Q",
+            "K",
+            "A"
+          ],
+          "suit": "H"
+        }
+      },
+      "play": {
+        "cards": [
+          "S3",
+          "S3",
+          "D3",
+          "D3",
+          "C3",
+          "H3"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": {
+      "legal": true,
+      "classification": {
+        "type": "bomb",
+        "rank": "3"
+      },
+      "exclusive": false,
+      "bomb_size": 6,
+      "straight_flush": false,
+      "beats_table": true,
+      "rejected_reason": null
+    },
+    "why": "R5.3: a straight flush loses to any same-rank bomb of 6 or more cards."
+  },
+  {
+    "id": "SF06",
+    "kind": "play",
+    "description": "Must not beat: straight flush on a 6-card bomb.",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R5.3",
+      "R4.9"
+    ],
+    "setup": {
+      "level": "9",
+      "wildcards_held": [],
+      "hand": null,
+      "table": {
+        "cards": [
+          "S3",
+          "S3",
+          "D3",
+          "D3",
+          "C3",
+          "H3"
+        ],
+        "declaration": null,
+        "classification": {
+          "type": "bomb",
+          "rank": "3"
+        }
+      },
+      "play": {
+        "cards": [
+          "H10",
+          "HJ",
+          "HQ",
+          "HK",
+          "HA"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": {
+      "legal": false,
+      "classification": {
+        "type": "straight_flush",
+        "ranks": [
+          "10",
+          "J",
+          "Q",
+          "K",
+          "A"
+        ],
+        "suit": "H"
+      },
+      "exclusive": false,
+      "bomb_size": null,
+      "straight_flush": true,
+      "beats_table": false,
+      "rejected_reason": null
+    },
+    "why": "R5.3: even the A-high straight flush loses to a 6-card bomb."
+  },
+  {
+    "id": "SF07",
+    "kind": "play",
+    "description": "6-card bomb built with two wildcards beats a straight flush (level 2).",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R4.2",
+      "R7.2",
+      "R5.3"
+    ],
+    "setup": {
+      "level": "2",
+      "wildcards_held": [
+        "H2",
+        "H2"
+      ],
+      "hand": null,
+      "table": {
+        "cards": [
+          "S7",
+          "S8",
+          "S9",
+          "S10",
+          "SJ"
+        ],
+        "declaration": null,
+        "classification": {
+          "type": "straight_flush",
+          "ranks": [
+            "7",
+            "8",
+            "9",
+            "10",
+            "J"
+          ],
+          "suit": "S"
+        }
+      },
+      "play": {
+        "cards": [
+          "S5",
+          "S5",
+          "D5",
+          "C5",
+          "H2",
+          "H2"
+        ],
+        "declaration": [
+          {
+            "card": "H2",
+            "as_rank": "5"
+          },
+          {
+            "card": "H2",
+            "as_rank": "5"
+          }
+        ]
+      }
+    },
+    "expected": {
+      "legal": true,
+      "classification": {
+        "type": "bomb",
+        "rank": "5"
+      },
+      "exclusive": false,
+      "bomb_size": 6,
+      "straight_flush": false,
+      "beats_table": true,
+      "rejected_reason": null
+    },
+    "why": "R4.2: wildcards count, 4 + 2 = 6 cards; R5.3: 6-card bomb beats a straight flush."
+  },
+  {
+    "id": "SF08",
+    "kind": "play",
+    "description": "Straight flush beats an ordinary straight.",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R5.3"
+    ],
+    "setup": {
+      "level": "9",
+      "wildcards_held": [],
+      "hand": null,
+      "table": {
+        "cards": [
+          "S10",
+          "DJ",
+          "CQ",
+          "SK",
+          "DA"
+        ],
+        "declaration": null,
+        "classification": {
+          "type": "straight",
+          "ranks": [
+            "10",
+            "J",
+            "Q",
+            "K",
+            "A"
+          ]
+        }
+      },
+      "play": {
+        "cards": [
+          "S3",
+          "S4",
+          "S5",
+          "S6",
+          "S7"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": {
+      "legal": true,
+      "classification": {
+        "type": "straight_flush",
+        "ranks": [
+          "3",
+          "4",
+          "5",
+          "6",
+          "7"
+        ],
+        "suit": "S"
+      },
+      "exclusive": false,
+      "bomb_size": null,
+      "straight_flush": true,
+      "beats_table": true,
+      "rejected_reason": null
+    },
+    "why": "R5.3: a straight flush beats every ordinary play."
+  },
+  {
+    "id": "SF09",
+    "kind": "play",
+    "description": "Higher straight flush beats lower: clubs 4-8 on spades 3-7.",
+    "status": "default-dependent",
+    "decisions": [
+      "D5"
+    ],
+    "rules": [
+      "R5.4",
+      "R2.16"
+    ],
+    "setup": {
+      "level": "9",
+      "wildcards_held": [],
+      "hand": null,
+      "table": {
+        "cards": [
+          "S3",
+          "S4",
+          "S5",
+          "S6",
+          "S7"
+        ],
+        "declaration": null,
+        "classification": {
+          "type": "straight_flush",
+          "ranks": [
+            "3",
+            "4",
+            "5",
+            "6",
+            "7"
+          ],
+          "suit": "S"
+        }
+      },
+      "play": {
+        "cards": [
+          "C4",
+          "C5",
+          "C6",
+          "C7",
+          "C8"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": {
+      "legal": true,
+      "classification": {
+        "type": "straight_flush",
+        "ranks": [
+          "4",
+          "5",
+          "6",
+          "7",
+          "8"
+        ],
+        "suit": "C"
+      },
+      "exclusive": false,
+      "bomb_size": null,
+      "straight_flush": true,
+      "beats_table": true,
+      "rejected_reason": null
+    },
+    "why": "R5.4 / R2.16 default (D5): compare the highest card, 8 > 7."
+  },
+  {
+    "id": "SF10",
+    "kind": "play",
+    "description": "Must not beat: straight flush of equal rank in another suit.",
+    "status": "default-dependent",
+    "decisions": [
+      "D5"
+    ],
+    "rules": [
+      "R5.4",
+      "R2.16",
+      "R1.7"
+    ],
+    "setup": {
+      "level": "9",
+      "wildcards_held": [],
+      "hand": null,
+      "table": {
+        "cards": [
+          "S3",
+          "S4",
+          "S5",
+          "S6",
+          "S7"
+        ],
+        "declaration": null,
+        "classification": {
+          "type": "straight_flush",
+          "ranks": [
+            "3",
+            "4",
+            "5",
+            "6",
+            "7"
+          ],
+          "suit": "S"
+        }
+      },
+      "play": {
+        "cards": [
+          "C3",
+          "C4",
+          "C5",
+          "C6",
+          "C7"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": {
+      "legal": false,
+      "classification": {
+        "type": "straight_flush",
+        "ranks": [
+          "3",
+          "4",
+          "5",
+          "6",
+          "7"
+        ],
+        "suit": "C"
+      },
+      "exclusive": false,
+      "bomb_size": null,
+      "straight_flush": true,
+      "beats_table": false,
+      "rejected_reason": null
+    },
+    "why": "R1.7: suit never decides; R5.4 / R2.16 (D5): equal highest card, so not bigger."
+  },
+  {
+    "id": "SF11",
+    "kind": "play",
+    "description": "Four jokers beat a straight flush.",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R6.2",
+      "R5.3"
+    ],
+    "setup": {
+      "level": "9",
+      "wildcards_held": [],
+      "hand": null,
+      "table": {
+        "cards": [
+          "H10",
+          "HJ",
+          "HQ",
+          "HK",
+          "HA"
+        ],
+        "declaration": null,
+        "classification": {
+          "type": "straight_flush",
+          "ranks": [
+            "10",
+            "J",
+            "Q",
+            "K",
+            "A"
+          ],
+          "suit": "H"
+        }
+      },
+      "play": {
+        "cards": [
+          "LJ",
+          "LJ",
+          "BJ",
+          "BJ"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": {
+      "legal": true,
+      "classification": {
+        "type": "four_jokers"
+      },
+      "exclusive": false,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": true,
+      "rejected_reason": null
+    },
+    "why": "R5.3 / R6.2: a straight flush loses to four jokers."
+  },
+  {
+    "id": "SF12",
+    "kind": "play",
+    "description": "A-low straight flush (spades A-2-3-4-5, level 9).",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R5.1",
+      "R3.1"
+    ],
+    "setup": {
+      "level": "9",
+      "wildcards_held": [],
+      "hand": null,
+      "table": null,
+      "play": {
+        "cards": [
+          "SA",
+          "S2",
+          "S3",
+          "S4",
+          "S5"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": {
+      "legal": true,
+      "classification": {
+        "type": "straight_flush",
+        "ranks": [
+          "A",
+          "2",
+          "3",
+          "4",
+          "5"
+        ],
+        "suit": "S"
+      },
+      "exclusive": false,
+      "bomb_size": null,
+      "straight_flush": true,
+      "beats_table": null,
+      "rejected_reason": null
+    },
+    "why": "R5.1 with R3.1: A counts as 1 in a straight flush (E27 names 同花顺)."
+  },
+  {
+    "id": "SF13",
+    "kind": "play",
+    "description": "A-high straight flush (hearts 10-J-Q-K-A, level 9).",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R5.1",
+      "R3.1"
+    ],
+    "setup": {
+      "level": "9",
+      "wildcards_held": [],
+      "hand": null,
+      "table": null,
+      "play": {
+        "cards": [
+          "H10",
+          "HJ",
+          "HQ",
+          "HK",
+          "HA"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": {
+      "legal": true,
+      "classification": {
+        "type": "straight_flush",
+        "ranks": [
+          "10",
+          "J",
+          "Q",
+          "K",
+          "A"
+        ],
+        "suit": "H"
+      },
+      "exclusive": false,
+      "bomb_size": null,
+      "straight_flush": true,
+      "beats_table": null,
+      "rejected_reason": null
+    },
+    "why": "R5.1 with R3.1. At level 9, heart A etc. are ordinary cards."
+  },
+  {
+    "id": "WC01",
+    "kind": "play",
+    "description": "Heart 2 + seven makes a pair of 7s that beats a pair of 6s (audit A06, level 2).",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R7.2",
+      "R7.4",
+      "R2.2",
+      "R2.13"
+    ],
+    "setup": {
+      "level": "2",
+      "wildcards_held": [
+        "H2"
+      ],
+      "hand": null,
+      "table": {
+        "cards": [
+          "S6",
+          "D6"
+        ],
+        "declaration": null,
+        "classification": {
+          "type": "pair",
+          "rank": "6"
+        }
+      },
+      "play": {
+        "cards": [
+          "S7",
+          "H2"
+        ],
+        "declaration": [
+          {
+            "card": "H2",
+            "as_rank": "7"
+          }
+        ]
+      }
+    },
+    "expected": {
+      "legal": true,
+      "classification": {
+        "type": "pair",
+        "rank": "7"
+      },
+      "exclusive": false,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": true,
+      "rejected_reason": null
+    },
+    "why": "R7.2/R7.4 (E50): a wildcard plus a 7 is a pair of 7s; R2.13: same type, higher rank."
+  },
+  {
+    "id": "WC02",
+    "kind": "play",
+    "description": "One 6 + both wildcards make a triple of 6s (level 2).",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R7.2",
+      "R2.4"
+    ],
+    "setup": {
+      "level": "2",
+      "wildcards_held": [
+        "H2",
+        "H2"
+      ],
+      "hand": null,
+      "table": null,
+      "play": {
+        "cards": [
+          "S6",
+          "H2",
+          "H2"
+        ],
+        "declaration": [
+          {
+            "card": "H2",
+            "as_rank": "6"
+          },
+          {
+            "card": "H2",
+            "as_rank": "6"
+          }
+        ]
+      }
+    },
+    "expected": {
+      "legal": true,
+      "classification": {
+        "type": "triple",
+        "rank": "6"
+      },
+      "exclusive": false,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": null,
+      "rejected_reason": null
+    },
+    "why": "R7.2 (E48 'any type'): each wildcard stands for a 6; three 6s are a triple (R2.4)."
+  },
+  {
+    "id": "WC03",
+    "kind": "play",
+    "description": "A wildcard cannot stand for a joker: big joker + heart 2 declared as big joker (level 2).",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R7.3"
+    ],
+    "setup": {
+      "level": "2",
+      "wildcards_held": [
+        "H2"
+      ],
+      "hand": null,
+      "table": null,
+      "play": {
+        "cards": [
+          "BJ",
+          "H2"
+        ],
+        "declaration": [
+          {
+            "card": "H2",
+            "as_rank": "BJ"
+          }
+        ]
+      }
+    },
+    "expected": {
+      "legal": false,
+      "classification": null,
+      "exclusive": false,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": null,
+      "rejected_reason": "wildcard_as_joker"
+    },
+    "why": "R7.3: a wildcard can never stand for a joker. Read as its own self the cards are a joker and a 2, which is no type."
+  },
+  {
+    "id": "WC04",
+    "kind": "play",
+    "description": "Four jokers cannot be completed by a wildcard (two small + one big + heart 2).",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R6.3",
+      "R7.3"
+    ],
+    "setup": {
+      "level": "2",
+      "wildcards_held": [
+        "H2"
+      ],
+      "hand": null,
+      "table": null,
+      "play": {
+        "cards": [
+          "LJ",
+          "LJ",
+          "BJ",
+          "H2"
+        ],
+        "declaration": [
+          {
+            "card": "H2",
+            "as_rank": "BJ"
+          }
+        ]
+      }
+    },
+    "expected": {
+      "legal": false,
+      "classification": null,
+      "exclusive": false,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": null,
+      "rejected_reason": "wildcard_as_joker"
+    },
+    "why": "R6.3: four jokers always needs all four physical jokers. No other reading: four cards fit only a bomb or four jokers."
+  },
+  {
+    "id": "WC05",
+    "kind": "play",
+    "description": "KK + 66 + wildcard read as three Ks with a pair of 6s (level 2).",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R7.6",
+      "R2.5"
+    ],
+    "setup": {
+      "level": "2",
+      "wildcards_held": [
+        "H2"
+      ],
+      "hand": null,
+      "table": null,
+      "play": {
+        "cards": [
+          "SK",
+          "DK",
+          "S6",
+          "D6",
+          "H2"
+        ],
+        "declaration": [
+          {
+            "card": "H2",
+            "as_rank": "K"
+          }
+        ]
+      }
+    },
+    "expected": {
+      "legal": true,
+      "classification": {
+        "type": "triple_with_pair",
+        "rank": "K"
+      },
+      "exclusive": false,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": null,
+      "rejected_reason": null
+    },
+    "why": "R7.6 (E51): the player chooses; three Ks + pair of 6s has rank K."
+  },
+  {
+    "id": "WC06",
+    "kind": "play",
+    "description": "Same cards read as three 6s with a pair of Ks (level 2).",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R7.6",
+      "R2.5"
+    ],
+    "setup": {
+      "level": "2",
+      "wildcards_held": [
+        "H2"
+      ],
+      "hand": null,
+      "table": null,
+      "play": {
+        "cards": [
+          "SK",
+          "DK",
+          "S6",
+          "D6",
+          "H2"
+        ],
+        "declaration": [
+          {
+            "card": "H2",
+            "as_rank": "6"
+          }
+        ]
+      }
+    },
+    "expected": {
+      "legal": true,
+      "classification": {
+        "type": "triple_with_pair",
+        "rank": "6"
+      },
+      "exclusive": false,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": null,
+      "rejected_reason": null
+    },
+    "why": "R7.6 (E51): the alternative reading; rank is the triple's, 6."
+  },
+  {
+    "id": "WC07",
+    "kind": "play",
+    "description": "The reading decides the result: KK+66+wildcard as KKK+66 beats 999+44 (level 2).",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R7.6",
+      "R2.15"
+    ],
+    "setup": {
+      "level": "2",
+      "wildcards_held": [
+        "H2"
+      ],
+      "hand": null,
+      "table": {
+        "cards": [
+          "S9",
+          "D9",
+          "C9",
+          "S4",
+          "D4"
+        ],
+        "declaration": null,
+        "classification": {
+          "type": "triple_with_pair",
+          "rank": "9"
+        }
+      },
+      "play": {
+        "cards": [
+          "SK",
+          "DK",
+          "S6",
+          "D6",
+          "H2"
+        ],
+        "declaration": [
+          {
+            "card": "H2",
+            "as_rank": "K"
+          }
+        ]
+      }
+    },
+    "expected": {
+      "legal": true,
+      "classification": {
+        "type": "triple_with_pair",
+        "rank": "K"
+      },
+      "exclusive": false,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": true,
+      "rejected_reason": null
+    },
+    "why": "R2.15: only the triple counts; K > 9."
+  },
+  {
+    "id": "WC08",
+    "kind": "play",
+    "description": "Must not beat: same cards as 666+KK on 999+44 (level 2).",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R7.6",
+      "R2.15"
+    ],
+    "setup": {
+      "level": "2",
+      "wildcards_held": [
+        "H2"
+      ],
+      "hand": null,
+      "table": {
+        "cards": [
+          "S9",
+          "D9",
+          "C9",
+          "S4",
+          "D4"
+        ],
+        "declaration": null,
+        "classification": {
+          "type": "triple_with_pair",
+          "rank": "9"
+        }
+      },
+      "play": {
+        "cards": [
+          "SK",
+          "DK",
+          "S6",
+          "D6",
+          "H2"
+        ],
+        "declaration": [
+          {
+            "card": "H2",
+            "as_rank": "6"
+          }
+        ]
+      }
+    },
+    "expected": {
+      "legal": false,
+      "classification": {
+        "type": "triple_with_pair",
+        "rank": "6"
+      },
+      "exclusive": false,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": false,
+      "rejected_reason": null
+    },
+    "why": "R2.15: only the triple counts; 6 < 9, and the pair of Ks does not help."
+  },
+  {
+    "id": "WC09",
+    "kind": "play",
+    "description": "7788 + both wildcards declared as consecutive triples 777-888 (level 2).",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R7.6",
+      "R2.10"
+    ],
+    "setup": {
+      "level": "2",
+      "wildcards_held": [
+        "H2",
+        "H2"
+      ],
+      "hand": null,
+      "table": null,
+      "play": {
+        "cards": [
+          "C7",
+          "D7",
+          "C8",
+          "D8",
+          "H2",
+          "H2"
+        ],
+        "declaration": [
+          {
+            "card": "H2",
+            "as_rank": "7"
+          },
+          {
+            "card": "H2",
+            "as_rank": "8"
+          }
+        ]
+      }
+    },
+    "expected": {
+      "legal": true,
+      "classification": {
+        "type": "consecutive_triples",
+        "ranks": [
+          "7",
+          "8"
+        ]
+      },
+      "exclusive": false,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": null,
+      "rejected_reason": null
+    },
+    "why": "R7.6 (E56 uses this example): the player may read it as consecutive triples."
+  },
+  {
+    "id": "WC10",
+    "kind": "play",
+    "description": "Same cards declared as consecutive pairs 77-88-99 (level 2).",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R7.6",
+      "R2.9"
+    ],
+    "setup": {
+      "level": "2",
+      "wildcards_held": [
+        "H2",
+        "H2"
+      ],
+      "hand": null,
+      "table": null,
+      "play": {
+        "cards": [
+          "C7",
+          "D7",
+          "C8",
+          "D8",
+          "H2",
+          "H2"
+        ],
+        "declaration": [
+          {
+            "card": "H2",
+            "as_rank": "9"
+          },
+          {
+            "card": "H2",
+            "as_rank": "9"
+          }
+        ]
+      }
+    },
+    "expected": {
+      "legal": true,
+      "classification": {
+        "type": "consecutive_pairs",
+        "ranks": [
+          "7",
+          "8",
+          "9"
+        ]
+      },
+      "exclusive": false,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": null,
+      "rejected_reason": null
+    },
+    "why": "R7.6 (E56): or as consecutive pairs; two wildcards as 9s give 778899."
+  },
+  {
+    "id": "WC11",
+    "kind": "play",
+    "description": "Same cards declared as consecutive pairs 66-77-88 (level 2).",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R7.6",
+      "R7.2",
+      "R2.9"
+    ],
+    "setup": {
+      "level": "2",
+      "wildcards_held": [
+        "H2",
+        "H2"
+      ],
+      "hand": null,
+      "table": null,
+      "play": {
+        "cards": [
+          "C7",
+          "D7",
+          "C8",
+          "D8",
+          "H2",
+          "H2"
+        ],
+        "declaration": [
+          {
+            "card": "H2",
+            "as_rank": "6"
+          },
+          {
+            "card": "H2",
+            "as_rank": "6"
+          }
+        ]
+      }
+    },
+    "expected": {
+      "legal": true,
+      "classification": {
+        "type": "consecutive_pairs",
+        "ranks": [
+          "6",
+          "7",
+          "8"
+        ]
+      },
+      "exclusive": false,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": null,
+      "rejected_reason": null
+    },
+    "why": "R7.2: the wildcards may stand for any rank, so 667788 is also a consecutive-pairs reading."
+  },
+  {
+    "id": "WC12",
+    "kind": "play",
+    "description": "Wildcard completes a diamond straight flush 7-8-9-[10]-J (level 2).",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R7.4",
+      "R5.1"
+    ],
+    "setup": {
+      "level": "2",
+      "wildcards_held": [
+        "H2"
+      ],
+      "hand": null,
+      "table": null,
+      "play": {
+        "cards": [
+          "D7",
+          "D8",
+          "D9",
+          "DJ",
+          "H2"
+        ],
+        "declaration": [
+          {
+            "card": "H2",
+            "as_rank": "10",
+            "as_suit": "D"
+          }
+        ]
+      }
+    },
+    "expected": {
+      "legal": true,
+      "classification": {
+        "type": "straight_flush",
+        "ranks": [
+          "7",
+          "8",
+          "9",
+          "10",
+          "J"
+        ],
+        "suit": "D"
+      },
+      "exclusive": false,
+      "bomb_size": null,
+      "straight_flush": true,
+      "beats_table": null,
+      "rejected_reason": null
+    },
+    "why": "R7.4 (E54 uses this example): the wildcard stands for diamond 10."
+  },
+  {
+    "id": "WC13",
+    "kind": "play",
+    "description": "Same cards declared without a suit, as an ordinary straight 7-8-9-10-J (level 2).",
+    "status": "default-dependent",
+    "decisions": [
+      "D6",
+      "D9"
+    ],
+    "rules": [
+      "R7.11",
+      "R7.10"
+    ],
+    "setup": {
+      "level": "2",
+      "wildcards_held": [
+        "H2"
+      ],
+      "hand": null,
+      "table": null,
+      "play": {
+        "cards": [
+          "D7",
+          "D8",
+          "D9",
+          "DJ",
+          "H2"
+        ],
+        "declaration": [
+          {
+            "card": "H2",
+            "as_rank": "10"
+          }
+        ]
+      }
+    },
+    "expected": {
+      "legal": true,
+      "classification": {
+        "type": "straight",
+        "ranks": [
+          "7",
+          "8",
+          "9",
+          "10",
+          "J"
+        ]
+      },
+      "exclusive": false,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": null,
+      "rejected_reason": null
+    },
+    "why": "R7.11 default (D9): a wildcard-completed same-suit run may be declared as an ordinary straight; R7.10 (D6): a declaration without a suit is not a straight flush."
+  },
+  {
+    "id": "WC14",
+    "kind": "play",
+    "description": "55-66-7 + wildcard as consecutive pairs 55-66-77 (level 2).",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R7.4",
+      "R2.9"
+    ],
+    "setup": {
+      "level": "2",
+      "wildcards_held": [
+        "H2"
+      ],
+      "hand": null,
+      "table": null,
+      "play": {
+        "cards": [
+          "S5",
+          "D5",
+          "S6",
+          "D6",
+          "S7",
+          "H2"
+        ],
+        "declaration": [
+          {
+            "card": "H2",
+            "as_rank": "7"
+          }
+        ]
+      }
+    },
+    "expected": {
+      "legal": true,
+      "classification": {
+        "type": "consecutive_pairs",
+        "ranks": [
+          "5",
+          "6",
+          "7"
+        ]
+      },
+      "exclusive": false,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": null,
+      "rejected_reason": null
+    },
+    "why": "R7.4 (E52 uses this example)."
+  },
+  {
+    "id": "WC15",
+    "kind": "play",
+    "description": "333-44 + wildcard as consecutive triples 333-444 (level 2).",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R7.4",
+      "R2.10"
+    ],
+    "setup": {
+      "level": "2",
+      "wildcards_held": [
+        "H2"
+      ],
+      "hand": null,
+      "table": null,
+      "play": {
+        "cards": [
+          "S3",
+          "D3",
+          "C3",
+          "S4",
+          "D4",
+          "H2"
+        ],
+        "declaration": [
+          {
+            "card": "H2",
+            "as_rank": "4"
+          }
+        ]
+      }
+    },
+    "expected": {
+      "legal": true,
+      "classification": {
+        "type": "consecutive_triples",
+        "ranks": [
+          "3",
+          "4"
+        ]
+      },
+      "exclusive": false,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": null,
+      "rejected_reason": null
+    },
+    "why": "R7.4 (E55 uses this example)."
+  },
+  {
+    "id": "WC16",
+    "kind": "play",
+    "description": "Forged declaration: 4-5-6-8 + wildcard declared as 9 is rejected (level 2).",
+    "status": "default-dependent",
+    "decisions": [
+      "D6"
+    ],
+    "rules": [
+      "R7.8",
+      "R2.8"
+    ],
+    "setup": {
+      "level": "2",
+      "wildcards_held": [
+        "H2"
+      ],
+      "hand": null,
+      "table": null,
+      "play": {
+        "cards": [
+          "D4",
+          "C5",
+          "S6",
+          "D8",
+          "H2"
+        ],
+        "declaration": [
+          {
+            "card": "H2",
+            "as_rank": "9"
+          }
+        ]
+      }
+    },
+    "expected": {
+      "legal": false,
+      "classification": null,
+      "exclusive": false,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": null,
+      "rejected_reason": "declared_reading_illegal"
+    },
+    "why": "R7.8 (D6): a declaration that does not describe a legal play is rejected. 4-5-6-8-9 is not consecutive (R2.8); only 7 would work (E53)."
+  },
+  {
+    "id": "WC17",
+    "kind": "play",
+    "description": "Forged declaration: 666 + wildcard declared as A is rejected (level 2).",
+    "status": "default-dependent",
+    "decisions": [
+      "D6"
+    ],
+    "rules": [
+      "R7.8"
+    ],
+    "setup": {
+      "level": "2",
+      "wildcards_held": [
+        "H2"
+      ],
+      "hand": null,
+      "table": null,
+      "play": {
+        "cards": [
+          "S6",
+          "D6",
+          "C6",
+          "H2"
+        ],
+        "declaration": [
+          {
+            "card": "H2",
+            "as_rank": "A"
+          }
+        ]
+      }
+    },
+    "expected": {
+      "legal": false,
+      "classification": null,
+      "exclusive": false,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": null,
+      "rejected_reason": "declared_reading_illegal"
+    },
+    "why": "R7.8 (D6): 666A is no legal play, so the declaration is rejected even though declaring 6 would make a bomb."
+  },
+  {
+    "id": "WC18",
+    "kind": "play",
+    "description": "Missing declaration: 666 + wildcard with no declaration is rejected (level 2).",
+    "status": "default-dependent",
+    "decisions": [
+      "D6"
+    ],
+    "rules": [
+      "R7.8"
+    ],
+    "setup": {
+      "level": "2",
+      "wildcards_held": [
+        "H2"
+      ],
+      "hand": null,
+      "table": null,
+      "play": {
+        "cards": [
+          "S6",
+          "D6",
+          "C6",
+          "H2"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": {
+      "legal": false,
+      "classification": null,
+      "exclusive": false,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": null,
+      "rejected_reason": "missing_declaration"
+    },
+    "why": "R7.8 default (D6): every play containing a wildcard carries an explicit declaration. The game texts only require one 'when necessary' (E58), so this is a product rule."
+  },
+  {
+    "id": "WC19",
+    "kind": "play",
+    "description": "Lone wildcard played as itself beats a single A (level 9).",
+    "status": "default-dependent",
+    "decisions": [
+      "D7"
+    ],
+    "rules": [
+      "R7.9",
+      "R1.5"
+    ],
+    "setup": {
+      "level": "9",
+      "wildcards_held": [
+        "H9"
+      ],
+      "hand": null,
+      "table": {
+        "cards": [
+          "SA"
+        ],
+        "declaration": null,
+        "classification": {
+          "type": "single",
+          "rank": "A"
+        }
+      },
+      "play": {
+        "cards": [
+          "H9"
+        ],
+        "declaration": [
+          {
+            "card": "H9",
+            "as_rank": "9"
+          }
+        ]
+      }
+    },
+    "expected": {
+      "legal": true,
+      "classification": {
+        "type": "single",
+        "rank": "9"
+      },
+      "exclusive": false,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": true,
+      "rejected_reason": null
+    },
+    "why": "R7.9 default (D7): alone it counts as a level card; R1.5: level card > A."
+  },
+  {
+    "id": "WC20",
+    "kind": "play",
+    "description": "Lone wildcard declared as a 3 is rejected (level 9).",
+    "status": "default-dependent",
+    "decisions": [
+      "D7"
+    ],
+    "rules": [
+      "R7.9"
+    ],
+    "setup": {
+      "level": "9",
+      "wildcards_held": [
+        "H9"
+      ],
+      "hand": null,
+      "table": null,
+      "play": {
+        "cards": [
+          "H9"
+        ],
+        "declaration": [
+          {
+            "card": "H9",
+            "as_rank": "3"
+          }
+        ]
+      }
+    },
+    "expected": {
+      "legal": false,
+      "classification": null,
+      "exclusive": false,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": null,
+      "rejected_reason": "lone_wildcard_redeclared"
+    },
+    "why": "R7.9 default (D7): a lone wildcard is not declared as another rank."
+  },
+  {
+    "id": "WC21",
+    "kind": "play",
+    "description": "Must not beat: lone wildcard on a small joker (level 9).",
+    "status": "default-dependent",
+    "decisions": [
+      "D7"
+    ],
+    "rules": [
+      "R7.9",
+      "R7.3",
+      "R1.5"
+    ],
+    "setup": {
+      "level": "9",
+      "wildcards_held": [
+        "H9"
+      ],
+      "hand": null,
+      "table": {
+        "cards": [
+          "LJ"
+        ],
+        "declaration": null,
+        "classification": {
+          "type": "single",
+          "rank": "LJ"
+        }
+      },
+      "play": {
+        "cards": [
+          "H9"
+        ],
+        "declaration": [
+          {
+            "card": "H9",
+            "as_rank": "9"
+          }
+        ]
+      }
+    },
+    "expected": {
+      "legal": false,
+      "classification": {
+        "type": "single",
+        "rank": "9"
+      },
+      "exclusive": false,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": false,
+      "rejected_reason": null
+    },
+    "why": "R7.9 (D7): alone it is a level card; R7.3: it cannot be a joker; R1.5: small joker > level card."
+  },
+  {
+    "id": "WC22",
+    "kind": "play",
+    "description": "Both wildcards alone are a pair of level cards and beat a pair of As (level 9).",
+    "status": "default-dependent",
+    "decisions": [
+      "D7"
+    ],
+    "rules": [
+      "R7.9",
+      "R1.5",
+      "R2.15"
+    ],
+    "setup": {
+      "level": "9",
+      "wildcards_held": [
+        "H9",
+        "H9"
+      ],
+      "hand": null,
+      "table": {
+        "cards": [
+          "SA",
+          "DA"
+        ],
+        "declaration": null,
+        "classification": {
+          "type": "pair",
+          "rank": "A"
+        }
+      },
+      "play": {
+        "cards": [
+          "H9",
+          "H9"
+        ],
+        "declaration": [
+          {
+            "card": "H9",
+            "as_rank": "9"
+          },
+          {
+            "card": "H9",
+            "as_rank": "9"
+          }
+        ]
+      }
+    },
+    "expected": {
+      "legal": true,
+      "classification": {
+        "type": "pair",
+        "rank": "9"
+      },
+      "exclusive": false,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": true,
+      "rejected_reason": null
+    },
+    "why": "R7.9 (D7): together alone they are a pair of level cards; R1.5: level > A."
+  },
+  {
+    "id": "WC23",
+    "kind": "play",
+    "description": "Both wildcards alone declared as a pair of 3s are rejected (level 9).",
+    "status": "default-dependent",
+    "decisions": [
+      "D7"
+    ],
+    "rules": [
+      "R7.9"
+    ],
+    "setup": {
+      "level": "9",
+      "wildcards_held": [
+        "H9",
+        "H9"
+      ],
+      "hand": null,
+      "table": null,
+      "play": {
+        "cards": [
+          "H9",
+          "H9"
+        ],
+        "declaration": [
+          {
+            "card": "H9",
+            "as_rank": "3"
+          },
+          {
+            "card": "H9",
+            "as_rank": "3"
+          }
+        ]
+      }
+    },
+    "expected": {
+      "legal": false,
+      "classification": null,
+      "exclusive": false,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": null,
+      "rejected_reason": "lone_wildcard_redeclared"
+    },
+    "why": "R7.9 default (D7): the two wildcards alone count as their natural selves only."
+  },
+  {
+    "id": "WC24",
+    "kind": "play",
+    "description": "Wildcard as itself with another level card: spade 9 + heart 9 beat a pair of As (level 9).",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R7.5",
+      "R2.2",
+      "R1.5"
+    ],
+    "setup": {
+      "level": "9",
+      "wildcards_held": [
+        "H9"
+      ],
+      "hand": null,
+      "table": {
+        "cards": [
+          "SA",
+          "DA"
+        ],
+        "declaration": null,
+        "classification": {
+          "type": "pair",
+          "rank": "A"
+        }
+      },
+      "play": {
+        "cards": [
+          "S9",
+          "H9"
+        ],
+        "declaration": [
+          {
+            "card": "H9",
+            "as_rank": "9"
+          }
+        ]
+      }
+    },
+    "expected": {
+      "legal": true,
+      "classification": {
+        "type": "pair",
+        "rank": "9"
+      },
+      "exclusive": false,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": true,
+      "rejected_reason": null
+    },
+    "why": "R7.5: the wildcard may count as itself (a 9); with spade 9 it is a pair of level cards. The lone-wildcard default does not apply: it is played with another card."
+  },
+  {
+    "id": "WC25",
+    "kind": "play",
+    "description": "Wildcard as its natural self inside a heart straight flush 7-8-9-10-J (level 9).",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R7.5",
+      "R3.5",
+      "R5.1"
+    ],
+    "setup": {
+      "level": "9",
+      "wildcards_held": [
+        "H9"
+      ],
+      "hand": null,
+      "table": null,
+      "play": {
+        "cards": [
+          "H7",
+          "H8",
+          "H9",
+          "H10",
+          "HJ"
+        ],
+        "declaration": [
+          {
+            "card": "H9",
+            "as_rank": "9",
+            "as_suit": "H"
+          }
+        ]
+      }
+    },
+    "expected": {
+      "legal": true,
+      "classification": {
+        "type": "straight_flush",
+        "ranks": [
+          "7",
+          "8",
+          "9",
+          "10",
+          "J"
+        ],
+        "suit": "H"
+      },
+      "exclusive": false,
+      "bomb_size": null,
+      "straight_flush": true,
+      "beats_table": null,
+      "rejected_reason": null
+    },
+    "why": "R7.5: as itself it is heart 9; R3.5: a level card in a sequence takes its natural rank; five consecutive hearts (R5.1)."
+  },
+  {
+    "id": "FO01",
+    "kind": "play",
+    "description": "Must not beat: triple on a pair.",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R2.14",
+      "R2.13"
+    ],
+    "setup": {
+      "level": "9",
+      "wildcards_held": [],
+      "hand": null,
+      "table": {
+        "cards": [
+          "S5",
+          "D5"
+        ],
+        "declaration": null,
+        "classification": {
+          "type": "pair",
+          "rank": "5"
+        }
+      },
+      "play": {
+        "cards": [
+          "S6",
+          "D6",
+          "C6"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": {
+      "legal": false,
+      "classification": {
+        "type": "triple",
+        "rank": "6"
+      },
+      "exclusive": false,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": false,
+      "rejected_reason": null
+    },
+    "why": "R2.14: different ordinary types never beat each other."
+  },
+  {
+    "id": "FO02",
+    "kind": "play",
+    "description": "Must not beat: straight on a triple-with-pair (both five cards).",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R2.14",
+      "R2.13"
+    ],
+    "setup": {
+      "level": "9",
+      "wildcards_held": [],
+      "hand": null,
+      "table": {
+        "cards": [
+          "S3",
+          "D3",
+          "C3",
+          "SK",
+          "DK"
+        ],
+        "declaration": null,
+        "classification": {
+          "type": "triple_with_pair",
+          "rank": "3"
+        }
+      },
+      "play": {
+        "cards": [
+          "S4",
+          "D5",
+          "C6",
+          "S7",
+          "D8"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": {
+      "legal": false,
+      "classification": {
+        "type": "straight",
+        "ranks": [
+          "4",
+          "5",
+          "6",
+          "7",
+          "8"
+        ]
+      },
+      "exclusive": false,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": false,
+      "rejected_reason": null
+    },
+    "why": "R2.14: same card count does not make the same type."
+  },
+  {
+    "id": "FO03",
+    "kind": "play",
+    "description": "Must not beat: consecutive pairs on consecutive triples (both six cards).",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R2.14",
+      "R2.13"
+    ],
+    "setup": {
+      "level": "9",
+      "wildcards_held": [],
+      "hand": null,
+      "table": {
+        "cards": [
+          "S3",
+          "D3",
+          "C3",
+          "S4",
+          "D4",
+          "C4"
+        ],
+        "declaration": null,
+        "classification": {
+          "type": "consecutive_triples",
+          "ranks": [
+            "3",
+            "4"
+          ]
+        }
+      },
+      "play": {
+        "cards": [
+          "S5",
+          "D5",
+          "S6",
+          "D6",
+          "S7",
+          "D7"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": {
+      "legal": false,
+      "classification": {
+        "type": "consecutive_pairs",
+        "ranks": [
+          "5",
+          "6",
+          "7"
+        ]
+      },
+      "exclusive": false,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": false,
+      "rejected_reason": null
+    },
+    "why": "R2.14."
+  },
+  {
+    "id": "FO04",
+    "kind": "play",
+    "description": "Must not beat: single A on a single A of another suit.",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R1.7",
+      "R2.13"
+    ],
+    "setup": {
+      "level": "9",
+      "wildcards_held": [],
+      "hand": null,
+      "table": {
+        "cards": [
+          "SA"
+        ],
+        "declaration": null,
+        "classification": {
+          "type": "single",
+          "rank": "A"
+        }
+      },
+      "play": {
+        "cards": [
+          "DA"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": {
+      "legal": false,
+      "classification": {
+        "type": "single",
+        "rank": "A"
+      },
+      "exclusive": false,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": false,
+      "rejected_reason": null
+    },
+    "why": "R1.7: suit never decides; R2.13 needs a higher rank."
+  },
+  {
+    "id": "FO05",
+    "kind": "play",
+    "description": "Single level card beats a single A (level 9).",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R1.5",
+      "R2.15"
+    ],
+    "setup": {
+      "level": "9",
+      "wildcards_held": [],
+      "hand": null,
+      "table": {
+        "cards": [
+          "SA"
+        ],
+        "declaration": null,
+        "classification": {
+          "type": "single",
+          "rank": "A"
+        }
+      },
+      "play": {
+        "cards": [
+          "S9"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": {
+      "legal": true,
+      "classification": {
+        "type": "single",
+        "rank": "9"
+      },
+      "exclusive": false,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": true,
+      "rejected_reason": null
+    },
+    "why": "R1.5: level card ranks just below the small joker, above A."
+  },
+  {
+    "id": "FO06",
+    "kind": "play",
+    "description": "Small joker beats a single level card (level 9).",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R1.5",
+      "R2.15"
+    ],
+    "setup": {
+      "level": "9",
+      "wildcards_held": [],
+      "hand": null,
+      "table": {
+        "cards": [
+          "S9"
+        ],
+        "declaration": null,
+        "classification": {
+          "type": "single",
+          "rank": "9"
+        }
+      },
+      "play": {
+        "cards": [
+          "LJ"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": {
+      "legal": true,
+      "classification": {
+        "type": "single",
+        "rank": "LJ"
+      },
+      "exclusive": false,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": true,
+      "rejected_reason": null
+    },
+    "why": "R1.5."
+  },
+  {
+    "id": "FO07",
+    "kind": "play",
+    "description": "Big joker beats small joker.",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R1.5",
+      "R2.15"
+    ],
+    "setup": {
+      "level": "9",
+      "wildcards_held": [],
+      "hand": null,
+      "table": {
+        "cards": [
+          "LJ"
+        ],
+        "declaration": null,
+        "classification": {
+          "type": "single",
+          "rank": "LJ"
+        }
+      },
+      "play": {
+        "cards": [
+          "BJ"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": {
+      "legal": true,
+      "classification": {
+        "type": "single",
+        "rank": "BJ"
+      },
+      "exclusive": false,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": true,
+      "rejected_reason": null
+    },
+    "why": "R1.5."
+  },
+  {
+    "id": "FO08",
+    "kind": "play",
+    "description": "Pair of big jokers beats pair of small jokers.",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R2.2",
+      "R1.5",
+      "R2.15"
+    ],
+    "setup": {
+      "level": "9",
+      "wildcards_held": [],
+      "hand": null,
+      "table": {
+        "cards": [
+          "LJ",
+          "LJ"
+        ],
+        "declaration": null,
+        "classification": {
+          "type": "pair",
+          "rank": "LJ"
+        }
+      },
+      "play": {
+        "cards": [
+          "BJ",
+          "BJ"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": {
+      "legal": true,
+      "classification": {
+        "type": "pair",
+        "rank": "BJ"
+      },
+      "exclusive": false,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": true,
+      "rejected_reason": null
+    },
+    "why": "R2.2 makes both pairs; R1.5 orders them."
+  },
+  {
+    "id": "FO09",
+    "kind": "play",
+    "description": "Pair of small jokers beats pair of level cards (level 9).",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R2.2",
+      "R1.5",
+      "R2.15"
+    ],
+    "setup": {
+      "level": "9",
+      "wildcards_held": [],
+      "hand": null,
+      "table": {
+        "cards": [
+          "S9",
+          "D9"
+        ],
+        "declaration": null,
+        "classification": {
+          "type": "pair",
+          "rank": "9"
+        }
+      },
+      "play": {
+        "cards": [
+          "LJ",
+          "LJ"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": {
+      "legal": true,
+      "classification": {
+        "type": "pair",
+        "rank": "LJ"
+      },
+      "exclusive": false,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": true,
+      "rejected_reason": null
+    },
+    "why": "R1.5."
+  },
+  {
+    "id": "FO10",
+    "kind": "play",
+    "description": "Must not beat: lower pair on higher pair.",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R2.15",
+      "R2.13"
+    ],
+    "setup": {
+      "level": "9",
+      "wildcards_held": [],
+      "hand": null,
+      "table": {
+        "cards": [
+          "SK",
+          "DK"
+        ],
+        "declaration": null,
+        "classification": {
+          "type": "pair",
+          "rank": "K"
+        }
+      },
+      "play": {
+        "cards": [
+          "SQ",
+          "DQ"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": {
+      "legal": false,
+      "classification": {
+        "type": "pair",
+        "rank": "Q"
+      },
+      "exclusive": false,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": false,
+      "rejected_reason": null
+    },
+    "why": "R2.15: Q < K."
+  },
+  {
+    "id": "FO11",
+    "kind": "play",
+    "description": "Triple-with-pair compares the triple only: 333+44 beats 222+AA (level 9).",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R2.15"
+    ],
+    "setup": {
+      "level": "9",
+      "wildcards_held": [],
+      "hand": null,
+      "table": {
+        "cards": [
+          "S2",
+          "D2",
+          "C2",
+          "SA",
+          "DA"
+        ],
+        "declaration": null,
+        "classification": {
+          "type": "triple_with_pair",
+          "rank": "2"
+        }
+      },
+      "play": {
+        "cards": [
+          "S3",
+          "D3",
+          "C3",
+          "S4",
+          "D4"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": {
+      "legal": true,
+      "classification": {
+        "type": "triple_with_pair",
+        "rank": "3"
+      },
+      "exclusive": false,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": true,
+      "rejected_reason": null
+    },
+    "why": "R2.15: 3 > 2; the attached AA does not count."
+  },
+  {
+    "id": "FO12",
+    "kind": "play",
+    "description": "Must not beat: equal triple, better pair (555+AA on 555+KK).",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R2.15",
+      "R2.13"
+    ],
+    "setup": {
+      "level": "9",
+      "wildcards_held": [],
+      "hand": null,
+      "table": {
+        "cards": [
+          "S5",
+          "D5",
+          "C5",
+          "SK",
+          "DK"
+        ],
+        "declaration": null,
+        "classification": {
+          "type": "triple_with_pair",
+          "rank": "5"
+        }
+      },
+      "play": {
+        "cards": [
+          "S5",
+          "D5",
+          "C5",
+          "SA",
+          "DA"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": {
+      "legal": false,
+      "classification": {
+        "type": "triple_with_pair",
+        "rank": "5"
+      },
+      "exclusive": false,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": false,
+      "rejected_reason": null
+    },
+    "why": "R2.15: the pair does not matter; equal triples are not bigger (R2.13)."
+  },
+  {
+    "id": "FO13",
+    "kind": "play",
+    "description": "Triple of level cards beats a triple of As (level 9).",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R2.15",
+      "R1.5"
+    ],
+    "setup": {
+      "level": "9",
+      "wildcards_held": [],
+      "hand": null,
+      "table": {
+        "cards": [
+          "SA",
+          "DA",
+          "CA"
+        ],
+        "declaration": null,
+        "classification": {
+          "type": "triple",
+          "rank": "A"
+        }
+      },
+      "play": {
+        "cards": [
+          "S9",
+          "D9",
+          "C9"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": {
+      "legal": true,
+      "classification": {
+        "type": "triple",
+        "rank": "9"
+      },
+      "exclusive": false,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": true,
+      "rejected_reason": null
+    },
+    "why": "R1.5: level > A."
+  },
+  {
+    "id": "FO14",
+    "kind": "play",
+    "description": "Higher straight beats lower: 4-8 on 3-7.",
+    "status": "default-dependent",
+    "decisions": [
+      "D5"
+    ],
+    "rules": [
+      "R2.16",
+      "R2.13"
+    ],
+    "setup": {
+      "level": "9",
+      "wildcards_held": [],
+      "hand": null,
+      "table": {
+        "cards": [
+          "S3",
+          "D4",
+          "C5",
+          "S6",
+          "D7"
+        ],
+        "declaration": null,
+        "classification": {
+          "type": "straight",
+          "ranks": [
+            "3",
+            "4",
+            "5",
+            "6",
+            "7"
+          ]
+        }
+      },
+      "play": {
+        "cards": [
+          "S4",
+          "D5",
+          "C6",
+          "S7",
+          "D8"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": {
+      "legal": true,
+      "classification": {
+        "type": "straight",
+        "ranks": [
+          "4",
+          "5",
+          "6",
+          "7",
+          "8"
+        ]
+      },
+      "exclusive": false,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": true,
+      "rejected_reason": null
+    },
+    "why": "R2.16 default (D5): compare the highest card, 8 > 7."
+  },
+  {
+    "id": "FO15",
+    "kind": "play",
+    "description": "A-low straight is the lowest: 2-6 beats A-5 (level 9).",
+    "status": "default-dependent",
+    "decisions": [
+      "D5"
+    ],
+    "rules": [
+      "R2.16",
+      "R3.1"
+    ],
+    "setup": {
+      "level": "9",
+      "wildcards_held": [],
+      "hand": null,
+      "table": {
+        "cards": [
+          "SA",
+          "D2",
+          "C3",
+          "S4",
+          "D5"
+        ],
+        "declaration": null,
+        "classification": {
+          "type": "straight",
+          "ranks": [
+            "A",
+            "2",
+            "3",
+            "4",
+            "5"
+          ]
+        }
+      },
+      "play": {
+        "cards": [
+          "S2",
+          "D3",
+          "C4",
+          "S5",
+          "D6"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": {
+      "legal": true,
+      "classification": {
+        "type": "straight",
+        "ranks": [
+          "2",
+          "3",
+          "4",
+          "5",
+          "6"
+        ]
+      },
+      "exclusive": false,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": true,
+      "rejected_reason": null
+    },
+    "why": "R2.16 (D5): A-2-3-4-5 ranks as 5-high, below 6-high."
+  },
+  {
+    "id": "FO16",
+    "kind": "play",
+    "description": "Must not beat: equal straight in other suits.",
+    "status": "default-dependent",
+    "decisions": [
+      "D5"
+    ],
+    "rules": [
+      "R2.16",
+      "R1.7",
+      "R2.13"
+    ],
+    "setup": {
+      "level": "9",
+      "wildcards_held": [],
+      "hand": null,
+      "table": {
+        "cards": [
+          "S3",
+          "D4",
+          "C5",
+          "S6",
+          "D7"
+        ],
+        "declaration": null,
+        "classification": {
+          "type": "straight",
+          "ranks": [
+            "3",
+            "4",
+            "5",
+            "6",
+            "7"
+          ]
+        }
+      },
+      "play": {
+        "cards": [
+          "D3",
+          "C4",
+          "S5",
+          "D6",
+          "C7"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": {
+      "legal": false,
+      "classification": {
+        "type": "straight",
+        "ranks": [
+          "3",
+          "4",
+          "5",
+          "6",
+          "7"
+        ]
+      },
+      "exclusive": false,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": false,
+      "rejected_reason": null
+    },
+    "why": "R1.7: suits do not count; equal highest card (R2.16, D5) is not bigger."
+  },
+  {
+    "id": "FO17",
+    "kind": "play",
+    "description": "A-high straight beats K-high (level 2).",
+    "status": "default-dependent",
+    "decisions": [
+      "D5"
+    ],
+    "rules": [
+      "R2.16"
+    ],
+    "setup": {
+      "level": "2",
+      "wildcards_held": [],
+      "hand": null,
+      "table": {
+        "cards": [
+          "S9",
+          "D10",
+          "CJ",
+          "SQ",
+          "DK"
+        ],
+        "declaration": null,
+        "classification": {
+          "type": "straight",
+          "ranks": [
+            "9",
+            "10",
+            "J",
+            "Q",
+            "K"
+          ]
+        }
+      },
+      "play": {
+        "cards": [
+          "S10",
+          "DJ",
+          "CQ",
+          "SK",
+          "DA"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": {
+      "legal": true,
+      "classification": {
+        "type": "straight",
+        "ranks": [
+          "10",
+          "J",
+          "Q",
+          "K",
+          "A"
+        ]
+      },
+      "exclusive": false,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": true,
+      "rejected_reason": null
+    },
+    "why": "R2.16 (D5): A > K at the top."
+  },
+  {
+    "id": "FO18",
+    "kind": "play",
+    "description": "AA-22-33 is the lowest consecutive pairs: 22-33-44 beats it (level 9).",
+    "status": "default-dependent",
+    "decisions": [
+      "D5"
+    ],
+    "rules": [
+      "R2.16",
+      "R3.1"
+    ],
+    "setup": {
+      "level": "9",
+      "wildcards_held": [],
+      "hand": null,
+      "table": {
+        "cards": [
+          "SA",
+          "DA",
+          "S2",
+          "D2",
+          "S3",
+          "D3"
+        ],
+        "declaration": null,
+        "classification": {
+          "type": "consecutive_pairs",
+          "ranks": [
+            "A",
+            "2",
+            "3"
+          ]
+        }
+      },
+      "play": {
+        "cards": [
+          "C2",
+          "H2",
+          "C3",
+          "H3",
+          "S4",
+          "D4"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": {
+      "legal": true,
+      "classification": {
+        "type": "consecutive_pairs",
+        "ranks": [
+          "2",
+          "3",
+          "4"
+        ]
+      },
+      "exclusive": false,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": true,
+      "rejected_reason": null
+    },
+    "why": "R2.16 (D5): AA2233 ranks as 3-high; 223344 is 4-high. At level 9, heart 2 is ordinary."
+  },
+  {
+    "id": "FO19",
+    "kind": "play",
+    "description": "KKK-AAA beats AAA-222 (level 9).",
+    "status": "default-dependent",
+    "decisions": [
+      "D5"
+    ],
+    "rules": [
+      "R2.16",
+      "R3.2"
+    ],
+    "setup": {
+      "level": "9",
+      "wildcards_held": [],
+      "hand": null,
+      "table": {
+        "cards": [
+          "HA",
+          "SA",
+          "DA",
+          "S2",
+          "D2",
+          "C2"
+        ],
+        "declaration": null,
+        "classification": {
+          "type": "consecutive_triples",
+          "ranks": [
+            "A",
+            "2"
+          ]
+        }
+      },
+      "play": {
+        "cards": [
+          "SK",
+          "DK",
+          "CK",
+          "SA",
+          "DA",
+          "CA"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": {
+      "legal": true,
+      "classification": {
+        "type": "consecutive_triples",
+        "ranks": [
+          "K",
+          "A"
+        ]
+      },
+      "exclusive": false,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": true,
+      "rejected_reason": null
+    },
+    "why": "R2.16 (D5): A-low AAA222 is 2-high; KKKAAA is A-high."
+  },
+  {
+    "id": "FO20",
+    "kind": "play",
+    "description": "Must not beat: an ordinary straight cannot follow five same-suit cards (level 9).",
+    "status": "default-dependent",
+    "decisions": [
+      "D9"
+    ],
+    "rules": [
+      "R5.5",
+      "R5.3"
+    ],
+    "setup": {
+      "level": "9",
+      "wildcards_held": [],
+      "hand": null,
+      "table": {
+        "cards": [
+          "S3",
+          "S4",
+          "S5",
+          "S6",
+          "S7"
+        ],
+        "declaration": null,
+        "classification": {
+          "type": "straight_flush",
+          "ranks": [
+            "3",
+            "4",
+            "5",
+            "6",
+            "7"
+          ],
+          "suit": "S"
+        }
+      },
+      "play": {
+        "cards": [
+          "S4",
+          "D5",
+          "C6",
+          "S7",
+          "D8"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": {
+      "legal": false,
+      "classification": {
+        "type": "straight",
+        "ranks": [
+          "4",
+          "5",
+          "6",
+          "7",
+          "8"
+        ]
+      },
+      "exclusive": false,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": false,
+      "rejected_reason": null
+    },
+    "why": "R5.5 default (D9): five physical same-suit cards are only a straight flush, so the table is a bomb-class play an ordinary straight cannot beat (R5.3)."
+  },
+  {
+    "id": "FO21",
+    "kind": "play",
+    "description": "Triple compared against a joker-pair triple-with-pair: 444+55 beats 333+BJ BJ.",
+    "status": "default-dependent",
+    "decisions": [
+      "D3"
+    ],
+    "rules": [
+      "R2.15",
+      "R2.7"
+    ],
+    "setup": {
+      "level": "9",
+      "wildcards_held": [],
+      "hand": null,
+      "table": {
+        "cards": [
+          "S3",
+          "D3",
+          "C3",
+          "BJ",
+          "BJ"
+        ],
+        "declaration": null,
+        "classification": {
+          "type": "triple_with_pair",
+          "rank": "3"
+        }
+      },
+      "play": {
+        "cards": [
+          "S4",
+          "D4",
+          "C4",
+          "S5",
+          "D5"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": {
+      "legal": true,
+      "classification": {
+        "type": "triple_with_pair",
+        "rank": "4"
+      },
+      "exclusive": false,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": true,
+      "rejected_reason": null
+    },
+    "why": "R2.7 (D3) makes the table play legal; R2.15: only the triple counts, so the big-joker pair does not help."
+  },
+  {
+    "id": "LA01",
+    "kind": "play",
+    "description": "At level A, heart A + a seven makes a pair of 7s that beats a pair of 6s.",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R1.6",
+      "R1.8",
+      "R7.2",
+      "R7.4",
+      "R2.2",
+      "R2.13"
+    ],
+    "setup": {
+      "level": "A",
+      "wildcards_held": [
+        "HA"
+      ],
+      "hand": null,
+      "table": {
+        "cards": [
+          "S6",
+          "D6"
+        ],
+        "declaration": null,
+        "classification": {
+          "type": "pair",
+          "rank": "6"
+        }
+      },
+      "play": {
+        "cards": [
+          "S7",
+          "HA"
+        ],
+        "declaration": [
+          {
+            "card": "HA",
+            "as_rank": "7"
+          }
+        ]
+      }
+    },
+    "expected": {
+      "legal": true,
+      "classification": {
+        "type": "pair",
+        "rank": "7"
+      },
+      "exclusive": true,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": true,
+      "rejected_reason": null
+    },
+    "why": "R1.6: at level A the As are the level cards, so R1.8 makes the two heart As the wildcards. R7.2/R7.4: the heart A stands for a 7, giving a pair of 7s (R2.2). As any other rank it pairs with nothing, so this is the only reading. R2.13: same type, 7 > 6."
+  },
+  {
+    "id": "LA02",
+    "kind": "play",
+    "description": "At level A, three 7s + heart A make a 4-card bomb of 7s.",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R1.6",
+      "R1.8",
+      "R4.1",
+      "R4.2",
+      "R7.4"
+    ],
+    "setup": {
+      "level": "A",
+      "wildcards_held": [
+        "HA"
+      ],
+      "hand": null,
+      "table": null,
+      "play": {
+        "cards": [
+          "S7",
+          "D7",
+          "C7",
+          "HA"
+        ],
+        "declaration": [
+          {
+            "card": "HA",
+            "as_rank": "7"
+          }
+        ]
+      }
+    },
+    "expected": {
+      "legal": true,
+      "classification": {
+        "type": "bomb",
+        "rank": "7"
+      },
+      "exclusive": true,
+      "bomb_size": 4,
+      "straight_flush": false,
+      "beats_table": null,
+      "rejected_reason": null
+    },
+    "why": "R1.6 + R1.8: heart A is a wildcard. R4.2/R7.4: three 7s + a wildcard is a four-card bomb of 7s (R4.1). No other type has four cards of at most two ranks here."
+  },
+  {
+    "id": "LA03",
+    "kind": "play",
+    "description": "At level A, heart A declared as a small joker is rejected.",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R1.6",
+      "R1.8",
+      "R7.3"
+    ],
+    "setup": {
+      "level": "A",
+      "wildcards_held": [
+        "HA"
+      ],
+      "hand": null,
+      "table": null,
+      "play": {
+        "cards": [
+          "LJ",
+          "HA"
+        ],
+        "declaration": [
+          {
+            "card": "HA",
+            "as_rank": "LJ"
+          }
+        ]
+      }
+    },
+    "expected": {
+      "legal": false,
+      "classification": null,
+      "exclusive": false,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": null,
+      "rejected_reason": "wildcard_as_joker"
+    },
+    "why": "R1.6 + R1.8: heart A is a wildcard; R7.3: a wildcard can never stand for a joker."
+  },
+  {
+    "id": "LA04",
+    "kind": "play",
+    "description": "At level A, a lone heart A declared as a K is rejected.",
+    "status": "default-dependent",
+    "decisions": [
+      "D7"
+    ],
+    "rules": [
+      "R1.6",
+      "R1.8",
+      "R7.9"
+    ],
+    "setup": {
+      "level": "A",
+      "wildcards_held": [
+        "HA"
+      ],
+      "hand": null,
+      "table": null,
+      "play": {
+        "cards": [
+          "HA"
+        ],
+        "declaration": [
+          {
+            "card": "HA",
+            "as_rank": "K"
+          }
+        ]
+      }
+    },
+    "expected": {
+      "legal": false,
+      "classification": null,
+      "exclusive": false,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": null,
+      "rejected_reason": "lone_wildcard_redeclared"
+    },
+    "why": "R1.6 + R1.8: heart A is a wildcard. R7.9 default (D7): played alone it counts as its natural self, a level A, and is not declared as another rank."
+  },
+  {
+    "id": "LA05",
+    "kind": "play",
+    "description": "At level A, heart A completes the hearts A-2-3-4-5 straight flush as the heart A.",
+    "status": "default-dependent",
+    "decisions": [
+      "D6"
+    ],
+    "rules": [
+      "R1.6",
+      "R1.8",
+      "R3.1",
+      "R5.1",
+      "R7.4",
+      "R7.10"
+    ],
+    "setup": {
+      "level": "A",
+      "wildcards_held": [
+        "HA"
+      ],
+      "hand": null,
+      "table": null,
+      "play": {
+        "cards": [
+          "HA",
+          "H2",
+          "H3",
+          "H4",
+          "H5"
+        ],
+        "declaration": [
+          {
+            "card": "HA",
+            "as_rank": "A",
+            "as_suit": "H"
+          }
+        ]
+      }
+    },
+    "expected": {
+      "legal": true,
+      "classification": {
+        "type": "straight_flush",
+        "ranks": [
+          "A",
+          "2",
+          "3",
+          "4",
+          "5"
+        ],
+        "suit": "H"
+      },
+      "exclusive": false,
+      "bomb_size": null,
+      "straight_flush": true,
+      "beats_table": null,
+      "rejected_reason": null
+    },
+    "why": "R1.6 + R1.8: heart A is a wildcard. R7.4: a wildcard may complete a straight flush; declared as the heart A (R7.10 default, D6: a suit is named for a straight flush), all five cards are hearts (R5.1) and A counts as 1 (R3.1)."
+  },
+  {
+    "id": "LA06",
+    "kind": "play",
+    "description": "At level A, four As (level cards) beat four Ks.",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R1.6",
+      "R1.5",
+      "R4.1",
+      "R4.8"
+    ],
+    "setup": {
+      "level": "A",
+      "wildcards_held": [],
+      "hand": null,
+      "table": {
+        "cards": [
+          "SK",
+          "DK",
+          "CK",
+          "HK"
+        ],
+        "declaration": null,
+        "classification": {
+          "type": "bomb",
+          "rank": "K"
+        }
+      },
+      "play": {
+        "cards": [
+          "SA",
+          "SA",
+          "DA",
+          "CA"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": {
+      "legal": true,
+      "classification": {
+        "type": "bomb",
+        "rank": "A"
+      },
+      "exclusive": true,
+      "bomb_size": 4,
+      "straight_flush": false,
+      "beats_table": true,
+      "rejected_reason": null
+    },
+    "why": "R4.1: four physical As (no heart A, so no wildcard) are a bomb. R4.8: equal size, higher rank wins; R1.6 + R1.5: A is the level card and outranks K."
+  },
+  {
+    "id": "LA07",
+    "kind": "play",
+    "description": "Must not beat: at level A, a single A (level card) does not beat a small joker.",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R1.6",
+      "R1.5",
+      "R2.15",
+      "R2.13"
+    ],
+    "setup": {
+      "level": "A",
+      "wildcards_held": [],
+      "hand": null,
+      "table": {
+        "cards": [
+          "LJ"
+        ],
+        "declaration": null,
+        "classification": {
+          "type": "single",
+          "rank": "LJ"
+        }
+      },
+      "play": {
+        "cards": [
+          "SA"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": {
+      "legal": false,
+      "classification": {
+        "type": "single",
+        "rank": "A"
+      },
+      "exclusive": false,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": false,
+      "rejected_reason": null
+    },
+    "why": "R1.6: A is the level card; R1.5: a level card sits just below the small joker, so R2.15 says it is lower and R2.13 does not let it follow."
+  },
+  {
+    "id": "LA08",
+    "kind": "play",
+    "description": "At level A, A-2-3-4-5 is a legal straight with A as 1.",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R1.6",
+      "R2.8",
+      "R3.1",
+      "R3.2",
+      "R3.5"
+    ],
+    "setup": {
+      "level": "A",
+      "wildcards_held": [],
+      "hand": null,
+      "table": null,
+      "play": {
+        "cards": [
+          "SA",
+          "D2",
+          "C3",
+          "S4",
+          "D5"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": {
+      "legal": true,
+      "classification": {
+        "type": "straight",
+        "ranks": [
+          "A",
+          "2",
+          "3",
+          "4",
+          "5"
+        ]
+      },
+      "exclusive": true,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": null,
+      "rejected_reason": null
+    },
+    "why": "R3.5: a level card inside a sequence counts at its natural rank, so the level A (R1.6) is still A; R3.1/R3.2: A may count as 1, so A-2-3-4-5 is a straight (R2.8). Mixed suits, no wildcard: one reading."
+  },
+  {
+    "id": "LA09",
+    "kind": "play",
+    "description": "At level A, 10-J-Q-K-A is a legal straight with A above K.",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R1.6",
+      "R2.8",
+      "R3.1",
+      "R3.2",
+      "R3.5"
+    ],
+    "setup": {
+      "level": "A",
+      "wildcards_held": [],
+      "hand": null,
+      "table": null,
+      "play": {
+        "cards": [
+          "S10",
+          "DJ",
+          "CQ",
+          "SK",
+          "DA"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": {
+      "legal": true,
+      "classification": {
+        "type": "straight",
+        "ranks": [
+          "10",
+          "J",
+          "Q",
+          "K",
+          "A"
+        ]
+      },
+      "exclusive": true,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": null,
+      "rejected_reason": null
+    },
+    "why": "R3.5: the level A (R1.6) counts at its natural rank in a sequence; R3.1/R3.2: A may sit above K, so 10-J-Q-K-A is a straight (R2.8)."
+  },
+  {
+    "id": "LA10",
+    "kind": "play",
+    "description": "At level A, 2-3-4-5-6 beats A-2-3-4-5.",
+    "status": "default-dependent",
+    "decisions": [
+      "D5"
+    ],
+    "rules": [
+      "R1.6",
+      "R2.16",
+      "R3.1",
+      "R3.5"
+    ],
+    "setup": {
+      "level": "A",
+      "wildcards_held": [],
+      "hand": null,
+      "table": {
+        "cards": [
+          "SA",
+          "D2",
+          "C3",
+          "S4",
+          "D5"
+        ],
+        "declaration": null,
+        "classification": {
+          "type": "straight",
+          "ranks": [
+            "A",
+            "2",
+            "3",
+            "4",
+            "5"
+          ]
+        }
+      },
+      "play": {
+        "cards": [
+          "S2",
+          "D3",
+          "C4",
+          "S5",
+          "D6"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": {
+      "legal": true,
+      "classification": {
+        "type": "straight",
+        "ranks": [
+          "2",
+          "3",
+          "4",
+          "5",
+          "6"
+        ]
+      },
+      "exclusive": false,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": true,
+      "rejected_reason": null
+    },
+    "why": "R3.5: the level A (R1.6) is a natural A inside the run; R3.1: here it counts as 1. R2.16 default (D5): A-2-3-4-5 ranks as 5-high, below 6-high."
+  },
+  {
+    "id": "LA11",
+    "kind": "play",
+    "description": "At level A, 10-J-Q-K-A beats 9-10-J-Q-K.",
+    "status": "default-dependent",
+    "decisions": [
+      "D5"
+    ],
+    "rules": [
+      "R1.6",
+      "R2.16",
+      "R3.5"
+    ],
+    "setup": {
+      "level": "A",
+      "wildcards_held": [],
+      "hand": null,
+      "table": {
+        "cards": [
+          "S9",
+          "D10",
+          "CJ",
+          "SQ",
+          "DK"
+        ],
+        "declaration": null,
+        "classification": {
+          "type": "straight",
+          "ranks": [
+            "9",
+            "10",
+            "J",
+            "Q",
+            "K"
+          ]
+        }
+      },
+      "play": {
+        "cards": [
+          "S10",
+          "DJ",
+          "CQ",
+          "SK",
+          "DA"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": {
+      "legal": true,
+      "classification": {
+        "type": "straight",
+        "ranks": [
+          "10",
+          "J",
+          "Q",
+          "K",
+          "A"
+        ]
+      },
+      "exclusive": false,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": true,
+      "rejected_reason": null
+    },
+    "why": "R3.5: the level A (R1.6) sits at its natural place above K; R2.16 default (D5): A-high beats K-high."
+  },
+  {
+    "id": "LA12",
+    "kind": "play",
+    "description": "At level A, AA-22-3 + heart A as a 3 makes consecutive pairs AA2233.",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R1.6",
+      "R1.8",
+      "R2.9",
+      "R3.1",
+      "R3.2",
+      "R3.6",
+      "R7.2"
+    ],
+    "setup": {
+      "level": "A",
+      "wildcards_held": [
+        "HA"
+      ],
+      "hand": null,
+      "table": null,
+      "play": {
+        "cards": [
+          "SA",
+          "DA",
+          "S2",
+          "D2",
+          "S3",
+          "HA"
+        ],
+        "declaration": [
+          {
+            "card": "HA",
+            "as_rank": "3"
+          }
+        ]
+      }
+    },
+    "expected": {
+      "legal": true,
+      "classification": {
+        "type": "consecutive_pairs",
+        "ranks": [
+          "A",
+          "2",
+          "3"
+        ]
+      },
+      "exclusive": false,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": null,
+      "rejected_reason": null
+    },
+    "why": "R1.6 + R1.8: heart A is a wildcard; R7.2/R3.6: it stands for a 3. R3.1/R3.2: A counts as 1, so AA2233 is three consecutive pairs (R2.9)."
+  },
+  {
+    "id": "LA13",
+    "kind": "play",
+    "description": "At level A, heart A as itself is the A of an A-2-3-4-5 straight.",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R1.6",
+      "R1.8",
+      "R7.5",
+      "R3.6",
+      "R3.5",
+      "R2.8",
+      "R3.1"
+    ],
+    "setup": {
+      "level": "A",
+      "wildcards_held": [
+        "HA"
+      ],
+      "hand": null,
+      "table": null,
+      "play": {
+        "cards": [
+          "HA",
+          "D2",
+          "C3",
+          "S4",
+          "D5"
+        ],
+        "declaration": [
+          {
+            "card": "HA",
+            "as_rank": "A"
+          }
+        ]
+      }
+    },
+    "expected": {
+      "legal": true,
+      "classification": {
+        "type": "straight",
+        "ranks": [
+          "A",
+          "2",
+          "3",
+          "4",
+          "5"
+        ]
+      },
+      "exclusive": false,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": null,
+      "rejected_reason": null
+    },
+    "why": "R1.6 + R1.8: heart A is a wildcard and (R7.5) also a level card that may count as itself. R3.6/R3.5: inside a run it takes the natural rank A, and R3.1 lets A be 1: a straight (R2.8). Not exclusive: declared as a 6 it makes 2-3-4-5-6."
+  },
+  {
+    "id": "LA14",
+    "kind": "play",
+    "description": "At level A, KK-AA-22 is not consecutive pairs.",
+    "status": "default-dependent",
+    "decisions": [
+      "D1"
+    ],
+    "rules": [
+      "R1.6",
+      "R3.4",
+      "R3.5"
+    ],
+    "setup": {
+      "level": "A",
+      "wildcards_held": [],
+      "hand": null,
+      "table": null,
+      "play": {
+        "cards": [
+          "SK",
+          "DK",
+          "SA",
+          "DA",
+          "S2",
+          "D2"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": {
+      "legal": false,
+      "classification": null,
+      "exclusive": false,
+      "bomb_size": null,
+      "straight_flush": false,
+      "beats_table": null,
+      "rejected_reason": "no_combination"
+    },
+    "why": "R3.5: the level A (R1.6) counts at its natural rank, so A being the level card adds nothing. R3.4 default (D1): a run may not pass through A into 2. Six cards of three ranks fit no other type."
+  },
+  {
+    "id": "GE01",
+    "kind": "generator",
+    "description": "Hand with all eight physical 7s and both heart 2s at level 2: the seven-bombs offered (SevenBomb27CardTest).",
+    "status": "default-dependent",
+    "decisions": [
+      "D2",
+      "D6"
+    ],
+    "rules": [
+      "R4.1",
+      "R4.2",
+      "R4.4",
+      "R4.5",
+      "R7.8"
+    ],
+    "setup": {
+      "level": "2",
+      "wildcards_held": [
+        "H2",
+        "H2"
+      ],
+      "hand": [
+        "S7",
+        "S7",
+        "D7",
+        "D7",
+        "C7",
+        "C7",
+        "H7",
+        "H7",
+        "H2",
+        "H2"
+      ],
+      "table": null,
+      "play": null
+    },
+    "expected": {
+      "bomb_rank": "7",
+      "bomb_sizes_offered": [
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "must_include": [
+        {
+          "physical": 8,
+          "wildcards": 1,
+          "size": 9
+        },
+        {
+          "physical": 7,
+          "wildcards": 2,
+          "size": 9
+        },
+        {
+          "physical": 8,
+          "wildcards": 2,
+          "size": 10
+        }
+      ]
+    },
+    "why": "R4.1/R4.2: 4-8 from physical cards and wildcards; R4.5/R4.4 defaults (D2): 9 from 8+1 or 7+2, 10 from 8+2. R7.8 (D6): each distinct reading is its own action. The test pads the hand to 27 cards; the extra cards must not include 7s or heart 2s."
+  },
+  {
+    "id": "GE02",
+    "kind": "generator",
+    "description": "Hand holding all four jokers and no wildcard: the four-joker bomb is offered (FourJokerBombTest).",
+    "status": "sourced",
+    "decisions": [],
+    "rules": [
+      "R6.1",
+      "R6.3"
+    ],
+    "setup": {
+      "level": "2",
+      "wildcards_held": [],
+      "hand": [
+        "LJ",
+        "LJ",
+        "BJ",
+        "BJ"
+      ],
+      "table": null,
+      "play": null
+    },
+    "expected": {
+      "must_include_classification": {
+        "type": "four_jokers"
+      }
+    },
+    "why": "R6.1: the four physical jokers together are the four-joker bomb; R6.3: no wildcard is needed or usable. The test pads the hand to 27 cards without heart 2s."
+  },
+  {
+    "id": "GE03",
+    "kind": "generator",
+    "description": "7788 + both wildcards at level 2: every reading that uses all six cards is offered as its own action.",
+    "status": "default-dependent",
+    "decisions": [
+      "D6"
+    ],
+    "rules": [
+      "R7.6",
+      "R7.8",
+      "R7.10",
+      "R2.9",
+      "R2.10"
+    ],
+    "setup": {
+      "level": "2",
+      "wildcards_held": [
+        "H2",
+        "H2"
+      ],
+      "hand": [
+        "C7",
+        "D7",
+        "C8",
+        "D8",
+        "H2",
+        "H2"
+      ],
+      "table": null,
+      "play": null
+    },
+    "expected": {
+      "readings_using_all_cards": [
+        {
+          "declaration": [
+            {
+              "card": "H2",
+              "as_rank": "7"
+            },
+            {
+              "card": "H2",
+              "as_rank": "8"
+            }
+          ],
+          "classification": {
+            "type": "consecutive_triples",
+            "ranks": [
+              "7",
+              "8"
+            ]
+          }
+        },
+        {
+          "declaration": [
+            {
+              "card": "H2",
+              "as_rank": "6"
+            },
+            {
+              "card": "H2",
+              "as_rank": "6"
+            }
+          ],
+          "classification": {
+            "type": "consecutive_pairs",
+            "ranks": [
+              "6",
+              "7",
+              "8"
+            ]
+          }
+        },
+        {
+          "declaration": [
+            {
+              "card": "H2",
+              "as_rank": "9"
+            },
+            {
+              "card": "H2",
+              "as_rank": "9"
+            }
+          ],
+          "classification": {
+            "type": "consecutive_pairs",
+            "ranks": [
+              "7",
+              "8",
+              "9"
+            ]
+          }
+        }
+      ],
+      "complete": true
+    },
+    "why": "Six cards fit only consecutive pairs or consecutive triples. Triples: only 777888. Pairs containing 77 and 88: 667788 and 778899. R7.8 (D6) makes each a separate action; R7.10 (D6) means no suit variants."
+  },
+  {
+    "id": "PR01",
+    "kind": "profile",
+    "description": "base-v1 rejects any option key.",
+    "status": "default-dependent",
+    "decisions": [
+      "D10"
+    ],
+    "rules": [
+      "R8.1"
+    ],
+    "setup": {
+      "profile": "base-v1",
+      "options": {
+        "allowWrapAround": true
+      }
+    },
+    "expected": {
+      "accepted": false,
+      "rejected_reason": "unknown_option"
+    },
+    "why": "R8.1 default (D10): base-v1 has no options; any key is unknown and rejected."
+  },
+  {
+    "id": "UN01",
+    "kind": "play",
+    "description": "Lone wildcard played with no declaration at all (level 9).",
+    "status": "unsourced",
+    "decisions": [],
+    "rules": [
+      "R7.8",
+      "R7.9"
+    ],
+    "setup": {
+      "level": "9",
+      "wildcards_held": [
+        "H9"
+      ],
+      "hand": null,
+      "table": null,
+      "play": {
+        "cards": [
+          "H9"
+        ],
+        "declaration": null
+      }
+    },
+    "expected": null,
+    "unresolved": "R7.8 says every play with a wildcard carries a declaration; R7.9 says a lone wildcard counts as its natural self and is 'not declared as another rank'. The draft does not say whether the natural-self play needs a declaration, or how one is written. The golden set writes natural self as as_rank = level rank (BS08, BR10, SQ20, WC19, WC21, WC22, WC24, WC25); outside a straight flush that form cannot tell 'itself' from 'standing for a level card of another suit', which gives the same result. That is a format assumption, not a stated rule.",
+    "needs": "Extend D6 (owner): state whether a natural-self wildcard is declared, and in what form.",
+    "why": "No rule row answers it."
+  },
+  {
+    "id": "UN02",
+    "kind": "play",
+    "description": "Declaration that names a suit outside a straight flush: 666 + heart 2 declared as club 6 (level 2).",
+    "status": "unsourced",
+    "decisions": [],
+    "rules": [
+      "R7.10"
+    ],
+    "setup": {
+      "level": "2",
+      "wildcards_held": [
+        "H2"
+      ],
+      "hand": null,
+      "table": null,
+      "play": {
+        "cards": [
+          "S6",
+          "D6",
+          "C6",
+          "H2"
+        ],
+        "declaration": [
+          {
+            "card": "H2",
+            "as_rank": "6",
+            "as_suit": "C"
+          }
+        ]
+      }
+    },
+    "expected": null,
+    "unresolved": "R7.10 says a declaration names a suit only for a straight flush. It does not say whether a declaration carrying an unneeded suit is rejected or the suit ignored.",
+    "needs": "Extend D6 (owner): reject, or ignore the suit.",
+    "why": "No rule row answers it."
+  }
+]

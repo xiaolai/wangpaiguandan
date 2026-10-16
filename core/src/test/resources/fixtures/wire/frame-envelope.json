@@ -1,0 +1,57 @@
+{
+    "schema": 1,
+    "description": "Chunk layout (u16 length, 0xC7, version 1, u32 frameId, u16 index, u16 count, u32 frameLength, payload); PLAIN frame = 0x01 + JSON; SEALED frame = 0x02 + u64 seq + AES-256-GCM(ciphertext||tag), nonce = direction tag + seq, AAD = the 9 header bytes; keys = HKDF-SHA256(salt empty, ikm = length-prefixed ECDH(client eph, host eph) and ECDH(client eph, host room key), info = length-prefixed label, roomId, epoch u64, client key, host ephemeral key, host room key, nonce) -> c2h 32, h2c 32, code 4. Host key fingerprint = HMAC-SHA256(key ASCII label, SPKI room key). Rejoin proof = HMAC-SHA256(capability, length-prefixed label, roomId, epoch u64, nonce, fingerprint, client key, host ephemeral key). G2: owner-delegated default, no external cryptography review.",
+    "chunking": {
+        "maxChunkPayload": 16,
+        "frameId": 7,
+        "frameHex": "017b2274797065223a22686561727462656174222c2265706f6368223a332c227265766973696f6e223a31372c227374617475735265766973696f6e223a327d",
+        "chunksHex": [
+            "001ec701000000070000000400000040017b2274797065223a22686561727462",
+            "001ec701000000070001000400000040656174222c2265706f6368223a332c22",
+            "001ec7010000000700020004000000407265766973696f6e223a31372c227374",
+            "001ec701000000070003000400000040617475735265766973696f6e223a327d"
+        ]
+    },
+    "sealed": {
+        "keyHex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+        "direction": "HOST_TO_CLIENT",
+        "directionTagHex": "48324300",
+        "plaintext": "{\"type\":\"heartbeat\",\"epoch\":3,\"revision\":17,\"statusRevision\":2}",
+        "frames": [
+            {
+                "seq": 1,
+                "frameHex": "0200000000000000018b20e807de9dc2053207aa3d81a22caae630b8a362360038d394ddeeda8cc574723a688055beecf9cc1f9a8ef0fd7c71a9341b35c34238830659340ac97e2e472ff5617b283532037a36ecbbef16ea"
+            },
+            {
+                "seq": 2,
+                "frameHex": "0200000000000000022549c0939292563171c1f0448469359c6cf4c2a233eb6cbd69964f2a5f5ceece5730e67201ea0ed65fc79c5e3dfd26696e94768026157ca0de874092df4ab2d89e4e0f275e6fb8fe6556082fca2e35"
+            }
+        ]
+    },
+    "keyDerivation": {
+        "label": "wpgd-session-v2",
+        "sharedSecretHex": "a0a1a2a3a4a5a6a7a8a9aaabacadaeafb0b1b2b3b4b5b6b7b8b9babbbcbdbebf",
+        "roomKeySharedSecretHex": "505152535455565758595a5b5c5d5e5f606162636465666768696a6b6c6d6e6f",
+        "roomId": "room-a",
+        "epoch": 3,
+        "clientPublicKeyHex": "000306090c0f1215181b1e2124272a2d303336393c3f4245484b4e5154575a5d606366696c6f7275787b7e8184878a8d909396999c9fa2a5a8abaeb1b4b7babdc0",
+        "hostPublicKeyHex": "00050a0f14191e23282d32373c41464b50555a5f64696e73787d82878c91969ba0a5aaafb4b9bec3c8cdd2d7dce1e6ebf0f5faff04090e13181d22272c31363b40",
+        "hostRoomKeyHex": "00070e151c232a31383f464d545b626970777e858c939aa1a8afb6bdc4cbd2d9e0e7eef5fc030a11181f262d343b424950575e656c737a81888f969da4abb2b9c0",
+        "nonceHex": "404142434445464748494a4b4c4d4e4f505152535455565758595a5b5c5d5e5f",
+        "clientToHostHex": "ad51877cfd6ebf98b64c04443e60a5615e2abe773b1e44f296cb800958141d5b",
+        "hostToClientHex": "80b39a17e9920f21f9329b66faabfd3e400c14fca07a5223c484fa04d31851c8",
+        "confirmationCode": "684061"
+    },
+    "hostKey": {
+        "label": "wpgd-host-key-v1",
+        "roomKeyHex": "00070e151c232a31383f464d545b626970777e858c939aa1a8afb6bdc4cbd2d9e0e7eef5fc030a11181f262d343b424950575e656c737a81888f969da4abb2b9c0",
+        "fingerprintHex": "0ad884caa06ea7b745d082cae8267067c434e65cb58e9649718de9842d48b5bd",
+        "fingerprintB64": "CtiEyqBup7dF0ILK6CZwZ8Q05ly1jpZJcY3phC1Itb0"
+    },
+    "rejoinProof": {
+        "label": "wpgd-rejoin-v1",
+        "capabilityHex": "202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f",
+        "transcriptHex": "000e777067642d72656a6f696e2d76310006726f6f6d2d61000800000000000000030020404142434445464748494a4b4c4d4e4f505152535455565758595a5b5c5d5e5f00200ad884caa06ea7b745d082cae8267067c434e65cb58e9649718de9842d48b5bd0041000306090c0f1215181b1e2124272a2d303336393c3f4245484b4e5154575a5d606366696c6f7275787b7e8184878a8d909396999c9fa2a5a8abaeb1b4b7babdc0004100050a0f14191e23282d32373c41464b50555a5f64696e73787d82878c91969ba0a5aaafb4b9bec3c8cdd2d7dce1e6ebf0f5faff04090e13181d22272c31363b40",
+        "proofHex": "e299723a6f056ffc01d3b09e024cb9af8a8855b03043d31fd42a9a7e22473d9e"
+    }
+}
