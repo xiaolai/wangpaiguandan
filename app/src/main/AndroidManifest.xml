@@ -1,6 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
-    <application android:allowBackup="false" android:label="@string/app_name" android:icon="@drawable/ic_launcher"
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools">
+    <!-- androidx.core injects this signature permission for ContextCompat.registerReceiver on old
+         Android versions. The app registers no receiver; removed so the app requests only the allow-listed ones. -->
+    <permission android:name="${applicationId}.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" tools:node="remove" />
+    <uses-permission android:name="${applicationId}.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" tools:node="remove" />
+    <!-- WI-09 rooms: phones on the same Wi-Fi play over TCP sockets (GDN-021), which needs INTERNET.
+         A normal install-time permission: no prompt. Room discovery (NSD) needs no permission, and
+         solo play opens no socket at all (GDN-005). Kept in step with app/permissions-allowlist.txt. -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <application android:name=".WpgdApplication" android:allowBackup="false" android:label="@string/app_name" android:icon="@drawable/ic_launcher"
         android:dataExtractionRules="@xml/data_extraction_rules" android:fullBackupContent="false"
         android:supportsRtl="true" android:theme="@style/Theme.WangpaiGuandan">
         <activity android:name=".MainActivity" android:exported="true">

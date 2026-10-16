@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- WI-10: merged into the app manifest only when the bleTransport flag is on (app/build.gradle.kts,
+     -Pwpgd.bleTransport=true). With the flag off (the default) the app declares no Bluetooth permission.
+     Kept in step with the "bleTransport:" lines of app/permissions-allowlist.txt. -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools">
+    <!-- Joiners scan for nearby Bluetooth rooms (GDN-004, GDN-019). Runtime "Nearby devices" permission,
+         asked only when the user opens a Bluetooth room. neverForLocation: scan results are never used
+         to derive location, so the app has no location permission on any Android version. -->
+    <uses-permission android:name="android.permission.BLUETOOTH_SCAN" android:usesPermissionFlags="neverForLocation" tools:targetApi="31" />
+    <!-- Hosts and joiners open GATT connections and exchange the session's sealed frames. Runtime,
+         same "Nearby devices" prompt. -->
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+    <!-- Hosts advertise the room service so joiners can find it. Runtime, same "Nearby devices" prompt. -->
+    <uses-permission android:name="android.permission.BLUETOOTH_ADVERTISE" />
+    <!-- No legacy BLUETOOTH, BLUETOOTH_ADMIN or location permission: Bluetooth rooms are offered on
+         Android 12+ only (BlePermissions.MIN_SDK), so nothing older is declared. Not required, so phones
+         without Bluetooth LE still install the app for solo and Wi-Fi play. -->
+    <uses-feature android:name="android.hardware.bluetooth_le" android:required="false" />
+</manifest>
