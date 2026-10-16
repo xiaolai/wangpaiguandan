@@ -23,6 +23,8 @@ import cn.wpgd.app.session.framing.ChunkCodec
 import cn.wpgd.app.session.wire.AbsenceMode
 import cn.wpgd.app.session.wire.AdmissionDenial
 import cn.wpgd.app.session.wire.Occupant
+import cn.wpgd.app.session.wire.RoomListing
+import cn.wpgd.app.session.wire.RoomQuery
 import cn.wpgd.app.session.wire.ReadyBody
 import cn.wpgd.app.session.wire.RoomSettingsView
 import cn.wpgd.app.session.wire.RoomView
@@ -92,6 +94,8 @@ internal object WireSamples {
         "hello-observer" to Hello(2, 3, Role.OBSERVER, "room-a", HASH_A, HASH_B, key),
         "welcome" to Welcome(2, "room-a", 3, key, cap, nonce, RoomPolicyView(RoomMode.FRIENDLY, hints = true, privateFollow = true)),
         "hello-rejected-version" to HelloRejected(HelloRejectReason.VERSION_UNSUPPORTED, 2, 2, "host speaks 2..2"),
+        "room-query" to RoomQuery(2, 2),
+        "room-listing" to RoomListing(2, 2, "room-a", "周末掼蛋", "阿梅", HASH_A, HASH_B, B64.encode(ByteArray(32) { (128 + it).toByte() }), listOf(Seat.EAST, Seat.WEST), listOf(Seat.NORTH)),
         "join-seat" to Join(3, "south", Seat.SOUTH, false, null),
         "join-rejoin" to Join(3, "south", Seat.SOUTH, false, proof),
         "join-observer" to Join(3, "watcher", null, false, null),
@@ -282,7 +286,7 @@ internal object WireSamples {
     }
 
     val files: Map<String, () -> JsonObject> = linkedMapOf(
-        "handshake.json" to { messageFixture("Handshake, admission and liveness messages. hello/welcome/hello_rejected travel in PLAIN frames; the rest only sealed.", handshake) },
+        "handshake.json" to { messageFixture("Handshake, admission and liveness messages. hello/welcome/hello_rejected and the join-by-address room_query/room_listing travel in PLAIN frames; the rest only sealed.", handshake) },
         "command.json" to { messageFixture("Client commands: capability, idempotent commandId, expectedRevision, typed body. The seat is never in the body.", commands) },
         "receipt.json" to { messageFixture("Host deliveries: receipt (keyed digest of the issuer's own projection), snapshot, follow_snapshot, status.", receipts) },
         "rejection.json" to { messageFixture("Typed rejection receipts (audit A20).", rejections) },

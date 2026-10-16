@@ -141,6 +141,11 @@ data class HostSide(
     val canRematch: Boolean,
     /** Hosting stopped working ([cn.wpgd.app.room.RoomListener.onFailure]): nearby devices cannot find the room. */
     val hostingFailed: Boolean = false,
+    /**
+     * Join by address: the port this room listens on over the LAN (null for Bluetooth or when not
+     * listening). The lobby shows it with this phone's Wi-Fi or hotspot addresses.
+     */
+    val listenPort: Int? = null,
 )
 
 /** A joined table's connection, as the joiner sees it. */

@@ -65,6 +65,8 @@ import cn.wpgd.app.session.wire.GrantView
 import cn.wpgd.app.session.wire.HandshakeMessage
 import cn.wpgd.app.session.wire.Heartbeat
 import cn.wpgd.app.session.wire.Hello
+import cn.wpgd.app.session.wire.RoomListing
+import cn.wpgd.app.session.wire.RoomQuery
 import cn.wpgd.app.session.wire.HelloRejectReason
 import cn.wpgd.app.session.wire.HelloRejected
 import cn.wpgd.app.session.wire.Join
@@ -146,6 +148,12 @@ class SessionHost internal constructor(
 
     /** Public identity of this room's key (base64url): adverts carry it, joiners pin it with their ticket. */
     val hostKeyFingerprint: String = B64.encode(hostKey.fingerprint)
+
+    /**
+     * What this room answers to a `room_query` (join by address); null answers that no room is listed.
+     * Set by the room's owner whenever it announces the room, cleared when it stops announcing.
+     */
+    var listing: RoomListingInfo? = null
 
     private val reducer = MatchReducer(base, match)
     private val projector = MatchProjector(base, match)
@@ -673,6 +681,7 @@ class SessionHost internal constructor(
     }
 
     private fun onPlain(conn: Conn, m: HandshakeMessage) {
+        if (m is RoomQuery && conn.phase == Phase.AWAITING_HELLO && conn.hello == null) return answerQuery(conn)
         if (m !is Hello) return close(conn, CloseReason.PROTOCOL_VIOLATION)
         if (conn.phase != Phase.AWAITING_HELLO) {
             // A retried hello with the same key gets the same welcome; anything else is ignored.
@@ -710,6 +719,24 @@ class SessionHost internal constructor(
         )
         conn.phase = Phase.AWAITING_JOIN
         send(conn, OutKind.CONTROL, welcome(conn))
+    }
+
+    /**
+     * Join by address: answers "what room listens here?" with [listing] (the advert's public facts)
+     * and closes. Never admits, never derives keys; a host with no listing refuses like a wrong room.
+     */
+    private fun answerQuery(conn: Conn) {
+        val l = listing ?: return rejectHello(conn, HelloRejectReason.ROOM_MISMATCH, "no room is listed here")
+        metrics.roomQueries++
+        send(
+            conn, OutKind.CONTROL,
+            RoomListing(
+                config.protocolMin, config.protocolMax, config.roomId, l.tableName, l.hostName, baseHash, matchHash, hostKeyFingerprint,
+                Seat.entries.filter { it in l.openSeats }, Seat.entries.filter { it in l.replaceableSeats },
+            ),
+        )
+        conn.link.pump()
+        dropConnection(conn)
     }
 
     private fun welcome(conn: Conn) = Welcome(
@@ -1605,6 +1632,9 @@ class HostMetrics {
     var replacements = 0L
     var denied = 0L
     var helloRejected = 0L
+
+    /** `room_query` answers sent (join by address); each closed its connection. */
+    var roomQueries = 0L
     var codeMismatches = 0L
     var ignored = 0L
     var resyncs = 0L

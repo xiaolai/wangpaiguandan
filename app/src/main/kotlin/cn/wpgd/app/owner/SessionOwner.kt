@@ -19,6 +19,7 @@ import cn.wpgd.app.data.IdentityRepository
 import cn.wpgd.app.data.Nickname
 import cn.wpgd.app.data.RejoinTicket
 import cn.wpgd.app.data.WallClock
+import cn.wpgd.app.lan.LanEndpoint
 import cn.wpgd.app.room.LeaveChoice
 import cn.wpgd.app.room.LeavePrompt
 import cn.wpgd.app.room.RoomAdvert
@@ -38,6 +39,7 @@ import cn.wpgd.app.session.host.EndReason
 import cn.wpgd.app.session.host.HostConfig
 import cn.wpgd.app.session.host.LobbyGate
 import cn.wpgd.app.session.host.RecoveryPolicy
+import cn.wpgd.app.session.host.RoomListingInfo
 import cn.wpgd.app.session.host.RoomStatus
 import cn.wpgd.app.session.host.SessionHost
 import cn.wpgd.app.session.storage.Storage
@@ -468,6 +470,8 @@ class SessionOwner(private val deps: OwnerDependencies) : RoomSession {
 
     private fun withdraw(t: OwnerTable) {
         t.leaving = true
+        // Join by address: a leaving host lists no room any more.
+        t.host?.listing = null
         if (t.listener != null) {
             announcedRoom.set(null)
             deps.network?.announcer?.withdraw(t.tableId)
@@ -776,8 +780,8 @@ class SessionOwner(private val deps: OwnerDependencies) : RoomSession {
 
     /**
      * The host has no change callback (members join, seats change, grace timers and AI turns run on
-     * its own timers), so this tick republishes within [WATCH_MS] of any host-side change and settles
-     * pending commands and rejoins. Client changes, including a timer-driven stale link, arrive
+     * its own timers), so this tick republishes within [WATCH_MS] of any host-side change, settles
+     * pending commands and rejoins, and takes the room's automatic steps ([hostStep]). Client changes, including a timer-driven stale link, arrive
      * through the client's own update callback.
      */
     private fun watch() {
@@ -786,6 +790,10 @@ class SessionOwner(private val deps: OwnerDependencies) : RoomSession {
                 table?.let {
                     resolvePending(it)
                     scheduleRejoin(it)
+                    // The room's own steps follow the host, not the host's own client: that client can
+                    // lose its local link (a held-up session thread past the liveness limit), and the
+                    // other players' table must not stall waiting for it (HostOwnLinkLostTest).
+                    hostStep(it)
                 }
                 publish()
                 watch()
@@ -964,6 +972,8 @@ class SessionOwner(private val deps: OwnerDependencies) : RoomSession {
             t.tableId, info.tableName, info.hostName, PROTOCOL_VERSION, PROTOCOL_VERSION,
             deps.profiles.base.hash, deps.profiles.match.hash, host.hostKeyFingerprint, open, listener.endpoint, away,
         )
+        // Join by address: a `room_query` is answered with the same public facts as the advert.
+        host.listing = RoomListingInfo(info.tableName, info.hostName, open, away)
         if (advert != t.advert) {
             t.advert = advert
             announcedRoom.set(advert.roomId)
@@ -991,6 +1001,7 @@ class SessionOwner(private val deps: OwnerDependencies) : RoomSession {
         }
         t.listener = null
         t.advert = null
+        t.host?.listing = null
         t.transport?.close()
     }
 
@@ -1164,6 +1175,7 @@ class SessionOwner(private val deps: OwnerDependencies) : RoomSession {
         saved = host.tableId != null,
         canRematch = host.state.phase == MatchPhase.OVER && host.status == RoomStatus.Ended(EndReason.MATCH_OVER),
         hostingFailed = t.hostingFailed,
+        listenPort = (t.listener?.endpoint as? LanEndpoint)?.port,
     )
 
     private fun joinStatus(t: OwnerTable): JoinStatus {

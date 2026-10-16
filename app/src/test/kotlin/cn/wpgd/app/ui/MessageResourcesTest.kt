@@ -31,6 +31,8 @@ class MessageResourcesTest {
         TurnKey.entries.map { it.messageKey } +
         ResultHeadline.entries.map { it.messageKey } +
         PreviewProblem.entries.map { it.messageKey } +
+        cn.wpgd.app.room.AddressProblem.entries.map { it.messageKey } +
+        cn.wpgd.app.room.LookupFailure.entries.map { it.messageKey } +
         listOf<ResultLine>(
             ResultLine.Placing(SeatLabel.Relative(SeatRelation.SELF), 1, 1, PlaceBasis.PLAYED),
             ResultLine.PlacesInferred,

@@ -46,7 +46,10 @@ import cn.wpgd.app.ble.BleGate
 import cn.wpgd.app.ble.BleGateState
 import cn.wpgd.app.ble.BlePurpose
 import cn.wpgd.app.core.state.Seat
+import cn.wpgd.app.room.AddressJoin
 import cn.wpgd.app.room.Features
+import cn.wpgd.app.session.transport.Cancellable
+import androidx.compose.runtime.remember
 import cn.wpgd.app.room.LocalVersion
 import cn.wpgd.app.room.RoomAdvert
 import cn.wpgd.app.room.RoomFinder
@@ -61,7 +64,7 @@ import cn.wpgd.app.table.WakeLockSink
 import kotlinx.coroutines.flow.StateFlow
 
 /** The app's places. Saved across recreation; the table itself lives in the owner. */
-enum class Route { MENU, SETTINGS, TABLE, CREATE, FIND, SAVED, BLUETOOTH, BLUETOOTH_GATE }
+enum class Route { MENU, SETTINGS, TABLE, CREATE, FIND, SAVED, BLUETOOTH, BLUETOOTH_GATE, ADDRESS }
 
 /** WI-09: what the rooms part of the shell needs. Each action starts (or restores) a table in the owner. */
 class RoomShell(
@@ -77,6 +80,10 @@ class RoomShell(
     val savedMedium: (String) -> RoomMedium = { RoomMedium.LAN },
     /** WI-10: null when the build's `bleTransport` flag is off: no Bluetooth entry is shown. */
     val bluetooth: BluetoothAccess? = null,
+    /** C10: a new join-by-address lookup (LAN), one per visit of the screen. */
+    val addressJoin: () -> AddressJoin = { AddressJoin { _, _ -> Cancellable { } } },
+    /** C10: this phone's Wi-Fi or hotspot addresses, for a host's lobby (blocking: call off the main thread). */
+    val hostAddresses: () -> List<String> = { emptyList() },
 )
 
 /** What the shell needs from the activity: navigation targets and the platform sinks. */
@@ -198,10 +205,23 @@ fun AppRoot(shell: AppShell) {
         } else {
             val back = { route = if (medium == RoomMedium.BLUETOOTH) Route.BLUETOOTH else Route.MENU }
             BackHandler(onBack = back)
-            FindRoomScreen(shell.rooms.finder(medium), shell.rooms.localVersion(), medium = medium, onJoin = { advert, seat, replace ->
+            FindRoomScreen(
+                shell.rooms.finder(medium), shell.rooms.localVersion(), medium = medium,
+                onJoin = { advert, seat, replace ->
+                    shell.rooms.join(advert, seat, replace)
+                    route = Route.TABLE
+                },
+                onBack = back,
+                onAddress = if (medium == RoomMedium.LAN) ({ route = Route.ADDRESS }) else null,
+            )
+        }
+        Route.ADDRESS -> {
+            BackHandler { route = Route.FIND }
+            val join = remember { shell.rooms.addressJoin() }
+            AddressJoinScreen(join, shell.rooms.localVersion(), onJoin = { advert, seat, replace ->
                 shell.rooms.join(advert, seat, replace)
                 route = Route.TABLE
-            }, onBack = back)
+            }, onBack = { route = Route.FIND })
         }
         Route.SAVED -> {
             BackHandler { route = Route.MENU }
@@ -233,6 +253,7 @@ fun AppRoot(shell: AppShell) {
                     medium = RoomMedium.LAN
                     route = Route.FIND
                 },
+                hostAddresses = shell.rooms.hostAddresses,
             )
         }
     }

@@ -19,6 +19,12 @@ object WireValidation {
     private val ID = Regex("[A-Za-z0-9_-]{1,$MAX_ID}")
     private val HASH = Regex("[0-9a-f]{64}")
 
+    /** A room listing's table name: the same bound as the discovery advert's (`AdvertCodec`). */
+    const val MAX_TABLE_NAME = 24
+
+    /** A host key fingerprint: 32 bytes, base64url without padding. */
+    private val HOST_KEY = Regex("[A-Za-z0-9_-]{43}")
+
     fun problem(m: WireMessage): String? = when (m) {
         is Hello -> when {
             m.protocolMin < 1 || m.protocolMax < m.protocolMin -> "protocol range"
@@ -35,6 +41,18 @@ object WireValidation {
             else -> null
         }
         is HelloRejected -> if (m.message.length > 200) "message" else null
+        is RoomQuery -> if (m.protocolMin < 1 || m.protocolMax < m.protocolMin) "protocol range" else null
+        is RoomListing -> when {
+            m.protocolMin < 1 || m.protocolMax < m.protocolMin -> "protocol range"
+            !ID.matches(m.roomId) -> "roomId"
+            !listedName(m.tableName, MAX_TABLE_NAME) -> "tableName"
+            !listedName(m.hostName, MAX_NICKNAME) -> "hostName"
+            !HASH.matches(m.baseProfileHash) || !HASH.matches(m.matchProfileHash) -> "profile hash"
+            !HOST_KEY.matches(m.hostKey) -> "hostKey"
+            m.openSeats.toSet().size != m.openSeats.size || m.replaceableSeats.toSet().size != m.replaceableSeats.size -> "seats"
+            m.openSeats.any { it in m.replaceableSeats } -> "seats"
+            else -> null
+        }
         is Join -> when {
             !nickname(m.nickname) -> "nickname"
             m.rejoinProof != null && (m.rejoinProof.length > MAX_KEY_B64 || B64.decode(m.rejoinProof)?.size != DIGEST_BYTES) -> "rejoinProof"
@@ -70,6 +88,10 @@ object WireValidation {
         r.settings.graceMs < 0 || r.settingsRevision < 0 -> "settings"
         else -> null
     }
+
+    /** Not blank, bounded, and no control or invisible formatting character (a listing reaches the screen). */
+    private fun listedName(n: String, max: Int): Boolean =
+        n.isNotBlank() && n.length <= max && n.none { it.isISOControl() || Character.getType(it) == Character.FORMAT.toInt() }
 
     private fun nickname(n: String): Boolean = n.isNotBlank() && n.length <= MAX_NICKNAME && n.none { it.isISOControl() }
 

@@ -66,6 +66,9 @@ class WpgdApplication : Application() {
         return BluetoothPlatform(BleRoomNetwork(AndroidBleRadio(this), timers)) { line -> Log.i(BLE_LOG_TAG, line) }
     }
 
+    /** The end-to-end driver's seam; bound per build type ([automationHook]), [AutomationHook.None] in release. */
+    val automation: AutomationHook get() = automationHook
+
     fun store(name: String) = SharedPreferencesKeyValueStore(getSharedPreferences(name, Context.MODE_PRIVATE))
 
     private fun asset(name: String): String = assets.open(name).use { it.readBytes().decodeToString() }

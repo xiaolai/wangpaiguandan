@@ -50,6 +50,29 @@ data class LanLimits(
     }
 }
 
+/** Why a joiner's connection never opened (join by address explains it to the user). */
+enum class ConnectFailure {
+    /** The host answered that nothing listens on that port. */
+    REFUSED,
+
+    /** No answer within [LanLimits.connectTimeoutMs]. */
+    TIMED_OUT,
+
+    /** No route, network down, or the name does not resolve. */
+    UNREACHABLE,
+}
+
+/**
+ * What a joiner's connection learned about the other end before closing, so join by address can say
+ * what went wrong: connecting failed and why, or the peer sent something that is not this app's records.
+ */
+interface ConnectReport {
+    val connectFailure: ConnectFailure?
+
+    /** Records refused as malformed (zero or oversized length): the peer does not speak this protocol. */
+    val malformedRecords: Long
+}
+
 /** Counters for diagnostics (no payload bytes). */
 class LanMetrics {
     val recordsIn = AtomicLong()
@@ -78,7 +101,7 @@ class SocketTransport private constructor(
     private val onDisposed: (SocketTransport) -> Unit,
     /** An accepted connection's socket, owned from construction so closing before [open] closes it. */
     acceptedSocket: Socket? = null,
-) : Transport {
+) : Transport, ConnectReport {
     private val queue = LinkedBlockingQueue<ByteArray>()
     private val queued = AtomicInteger()
     private val closed = AtomicBoolean(false)
@@ -95,6 +118,12 @@ class SocketTransport private constructor(
     val metrics = LanMetrics()
 
     val isClosed: Boolean get() = closed.get()
+
+    /** Set before the transport reports closed when connecting failed; null once connected (or for an accepted socket). */
+    @Volatile override var connectFailure: ConnectFailure? = null
+        private set
+
+    override val malformedRecords: Long get() = metrics.oversized.get()
 
     override fun open(listener: TransportListener) {
         check(this.listener == null) { "transport already opened" }
@@ -138,7 +167,12 @@ class SocketTransport private constructor(
 
     private fun readLoop() {
         try {
-            val s = opener()
+            val s = try {
+                opener()
+            } catch (e: IOException) {
+                connectFailure = classify(e)
+                throw e
+            }
             socket = s
             s.tcpNoDelay = true
             s.keepAlive = true
@@ -234,6 +268,13 @@ class SocketTransport private constructor(
     }
 
     companion object {
+        /** Refused (RST) means the address was reached; anything else means it was not. */
+        internal fun classify(e: IOException): ConnectFailure = when {
+            e is java.net.SocketTimeoutException -> ConnectFailure.TIMED_OUT
+            e is java.net.ConnectException && (e.message.orEmpty().contains("refused", ignoreCase = true) || e.message.orEmpty().contains("ECONNREFUSED")) -> ConnectFailure.REFUSED
+            else -> ConnectFailure.UNREACHABLE
+        }
+
         private val POISON = ByteArray(0)
         private const val RECEIVE_POLL_MS = 200L
 

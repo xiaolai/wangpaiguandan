@@ -42,11 +42,16 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.error
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.unit.dp
 import cn.wpgd.app.R
 import cn.wpgd.app.core.match.Team
@@ -55,7 +60,10 @@ import cn.wpgd.app.core.state.Seat
 import cn.wpgd.app.owner.JoinPhase
 import cn.wpgd.app.owner.JoinStatus
 import cn.wpgd.app.owner.RoomInfo
+import cn.wpgd.app.room.AddressJoin
+import cn.wpgd.app.room.AddressJoinState
 import cn.wpgd.app.room.Compatibility
+import cn.wpgd.app.room.ManualAddress
 import cn.wpgd.app.room.DeleteState
 import cn.wpgd.app.room.LocalVersion
 import cn.wpgd.app.room.MediumFallback
@@ -216,7 +224,15 @@ fun CreateRoomScreen(medium: RoomMedium, onCreate: (RoomSettings) -> Unit, onBac
  * open seat) or watch, after showing its host and code to compare.
  */
 @Composable
-fun FindRoomScreen(finder: RoomFinder, local: LocalVersion, onJoin: (RoomAdvert, Seat?, Boolean) -> Unit, onBack: () -> Unit, medium: RoomMedium = RoomMedium.LAN) {
+fun FindRoomScreen(
+    finder: RoomFinder,
+    local: LocalVersion,
+    onJoin: (RoomAdvert, Seat?, Boolean) -> Unit,
+    onBack: () -> Unit,
+    medium: RoomMedium = RoomMedium.LAN,
+    /** C10: join by typing the host's address; null hides it (Bluetooth rooms have no address to type). */
+    onAddress: (() -> Unit)? = null,
+) {
     val bluetooth = medium == RoomMedium.BLUETOOTH
     DisposableEffect(finder) {
         finder.start()
@@ -267,8 +283,90 @@ fun FindRoomScreen(finder: RoomFinder, local: LocalVersion, onJoin: (RoomAdvert,
             }
         }
         RoomSecondary(stringResource(R.string.find_retry), "find:retry") { finder.start() }
+        if (onAddress != null) {
+            Text(stringResource(R.string.find_hotspot_hint), style = roomLabel, color = c.ink2, modifier = Modifier.testTag("find:hotspot_hint"))
+            RoomSecondary(stringResource(R.string.find_by_address), "find:address", onClick = onAddress)
+        }
     }
 }
+
+/**
+ * C10, join by address: for networks where discovery cannot reach the host (phone hotspots, guest
+ * Wi-Fi that isolates phones, emulators). The address is checked before anything is dialled; the
+ * room found there is then joined through the same play-or-watch choice, code comparison and host
+ * approval as a room found by search ([PlayOrWatchContent]).
+ */
+@Composable
+fun AddressJoinScreen(join: AddressJoin, local: LocalVersion, onJoin: (RoomAdvert, Seat?, Boolean) -> Unit, onBack: () -> Unit) {
+    val c = Wpgd.colors
+    val state by join.state.collectAsState()
+    DisposableEffect(join) { onDispose { join.cancel() } }
+    var host by rememberSaveable { mutableStateOf("") }
+    var port by rememberSaveable { mutableStateOf("") }
+    val found = state as? AddressJoinState.Found
+    val looking = state as? AddressJoinState.Looking
+    BackHandler(enabled = found != null || looking != null) { join.back() }
+    RoomPage(stringResource(R.string.address_title), "address", if (found != null) ({ join.back() }) else onBack) {
+        if (found != null) {
+            PlayOrWatchContent(PlayOrWatch.of(found.advert, local), onJoin)
+            return@RoomPage
+        }
+        Text(stringResource(R.string.address_intro), style = roomBody)
+        val editing = state as? AddressJoinState.Editing
+        val problem = editing?.problem
+        val hostProblem = problem?.takeIf { it.name.startsWith("HOST") }?.let { stringResource(checkNotNull(Messages.resId(it.messageKey))) }
+        val portProblem = problem?.takeIf { it.name.startsWith("PORT") }?.let { stringResource(checkNotNull(Messages.resId(it.messageKey))) }
+        val lookup = { join.lookup(host, port) }
+        OutlinedTextField(
+            value = host,
+            onValueChange = { host = it.take(MAX_ADDRESS_INPUT) },
+            label = { Text(stringResource(R.string.address_host_label), style = roomLabel) },
+            isError = hostProblem != null,
+            supportingText = hostProblem?.let { { Text(it, style = roomLabel) } },
+            singleLine = true,
+            enabled = looking == null,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri, imeAction = ImeAction.Next, autoCorrectEnabled = false),
+            modifier = Modifier.fillMaxWidth().heightIn(min = Tokens.touch).testTag("address:host").semantics { if (hostProblem != null) error(hostProblem) },
+        )
+        OutlinedTextField(
+            value = port,
+            onValueChange = { port = it.take(MAX_PORT_INPUT) },
+            label = { Text(stringResource(R.string.address_port_label), style = roomLabel) },
+            isError = portProblem != null,
+            supportingText = portProblem?.let { { Text(it, style = roomLabel) } },
+            singleLine = true,
+            enabled = looking == null,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Go),
+            keyboardActions = KeyboardActions(onGo = { lookup() }),
+            modifier = Modifier.fillMaxWidth().heightIn(min = Tokens.touch).testTag("address:port").semantics { if (portProblem != null) error(portProblem) },
+        )
+        editing?.failure?.let { f ->
+            Text(
+                stringResource(checkNotNull(Messages.resId(f.messageKey))),
+                style = roomBody.copy(fontWeight = FontWeight.Bold),
+                color = c.danger,
+                modifier = Modifier.testTag("address:failure:${f.name}").semantics { liveRegion = LiveRegionMode.Assertive },
+            )
+        }
+        if (looking != null) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Tokens.space(3))) {
+                CircularProgressIndicator(strokeWidth = 2.dp, modifier = Modifier.heightIn(max = Tokens.space(6)))
+                Text(
+                    stringResource(R.string.address_looking, ManualAddress.format(looking.endpoint.host, looking.endpoint.port)),
+                    style = roomBody,
+                    modifier = Modifier.testTag("address:looking").semantics { liveRegion = LiveRegionMode.Polite },
+                )
+            }
+            RoomSecondary(stringResource(R.string.cancel), "address:cancel") { join.cancel() }
+        } else {
+            RoomPrimary(stringResource(R.string.address_lookup), "address:lookup", onClick = lookup)
+        }
+    }
+}
+
+/** Longest input kept: a hostname (253) with brackets and spaces to trim; longer is never valid. */
+private const val MAX_ADDRESS_INPUT = 260
+private const val MAX_PORT_INPUT = 8
 
 @Composable
 private fun compatText(compat: Compatibility): String? = when (compat) {
@@ -280,7 +378,7 @@ private fun compatText(compat: Compatibility): String? = when (compat) {
 
 /** C4: play at an open seat or watch, chosen before asking; the code is shown to compare with the host. */
 @Composable
-private fun PlayOrWatchContent(choice: PlayOrWatch, onJoin: (RoomAdvert, Seat?, Boolean) -> Unit) {
+internal fun PlayOrWatchContent(choice: PlayOrWatch, onJoin: (RoomAdvert, Seat?, Boolean) -> Unit) {
     val a = choice.advert
     Text(stringResource(R.string.pow_title, a.tableName), style = roomTitle, modifier = Modifier.testTag("pow"))
     Text(stringResource(R.string.pow_check_code, a.hostName, a.tableCode), style = roomBody)

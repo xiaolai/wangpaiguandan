@@ -9,7 +9,7 @@ records device model, OS version and radio settings. A result is a separate file
 | ID | Procedure | Status | Blocked on |
 |---|---|---|---|
 | HP-1 | [Solo match in airplane mode; minimum-device budgets](HP-1-solo-airplane.md) | Not run | A physical phone named by G5 (unsigned); traffic capture; iPhone half needs WI-11 |
-| HP-2 | [Four phones + two spectators over LAN](HP-2-lan-four-phones.md) | Not run | Six phones on one Wi-Fi with WAN off; G4 signed for a releasable result (G1b signed; G2 owner-delegated default, no external cryptography review) |
+| HP-2 | [Four phones + two spectators over LAN](HP-2-lan-four-phones.md) | Not run on phones; software part runs on emulators (`tools/e2e/`, `HP-2-emulator-run-*`); real-phone radio part owed | Six phones on one Wi-Fi with WAN off; G4 signed for a releasable result (G1b signed; G2 owner-delegated default, no external cryptography review) |
 | HP-3 | [Bluetooth 4 + 2, 60 minutes, both host platforms](HP-3-bluetooth-4plus2.md) (steps in [ble-device-spike.md](../ble-device-spike.md)) | Not run | G5 matrix phones; iPhone host needs WI-11 (G3 decided native Swift; not ported) |
 | HP-4 | [TalkBack and VoiceOver deal, 200% text, grayscale](HP-4-screen-reader.md) | Not run | A regular TalkBack user; VoiceOver needs WI-11 |
 | HP-5 | [Human partner sessions with the baseline AI](HP-5-ai-partner.md) | Not run | Human players |

@@ -2,6 +2,7 @@ package cn.wpgd.app.session.host
 
 import cn.wpgd.app.core.match.MatchMemberView
 import cn.wpgd.app.core.rules.LegalAction
+import cn.wpgd.app.core.state.Seat
 import cn.wpgd.app.session.framing.FramingLimits
 import cn.wpgd.app.session.transport.Cancellable
 import cn.wpgd.app.session.wire.CommandBody
@@ -95,4 +96,20 @@ fun interface SeatPolicy {
  */
 interface DeferredSeatPolicy : SeatPolicy {
     fun start(observation: MatchMemberView, options: SeatOptions, deliver: (CommandBody) -> Unit): Cancellable
+}
+
+/**
+ * The public part of a room's listing that only its owner knows (join by address): the table and
+ * host names and which seats a newcomer may ask for. The host adds room id, protocol range, profile
+ * hashes and its key fingerprint. Mirrors the discovery advert; carries no member or card.
+ */
+data class RoomListingInfo(
+    val tableName: String,
+    val hostName: String,
+    val openSeats: Set<Seat>,
+    val replaceableSeats: Set<Seat> = emptySet(),
+) {
+    init {
+        require(openSeats.none { it in replaceableSeats }) { "a seat is either open or replaceable" }
+    }
 }

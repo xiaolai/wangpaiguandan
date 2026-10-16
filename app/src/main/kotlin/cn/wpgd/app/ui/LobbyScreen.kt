@@ -10,6 +10,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -31,6 +33,7 @@ import cn.wpgd.app.owner.PendingJoiner
 import cn.wpgd.app.owner.RoomSession
 import cn.wpgd.app.room.LeaveChoice
 import cn.wpgd.app.room.LobbySeatUi
+import cn.wpgd.app.room.LobbyUi
 import cn.wpgd.app.room.LobbyUiState
 import cn.wpgd.app.room.RoomSettings
 import cn.wpgd.app.room.RulesSheet
@@ -39,6 +42,9 @@ import cn.wpgd.app.session.host.LobbyGate
 import cn.wpgd.app.session.wire.AbsenceMode
 import cn.wpgd.app.session.wire.Occupant
 import cn.wpgd.app.session.wire.Role
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
 
 /**
  * The lobby (B7–B10, D1, D2): who sits where and who is ready, the rules everyone readies for, and —
@@ -54,6 +60,8 @@ fun LobbyScreen(
     onLeave: () -> Unit,
     /** H9: false when the choice was refused (a suspend whose shown expiry passed); the prompt is shown again. */
     onLeaveHosted: (LeaveChoice) -> Boolean,
+    /** Join by address: this phone's Wi-Fi or hotspot addresses (read off the main thread, refreshed while shown). */
+    hostAddresses: () -> List<String> = { emptyList() },
 ) {
     val c = Wpgd.colors
     var showRules by rememberSaveable { mutableStateOf(false) }
@@ -65,6 +73,7 @@ fun LobbyScreen(
             Text(stringResource(R.string.lobby_hosting_failed), style = roomBody.copy(fontWeight = FontWeight.Bold), color = c.danger, modifier = Modifier.testTag("lobby:hosting_failed").semantics { liveRegion = LiveRegionMode.Assertive })
         }
         lobby.pending.firstOrNull()?.let { AdmissionPanel(it, session) }
+        if (lobby.listenPort != null) JoinAddressPanel(lobby.listenPort, hostAddresses)
 
         for (s in lobby.seats) {
             SeatRow(s, lobby.hosting) { seatSheet = if (seatSheet == s.seat) null else s.seat }
@@ -244,3 +253,29 @@ internal fun RulesSheetView(r: RulesSheet) {
         if (r.summary.provisional) Text(stringResource(R.string.rules_provisional), style = roomLabel.copy(fontWeight = FontWeight.Bold), color = c.danger)
     }
 }
+
+/**
+ * Join by address: where others can reach this room when discovery cannot (hotspot, isolated guest
+ * Wi-Fi). Hidden while this phone has no Wi-Fi or hotspot address. Addresses change when the network
+ * does, so they are read again every few seconds while the lobby is shown.
+ */
+@Composable
+private fun JoinAddressPanel(port: Int, hostAddresses: () -> List<String>) {
+    var addresses by remember { mutableStateOf(emptyList<String>()) }
+    LaunchedEffect(port) {
+        while (true) {
+            addresses = withContext(Dispatchers.IO) { hostAddresses() }
+            delay(ADDRESS_REFRESH_MS)
+        }
+    }
+    val shown = LobbyUi.joinAddresses(port, addresses)
+    if (shown.isEmpty()) return
+    RoomPanel("lobby:addresses") {
+        Text(stringResource(R.string.lobby_addresses_title), style = roomLabel, color = Wpgd.colors.ink2)
+        for ((i, a) in shown.withIndex()) {
+            Text(stringResource(R.string.lobby_address_line, a.host, a.port), style = roomBody.copy(fontWeight = FontWeight.Bold), color = Wpgd.colors.ink, modifier = Modifier.testTag("lobby:address:$i"))
+        }
+    }
+}
+
+private const val ADDRESS_REFRESH_MS = 5_000L

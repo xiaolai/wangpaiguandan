@@ -1,7 +1,7 @@
 {
     "schema": 1,
     "protocolVersion": 2,
-    "description": "Handshake, admission and liveness messages. hello/welcome/hello_rejected travel in PLAIN frames; the rest only sealed.",
+    "description": "Handshake, admission and liveness messages. hello/welcome/hello_rejected and the join-by-address room_query/room_listing travel in PLAIN frames; the rest only sealed.",
     "cases": [
         {
             "name": "hello-player",
@@ -54,6 +54,35 @@
                 "protocolMin": 2,
                 "protocolMax": 2,
                 "message": "host speaks 2..2"
+            }
+        },
+        {
+            "name": "room-query",
+            "wire": {
+                "type": "room_query",
+                "protocolMin": 2,
+                "protocolMax": 2
+            }
+        },
+        {
+            "name": "room-listing",
+            "wire": {
+                "type": "room_listing",
+                "protocolMin": 2,
+                "protocolMax": 2,
+                "roomId": "room-a",
+                "tableName": "周末掼蛋",
+                "hostName": "阿梅",
+                "baseProfileHash": "1111111111111111111111111111111111111111111111111111111111111111",
+                "matchProfileHash": "2222222222222222222222222222222222222222222222222222222222222222",
+                "hostKey": "gIGCg4SFhoeIiYqLjI2Oj5CRkpOUlZaXmJmam5ydnp8",
+                "openSeats": [
+                    "EAST",
+                    "WEST"
+                ],
+                "replaceableSeats": [
+                    "NORTH"
+                ]
             }
         },
         {

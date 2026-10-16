@@ -32,7 +32,7 @@ Transport-independent session for one host and its members (players and observer
 
 ## Messages
 
-Plain: `hello` (version range, role, room id, both profile hashes, public key), `welcome` (ephemeral key, room key, nonce, room policy), `hello_rejected`.
+Plain: `hello` (version range, role, room id, both profile hashes, public key), `welcome` (ephemeral key, room key, nonce, room policy), `hello_rejected`. Join by address (2026-10-16): `room_query` as the only message of a connection, answered by `room_listing` (room id, table and host names, protocol range, profile hashes, host key fingerprint, open and replaceable seats: what the discovery advert already announces; no member or card) or `hello_rejected` when no room is listed, then the host closes (`SessionHost.listing`, `client.RoomLookup`). Not a version change: a host without it closes the connection as a protocol violation, which the joiner reports as "not a room".
 Sealed: `join` (a returning member sends a rejoin proof, never its capability), `admission_pending`, `admitted` (capability, digest key), `admission_denied`, `command` (epoch, capability, command id, expected revision, body), `receipt` (committed revision, keyed digest), `rejection` (typed code), `snapshot`, `follow_snapshot` (grant id and grant revision), `status` (grants), `heartbeat`, `resync`, `closing`.
 Command bodies: `play`, `pass`, `give_tribute`, `return_tribute`, `resist`, `ask_count` (game; players only), `follow_request`, `consent`, `revoke`, `leave` (session).
 

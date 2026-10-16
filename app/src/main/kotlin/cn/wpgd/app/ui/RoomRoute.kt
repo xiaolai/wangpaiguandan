@@ -34,6 +34,8 @@ fun OpenTableRoute(
     onFindAgain: () -> Unit,
     /** WI-10 (C9): leave a Bluetooth room that cannot be reached and look for rooms on the same Wi-Fi. */
     onUseWifi: () -> Unit = {},
+    /** C10: this phone's Wi-Fi or hotspot addresses, shown in a LAN host's lobby. */
+    hostAddresses: () -> List<String> = { emptyList() },
 ) {
     val state by owner.state.collectAsState()
     val t = state.table
@@ -70,6 +72,7 @@ fun OpenTableRoute(
                     onRulesSeen = { seenSettings = it },
                     onLeave = if (t.kind == TableKind.HOSTED) onLeave else leaveJoined,
                     onLeaveHosted = { choice -> leaveHostedTable(owner, choice, System.currentTimeMillis(), markHostLeaving) },
+                    hostAddresses = hostAddresses,
                 )
             }
         }

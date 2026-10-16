@@ -18,6 +18,7 @@ import cn.wpgd.app.ble.BleEnvironment
 import cn.wpgd.app.ble.BlePermissions
 import cn.wpgd.app.data.Nickname
 import cn.wpgd.app.data.NicknameResult
+import cn.wpgd.app.lan.HostAddresses
 import cn.wpgd.app.table.TableViewModel
 import cn.wpgd.app.ui.AndroidEffectSink
 import cn.wpgd.app.ui.AppRoot
@@ -71,6 +72,8 @@ class MainActivity : ComponentActivity() {
                 restore = { id, medium -> graph.roomOwner(medium).restoreRoom(id, nickname()) },
                 savedMedium = graph::savedMedium,
                 bluetooth = if (graph.bluetoothEnabled) bluetoothAccess() else null,
+                addressJoin = graph::addressJoin,
+                hostAddresses = HostAddresses::current,
             ),
         )
         setContent { WpgdTheme { AppRoot(shell) } }

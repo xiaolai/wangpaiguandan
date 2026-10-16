@@ -1,7 +1,7 @@
 ---
 title: "HP-2 — four Android phones and two spectators over LAN, full match (procedure)"
 created: 2026-10-15
-status: "Procedure only. Not run: it needs six physical Android phones on one Wi-Fi network, a traffic-capture point, and (for a releasable result) signed G1b, G2 and G4."
+status: "Software part runnable on emulators (tools/e2e/, see Emulator run); real-phone radio part owed. Not run on phones: it needs six physical Android phones on one Wi-Fi network, a traffic-capture point, and (for a releasable result) signed G4."
 ---
 
 # HP-2 — LAN match with spectators
@@ -12,7 +12,30 @@ GDN-009 (two rooms distinguishable), GDN-059 (no inference request), GDN-065–G
 and private follow), GDN-085 (rejoin own seat); privacy property P9. Real NSD discovery
 (`NsdRoomDirectory`) has no automated test; this procedure is its only device evidence.
 
-Outcome: not run
+Outcome: not run (on phones). Software part: see "Emulator run" below.
+
+## Emulator run (software part, 2026-10-16)
+
+`tools/e2e/run_e2e.py` (how to run: `tools/e2e/README.md`) runs the software part of this procedure
+on emulators: host, three players and up to two watchers, a whole match over real TCP sockets, a
+player killed and restarted mid-match rejoining its seat by its pinned ticket, codes compared before
+every approval, watchers checked against every player's hand, and the final result compared on all
+devices. Results: `HP-2-emulator-run-<stamp>.md` and `.json` in this folder. They are emulator
+evidence and do not count as an HP-2 pass.
+
+Rooms are found two ways: LAN discovery (NSD) and join by address (按地址加入: the joiner types
+the address and port the host's lobby shows; same code comparison, approval and G2 pinning).
+Emulators each sit behind their own NAT, so the emulator run uses join by address only.
+
+| Part of HP-2 | Emulator run | Still owed on phones |
+|---|---|---|
+| Four players complete a match over TCP, two watchers attached | Yes (emulators, adb-forwarded sockets) | Real Wi-Fi radio, OEM power management, Wi-Fi power save |
+| Joining: code compared on both screens, host approves | Yes (code read from both devices' screen state) | People comparing codes by eye |
+| A player's connection lost, back to its own seat without approval | Yes (whole emulator or app process killed, then restarted) | Step 8 (Wi-Fi off 20 s) on a phone |
+| Watchers never hold a hand without consent | Yes for the no-follow case (state and screen semantics vs. every hand) | Step 7 (follow, deny, revoke, second request) |
+| Rooms found by NSD/mDNS on a real network; two hosts told apart | No | Steps 4 and 5 by discovery |
+| Join by address on a phone hotspot or isolated guest Wi-Fi | No | A run on a phone hotspot |
+| No request leaves the local network (P9) | No | Step 2 capture |
 
 ## 1. What it proves
 

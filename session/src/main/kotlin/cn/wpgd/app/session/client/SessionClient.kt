@@ -345,7 +345,7 @@ class SessionClient(
                 disposeConnection()
             }
             is Welcome -> if (phase == ClientPhase.HELLO_SENT) onWelcome(m)
-            is Hello -> metrics.ignored++
+            is Hello, is cn.wpgd.app.session.wire.RoomQuery, is cn.wpgd.app.session.wire.RoomListing -> metrics.ignored++
         }
     }
 

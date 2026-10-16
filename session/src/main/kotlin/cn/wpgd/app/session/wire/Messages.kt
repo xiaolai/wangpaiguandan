@@ -84,6 +84,39 @@ data class HelloRejected(
     val message: String,
 ) : HandshakeMessage
 
+/**
+ * Client → host, as the first and only message of a connection, instead of a hello (join by
+ * address, when discovery cannot reach the host): "what room listens here?". The host answers with
+ * a [RoomListing] (or [HelloRejected] when it lists no room) and closes. Joining is a new connection
+ * with a hello. [protocolMin]/[protocolMax] are the asker's range, for the record; the listing
+ * carries the host's own range so the joiner can explain a version mismatch.
+ */
+@Serializable
+@SerialName("room_query")
+data class RoomQuery(val protocolMin: Int, val protocolMax: Int) : HandshakeMessage
+
+/**
+ * Host → client, the answer to a [RoomQuery]: exactly the public facts the room's discovery advert
+ * already announces to the whole network (room id, table and host names, protocol range, profile
+ * hashes, the host key fingerprint, open and replaceable seats). No member, nickname or card. The
+ * [hostKey] is unauthenticated here, as in an advert: a first join is still confirmed by comparing
+ * the six-digit code, and a rejoin still checks the welcome's key against the pinned one (G2).
+ */
+@Serializable
+@SerialName("room_listing")
+data class RoomListing(
+    val protocolMin: Int,
+    val protocolMax: Int,
+    val roomId: String,
+    val tableName: String,
+    val hostName: String,
+    val baseProfileHash: String,
+    val matchProfileHash: String,
+    val hostKey: String,
+    val openSeats: List<Seat>,
+    val replaceableSeats: List<Seat>,
+) : HandshakeMessage
+
 // ---- Admission (sealed) -----------------------------------------------------------------------
 
 /**

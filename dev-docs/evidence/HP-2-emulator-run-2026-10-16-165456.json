@@ -1,0 +1,1203 @@
+{
+  "schema": 1,
+  "kind": "emulator end-to-end run (software part of HP-2); NOT an HP-2 pass",
+  "started": "2026-10-16T16:54:56+08:00",
+  "commit": "db0f84f",
+  "workingTreeDirty": true,
+  "machine": {
+    "os": "macOS 27.0.1",
+    "arch": "arm64"
+  },
+  "options": {
+    "host": "emulator-5560",
+    "player": [
+      "emulator-5562",
+      "emulator-5564",
+      "emulator-5566"
+    ],
+    "watcher": [
+      "emulator-5568"
+    ],
+    "local_net": "reverse",
+    "host_address": null,
+    "relay_port": 47000,
+    "relay_allow": [],
+    "deals": 0,
+    "restart_seat": "NORTH",
+    "restart_mode": "process",
+    "restart_avd": null,
+    "restart_after_deal": 1,
+    "timeout_min": 60,
+    "note": [
+      "Repeat run on the same five emulators (host, three players, one watcher); the NORTH player's app process was force-stopped and started again instead of its emulator.",
+      "The second watcher did not fit on this 32 GB Mac (six emulators: the host app failed to start, ANR, while swapping); it is owed."
+    ],
+    "skip_install": true
+  },
+  "notes": [
+    "Repeat run on the same five emulators (host, three players, one watcher); the NORTH player's app process was force-stopped and started again instead of its emulator.",
+    "The second watcher did not fit on this 32 GB Mac (six emulators: the host app failed to start, ANR, while swapping); it is owed."
+  ],
+  "checks": {
+    "codeComparisons": [
+      {
+        "device": "player-EAST(emulator-5562)",
+        "joinerCode": "457875",
+        "hostShows": "457875",
+        "nickname": "Zhou",
+        "match": true
+      },
+      {
+        "device": "player-NORTH(emulator-5564)",
+        "joinerCode": "823338",
+        "hostShows": "823338",
+        "nickname": "Chen",
+        "match": true
+      },
+      {
+        "device": "player-WEST(emulator-5566)",
+        "joinerCode": "193077",
+        "hostShows": "193077",
+        "nickname": "Lily",
+        "match": true
+      },
+      {
+        "device": "watcher(emulator-5568)",
+        "joinerCode": "417879",
+        "hostShows": "417879",
+        "nickname": "Kan1",
+        "match": true
+      }
+    ],
+    "finalResultIdentical": true,
+    "finalResult": {
+      "tableId": "t5382e6ad3849c5ae",
+      "phase": "OVER",
+      "matchNumber": 1,
+      "dealNumber": 13,
+      "winner": "NORTH_SOUTH",
+      "teams": [
+        {
+          "team": "NORTH_SOUTH",
+          "level": 14,
+          "aFailures": 0
+        },
+        {
+          "team": "EAST_WEST",
+          "level": 14,
+          "aFailures": 2
+        }
+      ]
+    },
+    "dealsPlayed": 13,
+    "dealResultsAgree": true,
+    "dealDisagreements": [],
+    "violations": {
+      "host(emulator-5560)": 0,
+      "player-EAST(emulator-5562)": 0,
+      "player-NORTH(emulator-5564)": 0,
+      "player-WEST(emulator-5566)": 0,
+      "watcher(emulator-5568)": 0
+    },
+    "rejoin": {
+      "device": "player-NORTH(emulator-5564)",
+      "mode": "process",
+      "atDeal": 2,
+      "downSeconds": 0.6,
+      "startupAnrRetries": 0,
+      "ok": true,
+      "hostWasAskedToApprove": false,
+      "secondsToRejoin": 12.4,
+      "atSeconds": 95.8,
+      "driverReport": {
+        "ticketPinnedKeyMatched": true,
+        "sawApprovalPrompt": false,
+        "seat": "NORTH",
+        "msToAdmitted": 540
+      },
+      "dealsSettledAfterRejoin": 13,
+      "actionsAfterRejoin": 403
+    },
+    "spectatorPrivacy": {
+      "watchers": 1,
+      "watcherSamples": 1485,
+      "pairsCompared": 1481,
+      "semanticsChecks": 1485,
+      "leaks": []
+    }
+  },
+  "devices": {
+    "host(emulator-5560)": {
+      "serial": "emulator-5560",
+      "remoteAdb": false,
+      "dial": null,
+      "ro.product.model": "sdk_gphone64_arm64",
+      "ro.build.version.release": "16",
+      "ro.build.version.sdk": "36",
+      "ro.kernel.qemu": "1"
+    },
+    "player-EAST(emulator-5562)": {
+      "serial": "emulator-5562",
+      "remoteAdb": false,
+      "dial": [
+        "127.0.0.1",
+        58591
+      ],
+      "ro.product.model": "sdk_gphone64_arm64",
+      "ro.build.version.release": "16",
+      "ro.build.version.sdk": "36",
+      "ro.kernel.qemu": "1"
+    },
+    "player-NORTH(emulator-5564)": {
+      "serial": "emulator-5564",
+      "remoteAdb": false,
+      "dial": [
+        "127.0.0.1",
+        58591
+      ],
+      "ro.product.model": "sdk_gphone64_arm64",
+      "ro.build.version.release": "16",
+      "ro.build.version.sdk": "36",
+      "ro.kernel.qemu": "1"
+    },
+    "player-WEST(emulator-5566)": {
+      "serial": "emulator-5566",
+      "remoteAdb": false,
+      "dial": [
+        "127.0.0.1",
+        58591
+      ],
+      "ro.product.model": "sdk_gphone64_arm64",
+      "ro.build.version.release": "16",
+      "ro.build.version.sdk": "36",
+      "ro.kernel.qemu": "1"
+    },
+    "watcher(emulator-5568)": {
+      "serial": "emulator-5568",
+      "remoteAdb": false,
+      "dial": [
+        "127.0.0.1",
+        58591
+      ],
+      "ro.product.model": "sdk_gphone64_arm64",
+      "ro.build.version.release": "16",
+      "ro.build.version.sdk": "36",
+      "ro.kernel.qemu": "1"
+    }
+  },
+  "agentsExit": {
+    "host(emulator-5560)": 0,
+    "player-EAST(emulator-5562)": 0,
+    "player-NORTH(emulator-5564)": 0,
+    "player-WEST(emulator-5566)": 0,
+    "watcher(emulator-5568)": 0
+  },
+  "samples": {
+    "host(emulator-5560)": 1479,
+    "player-EAST(emulator-5562)": 1514,
+    "player-NORTH(emulator-5564)": 1504,
+    "player-WEST(emulator-5566)": 1510,
+    "watcher(emulator-5568)": 1485
+  },
+  "results": {
+    "host(emulator-5560)": {
+      "role": "host",
+      "seat": "SOUTH",
+      "final": {
+        "tableId": "t5382e6ad3849c5ae",
+        "phase": "OVER",
+        "matchNumber": 1,
+        "dealNumber": 13,
+        "winner": "NORTH_SOUTH",
+        "teams": [
+          {
+            "team": "NORTH_SOUTH",
+            "level": 14,
+            "aFailures": 0
+          },
+          {
+            "team": "EAST_WEST",
+            "level": 14,
+            "aFailures": 2
+          }
+        ]
+      },
+      "deals": [
+        {
+          "deal": 1,
+          "level": 2,
+          "finishOrder": [
+            "WEST",
+            "EAST"
+          ],
+          "winningTeam": "EAST_WEST",
+          "gain": 3,
+          "nextLevel": 5,
+          "matchWinner": null
+        },
+        {
+          "deal": 2,
+          "level": 5,
+          "finishOrder": [
+            "NORTH",
+            "SOUTH"
+          ],
+          "winningTeam": "NORTH_SOUTH",
+          "gain": 3,
+          "nextLevel": 5,
+          "matchWinner": null
+        },
+        {
+          "deal": 3,
+          "level": 5,
+          "finishOrder": [
+            "NORTH",
+            "SOUTH"
+          ],
+          "winningTeam": "NORTH_SOUTH",
+          "gain": 3,
+          "nextLevel": 8,
+          "matchWinner": null
+        },
+        {
+          "deal": 4,
+          "level": 8,
+          "finishOrder": [
+            "WEST",
+            "SOUTH",
+            "NORTH"
+          ],
+          "winningTeam": "EAST_WEST",
+          "gain": 1,
+          "nextLevel": 6,
+          "matchWinner": null
+        },
+        {
+          "deal": 5,
+          "level": 6,
+          "finishOrder": [
+            "EAST",
+            "WEST"
+          ],
+          "winningTeam": "EAST_WEST",
+          "gain": 3,
+          "nextLevel": 9,
+          "matchWinner": null
+        },
+        {
+          "deal": 6,
+          "level": 9,
+          "finishOrder": [
+            "SOUTH",
+            "NORTH"
+          ],
+          "winningTeam": "NORTH_SOUTH",
+          "gain": 3,
+          "nextLevel": 11,
+          "matchWinner": null
+        },
+        {
+          "deal": 7,
+          "level": 11,
+          "finishOrder": [
+            "WEST",
+            "NORTH",
+            "SOUTH"
+          ],
+          "winningTeam": "EAST_WEST",
+          "gain": 1,
+          "nextLevel": 10,
+          "matchWinner": null
+        },
+        {
+          "deal": 8,
+          "level": 10,
+          "finishOrder": [
+            "WEST",
+            "SOUTH",
+            "EAST"
+          ],
+          "winningTeam": "EAST_WEST",
+          "gain": 2,
+          "nextLevel": 12,
+          "matchWinner": null
+        },
+        {
+          "deal": 9,
+          "level": 12,
+          "finishOrder": [
+            "WEST",
+            "EAST"
+          ],
+          "winningTeam": "EAST_WEST",
+          "gain": 3,
+          "nextLevel": 14,
+          "matchWinner": null
+        },
+        {
+          "deal": 10,
+          "level": 14,
+          "finishOrder": [
+            "SOUTH",
+            "EAST",
+            "WEST"
+          ],
+          "winningTeam": "NORTH_SOUTH",
+          "gain": 1,
+          "nextLevel": 12,
+          "matchWinner": null
+        },
+        {
+          "deal": 11,
+          "level": 12,
+          "finishOrder": [
+            "NORTH",
+            "EAST",
+            "WEST"
+          ],
+          "winningTeam": "NORTH_SOUTH",
+          "gain": 1,
+          "nextLevel": 13,
+          "matchWinner": null
+        },
+        {
+          "deal": 12,
+          "level": 13,
+          "finishOrder": [
+            "NORTH",
+            "SOUTH"
+          ],
+          "winningTeam": "NORTH_SOUTH",
+          "gain": 3,
+          "nextLevel": 14,
+          "matchWinner": null
+        },
+        {
+          "deal": 13,
+          "level": 14,
+          "finishOrder": [
+            "NORTH",
+            "SOUTH"
+          ],
+          "winningTeam": "NORTH_SOUTH",
+          "gain": 3,
+          "nextLevel": 14,
+          "matchWinner": "NORTH_SOUTH"
+        }
+      ],
+      "actions": 437,
+      "violations": 0,
+      "samples": 1479,
+      "semanticsChecks": 0,
+      "rejoin": null,
+      "events": [
+        "1792140927660 hosted",
+        "1792140938945 approved PLAYER EAST",
+        "1792140950447 approved PLAYER NORTH",
+        "1792140958666 approved PLAYER WEST",
+        "1792140972238 approved OBSERVER null",
+        "1792140973458 started",
+        "1792141208800 finished playing"
+      ]
+    },
+    "player-EAST(emulator-5562)": {
+      "role": "player",
+      "seat": "EAST",
+      "final": {
+        "tableId": "t5382e6ad3849c5ae",
+        "phase": "OVER",
+        "matchNumber": 1,
+        "dealNumber": 13,
+        "winner": "NORTH_SOUTH",
+        "teams": [
+          {
+            "team": "NORTH_SOUTH",
+            "level": 14,
+            "aFailures": 0
+          },
+          {
+            "team": "EAST_WEST",
+            "level": 14,
+            "aFailures": 2
+          }
+        ]
+      },
+      "deals": [
+        {
+          "deal": 1,
+          "level": 2,
+          "finishOrder": [
+            "WEST",
+            "EAST"
+          ],
+          "winningTeam": "EAST_WEST",
+          "gain": 3,
+          "nextLevel": 5,
+          "matchWinner": null
+        },
+        {
+          "deal": 2,
+          "level": 5,
+          "finishOrder": [
+            "NORTH",
+            "SOUTH"
+          ],
+          "winningTeam": "NORTH_SOUTH",
+          "gain": 3,
+          "nextLevel": 5,
+          "matchWinner": null
+        },
+        {
+          "deal": 3,
+          "level": 5,
+          "finishOrder": [
+            "NORTH",
+            "SOUTH"
+          ],
+          "winningTeam": "NORTH_SOUTH",
+          "gain": 3,
+          "nextLevel": 8,
+          "matchWinner": null
+        },
+        {
+          "deal": 4,
+          "level": 8,
+          "finishOrder": [
+            "WEST",
+            "SOUTH",
+            "NORTH"
+          ],
+          "winningTeam": "EAST_WEST",
+          "gain": 1,
+          "nextLevel": 6,
+          "matchWinner": null
+        },
+        {
+          "deal": 5,
+          "level": 6,
+          "finishOrder": [
+            "EAST",
+            "WEST"
+          ],
+          "winningTeam": "EAST_WEST",
+          "gain": 3,
+          "nextLevel": 9,
+          "matchWinner": null
+        },
+        {
+          "deal": 6,
+          "level": 9,
+          "finishOrder": [
+            "SOUTH",
+            "NORTH"
+          ],
+          "winningTeam": "NORTH_SOUTH",
+          "gain": 3,
+          "nextLevel": 11,
+          "matchWinner": null
+        },
+        {
+          "deal": 7,
+          "level": 11,
+          "finishOrder": [
+            "WEST",
+            "NORTH",
+            "SOUTH"
+          ],
+          "winningTeam": "EAST_WEST",
+          "gain": 1,
+          "nextLevel": 10,
+          "matchWinner": null
+        },
+        {
+          "deal": 8,
+          "level": 10,
+          "finishOrder": [
+            "WEST",
+            "SOUTH",
+            "EAST"
+          ],
+          "winningTeam": "EAST_WEST",
+          "gain": 2,
+          "nextLevel": 12,
+          "matchWinner": null
+        },
+        {
+          "deal": 9,
+          "level": 12,
+          "finishOrder": [
+            "WEST",
+            "EAST"
+          ],
+          "winningTeam": "EAST_WEST",
+          "gain": 3,
+          "nextLevel": 14,
+          "matchWinner": null
+        },
+        {
+          "deal": 10,
+          "level": 14,
+          "finishOrder": [
+            "SOUTH",
+            "EAST",
+            "WEST"
+          ],
+          "winningTeam": "NORTH_SOUTH",
+          "gain": 1,
+          "nextLevel": 12,
+          "matchWinner": null
+        },
+        {
+          "deal": 11,
+          "level": 12,
+          "finishOrder": [
+            "NORTH",
+            "EAST",
+            "WEST"
+          ],
+          "winningTeam": "NORTH_SOUTH",
+          "gain": 1,
+          "nextLevel": 13,
+          "matchWinner": null
+        },
+        {
+          "deal": 12,
+          "level": 13,
+          "finishOrder": [
+            "NORTH",
+            "SOUTH"
+          ],
+          "winningTeam": "NORTH_SOUTH",
+          "gain": 3,
+          "nextLevel": 14,
+          "matchWinner": null
+        },
+        {
+          "deal": 13,
+          "level": 14,
+          "finishOrder": [
+            "NORTH",
+            "SOUTH"
+          ],
+          "winningTeam": "NORTH_SOUTH",
+          "gain": 3,
+          "nextLevel": 14,
+          "matchWinner": "NORTH_SOUTH"
+        }
+      ],
+      "actions": 453,
+      "violations": 0,
+      "samples": 1514,
+      "semanticsChecks": 0,
+      "rejoin": null,
+      "events": [
+        "1792140936912 found t5382e6ad3849c5ae",
+        "1792140938729 admitted seat=EAST",
+        "1792141208386 finished playing"
+      ]
+    },
+    "player-NORTH(emulator-5564)": {
+      "role": "player",
+      "seat": "NORTH",
+      "final": {
+        "tableId": "t5382e6ad3849c5ae",
+        "phase": "OVER",
+        "matchNumber": 1,
+        "dealNumber": 13,
+        "winner": "NORTH_SOUTH",
+        "teams": [
+          {
+            "team": "NORTH_SOUTH",
+            "level": 14,
+            "aFailures": 0
+          },
+          {
+            "team": "EAST_WEST",
+            "level": 14,
+            "aFailures": 2
+          }
+        ]
+      },
+      "deals": [
+        {
+          "deal": 1,
+          "level": 2,
+          "finishOrder": [
+            "WEST",
+            "EAST"
+          ],
+          "winningTeam": "EAST_WEST",
+          "gain": 3,
+          "nextLevel": 5,
+          "matchWinner": null
+        },
+        {
+          "deal": 2,
+          "level": 5,
+          "finishOrder": [
+            "NORTH",
+            "SOUTH"
+          ],
+          "winningTeam": "NORTH_SOUTH",
+          "gain": 3,
+          "nextLevel": 5,
+          "matchWinner": null
+        },
+        {
+          "deal": 3,
+          "level": 5,
+          "finishOrder": [
+            "NORTH",
+            "SOUTH"
+          ],
+          "winningTeam": "NORTH_SOUTH",
+          "gain": 3,
+          "nextLevel": 8,
+          "matchWinner": null
+        },
+        {
+          "deal": 4,
+          "level": 8,
+          "finishOrder": [
+            "WEST",
+            "SOUTH",
+            "NORTH"
+          ],
+          "winningTeam": "EAST_WEST",
+          "gain": 1,
+          "nextLevel": 6,
+          "matchWinner": null
+        },
+        {
+          "deal": 5,
+          "level": 6,
+          "finishOrder": [
+            "EAST",
+            "WEST"
+          ],
+          "winningTeam": "EAST_WEST",
+          "gain": 3,
+          "nextLevel": 9,
+          "matchWinner": null
+        },
+        {
+          "deal": 6,
+          "level": 9,
+          "finishOrder": [
+            "SOUTH",
+            "NORTH"
+          ],
+          "winningTeam": "NORTH_SOUTH",
+          "gain": 3,
+          "nextLevel": 11,
+          "matchWinner": null
+        },
+        {
+          "deal": 7,
+          "level": 11,
+          "finishOrder": [
+            "WEST",
+            "NORTH",
+            "SOUTH"
+          ],
+          "winningTeam": "EAST_WEST",
+          "gain": 1,
+          "nextLevel": 10,
+          "matchWinner": null
+        },
+        {
+          "deal": 8,
+          "level": 10,
+          "finishOrder": [
+            "WEST",
+            "SOUTH",
+            "EAST"
+          ],
+          "winningTeam": "EAST_WEST",
+          "gain": 2,
+          "nextLevel": 12,
+          "matchWinner": null
+        },
+        {
+          "deal": 9,
+          "level": 12,
+          "finishOrder": [
+            "WEST",
+            "EAST"
+          ],
+          "winningTeam": "EAST_WEST",
+          "gain": 3,
+          "nextLevel": 14,
+          "matchWinner": null
+        },
+        {
+          "deal": 10,
+          "level": 14,
+          "finishOrder": [
+            "SOUTH",
+            "EAST",
+            "WEST"
+          ],
+          "winningTeam": "NORTH_SOUTH",
+          "gain": 1,
+          "nextLevel": 12,
+          "matchWinner": null
+        },
+        {
+          "deal": 11,
+          "level": 12,
+          "finishOrder": [
+            "NORTH",
+            "EAST",
+            "WEST"
+          ],
+          "winningTeam": "NORTH_SOUTH",
+          "gain": 1,
+          "nextLevel": 13,
+          "matchWinner": null
+        },
+        {
+          "deal": 12,
+          "level": 13,
+          "finishOrder": [
+            "NORTH",
+            "SOUTH"
+          ],
+          "winningTeam": "NORTH_SOUTH",
+          "gain": 3,
+          "nextLevel": 14,
+          "matchWinner": null
+        },
+        {
+          "deal": 13,
+          "level": 14,
+          "finishOrder": [
+            "NORTH",
+            "SOUTH"
+          ],
+          "winningTeam": "NORTH_SOUTH",
+          "gain": 3,
+          "nextLevel": 14,
+          "matchWinner": "NORTH_SOUTH"
+        }
+      ],
+      "actions": 403,
+      "violations": 0,
+      "samples": 1376,
+      "semanticsChecks": 0,
+      "rejoin": {
+        "ticketPinnedKeyMatched": true,
+        "sawApprovalPrompt": false,
+        "seat": "NORTH",
+        "msToAdmitted": 540
+      },
+      "events": [
+        "1792141003047 found t5382e6ad3849c5ae",
+        "1792141003612 admitted seat=NORTH",
+        "1792141208677 finished playing"
+      ]
+    },
+    "player-WEST(emulator-5566)": {
+      "role": "player",
+      "seat": "WEST",
+      "final": {
+        "tableId": "t5382e6ad3849c5ae",
+        "phase": "OVER",
+        "matchNumber": 1,
+        "dealNumber": 13,
+        "winner": "NORTH_SOUTH",
+        "teams": [
+          {
+            "team": "NORTH_SOUTH",
+            "level": 14,
+            "aFailures": 0
+          },
+          {
+            "team": "EAST_WEST",
+            "level": 14,
+            "aFailures": 2
+          }
+        ]
+      },
+      "deals": [
+        {
+          "deal": 1,
+          "level": 2,
+          "finishOrder": [
+            "WEST",
+            "EAST"
+          ],
+          "winningTeam": "EAST_WEST",
+          "gain": 3,
+          "nextLevel": 5,
+          "matchWinner": null
+        },
+        {
+          "deal": 2,
+          "level": 5,
+          "finishOrder": [
+            "NORTH",
+            "SOUTH"
+          ],
+          "winningTeam": "NORTH_SOUTH",
+          "gain": 3,
+          "nextLevel": 5,
+          "matchWinner": null
+        },
+        {
+          "deal": 3,
+          "level": 5,
+          "finishOrder": [
+            "NORTH",
+            "SOUTH"
+          ],
+          "winningTeam": "NORTH_SOUTH",
+          "gain": 3,
+          "nextLevel": 8,
+          "matchWinner": null
+        },
+        {
+          "deal": 4,
+          "level": 8,
+          "finishOrder": [
+            "WEST",
+            "SOUTH",
+            "NORTH"
+          ],
+          "winningTeam": "EAST_WEST",
+          "gain": 1,
+          "nextLevel": 6,
+          "matchWinner": null
+        },
+        {
+          "deal": 5,
+          "level": 6,
+          "finishOrder": [
+            "EAST",
+            "WEST"
+          ],
+          "winningTeam": "EAST_WEST",
+          "gain": 3,
+          "nextLevel": 9,
+          "matchWinner": null
+        },
+        {
+          "deal": 6,
+          "level": 9,
+          "finishOrder": [
+            "SOUTH",
+            "NORTH"
+          ],
+          "winningTeam": "NORTH_SOUTH",
+          "gain": 3,
+          "nextLevel": 11,
+          "matchWinner": null
+        },
+        {
+          "deal": 7,
+          "level": 11,
+          "finishOrder": [
+            "WEST",
+            "NORTH",
+            "SOUTH"
+          ],
+          "winningTeam": "EAST_WEST",
+          "gain": 1,
+          "nextLevel": 10,
+          "matchWinner": null
+        },
+        {
+          "deal": 8,
+          "level": 10,
+          "finishOrder": [
+            "WEST",
+            "SOUTH",
+            "EAST"
+          ],
+          "winningTeam": "EAST_WEST",
+          "gain": 2,
+          "nextLevel": 12,
+          "matchWinner": null
+        },
+        {
+          "deal": 9,
+          "level": 12,
+          "finishOrder": [
+            "WEST",
+            "EAST"
+          ],
+          "winningTeam": "EAST_WEST",
+          "gain": 3,
+          "nextLevel": 14,
+          "matchWinner": null
+        },
+        {
+          "deal": 10,
+          "level": 14,
+          "finishOrder": [
+            "SOUTH",
+            "EAST",
+            "WEST"
+          ],
+          "winningTeam": "NORTH_SOUTH",
+          "gain": 1,
+          "nextLevel": 12,
+          "matchWinner": null
+        },
+        {
+          "deal": 11,
+          "level": 12,
+          "finishOrder": [
+            "NORTH",
+            "EAST",
+            "WEST"
+          ],
+          "winningTeam": "NORTH_SOUTH",
+          "gain": 1,
+          "nextLevel": 13,
+          "matchWinner": null
+        },
+        {
+          "deal": 12,
+          "level": 13,
+          "finishOrder": [
+            "NORTH",
+            "SOUTH"
+          ],
+          "winningTeam": "NORTH_SOUTH",
+          "gain": 3,
+          "nextLevel": 14,
+          "matchWinner": null
+        },
+        {
+          "deal": 13,
+          "level": 14,
+          "finishOrder": [
+            "NORTH",
+            "SOUTH"
+          ],
+          "winningTeam": "NORTH_SOUTH",
+          "gain": 3,
+          "nextLevel": 14,
+          "matchWinner": "NORTH_SOUTH"
+        }
+      ],
+      "actions": 425,
+      "violations": 0,
+      "samples": 1510,
+      "semanticsChecks": 0,
+      "rejoin": null,
+      "events": [
+        "1792140957547 found t5382e6ad3849c5ae",
+        "1792140958701 admitted seat=WEST",
+        "1792141208700 finished playing"
+      ]
+    },
+    "watcher(emulator-5568)": {
+      "role": "watcher",
+      "seat": null,
+      "final": {
+        "tableId": "t5382e6ad3849c5ae",
+        "phase": "OVER",
+        "matchNumber": 1,
+        "dealNumber": 13,
+        "winner": "NORTH_SOUTH",
+        "teams": [
+          {
+            "team": "NORTH_SOUTH",
+            "level": 14,
+            "aFailures": 0
+          },
+          {
+            "team": "EAST_WEST",
+            "level": 14,
+            "aFailures": 2
+          }
+        ]
+      },
+      "deals": [
+        {
+          "deal": 1,
+          "level": 2,
+          "finishOrder": [
+            "WEST",
+            "EAST"
+          ],
+          "winningTeam": "EAST_WEST",
+          "gain": 3,
+          "nextLevel": 5,
+          "matchWinner": null
+        },
+        {
+          "deal": 2,
+          "level": 5,
+          "finishOrder": [
+            "NORTH",
+            "SOUTH"
+          ],
+          "winningTeam": "NORTH_SOUTH",
+          "gain": 3,
+          "nextLevel": 5,
+          "matchWinner": null
+        },
+        {
+          "deal": 3,
+          "level": 5,
+          "finishOrder": [
+            "NORTH",
+            "SOUTH"
+          ],
+          "winningTeam": "NORTH_SOUTH",
+          "gain": 3,
+          "nextLevel": 8,
+          "matchWinner": null
+        },
+        {
+          "deal": 4,
+          "level": 8,
+          "finishOrder": [
+            "WEST",
+            "SOUTH",
+            "NORTH"
+          ],
+          "winningTeam": "EAST_WEST",
+          "gain": 1,
+          "nextLevel": 6,
+          "matchWinner": null
+        },
+        {
+          "deal": 5,
+          "level": 6,
+          "finishOrder": [
+            "EAST",
+            "WEST"
+          ],
+          "winningTeam": "EAST_WEST",
+          "gain": 3,
+          "nextLevel": 9,
+          "matchWinner": null
+        },
+        {
+          "deal": 6,
+          "level": 9,
+          "finishOrder": [
+            "SOUTH",
+            "NORTH"
+          ],
+          "winningTeam": "NORTH_SOUTH",
+          "gain": 3,
+          "nextLevel": 11,
+          "matchWinner": null
+        },
+        {
+          "deal": 7,
+          "level": 11,
+          "finishOrder": [
+            "WEST",
+            "NORTH",
+            "SOUTH"
+          ],
+          "winningTeam": "EAST_WEST",
+          "gain": 1,
+          "nextLevel": 10,
+          "matchWinner": null
+        },
+        {
+          "deal": 8,
+          "level": 10,
+          "finishOrder": [
+            "WEST",
+            "SOUTH",
+            "EAST"
+          ],
+          "winningTeam": "EAST_WEST",
+          "gain": 2,
+          "nextLevel": 12,
+          "matchWinner": null
+        },
+        {
+          "deal": 9,
+          "level": 12,
+          "finishOrder": [
+            "WEST",
+            "EAST"
+          ],
+          "winningTeam": "EAST_WEST",
+          "gain": 3,
+          "nextLevel": 14,
+          "matchWinner": null
+        },
+        {
+          "deal": 10,
+          "level": 14,
+          "finishOrder": [
+            "SOUTH",
+            "EAST",
+            "WEST"
+          ],
+          "winningTeam": "NORTH_SOUTH",
+          "gain": 1,
+          "nextLevel": 12,
+          "matchWinner": null
+        },
+        {
+          "deal": 11,
+          "level": 12,
+          "finishOrder": [
+            "NORTH",
+            "EAST",
+            "WEST"
+          ],
+          "winningTeam": "NORTH_SOUTH",
+          "gain": 1,
+          "nextLevel": 13,
+          "matchWinner": null
+        },
+        {
+          "deal": 12,
+          "level": 13,
+          "finishOrder": [
+            "NORTH",
+            "SOUTH"
+          ],
+          "winningTeam": "NORTH_SOUTH",
+          "gain": 3,
+          "nextLevel": 14,
+          "matchWinner": null
+        },
+        {
+          "deal": 13,
+          "level": 14,
+          "finishOrder": [
+            "NORTH",
+            "SOUTH"
+          ],
+          "winningTeam": "NORTH_SOUTH",
+          "gain": 3,
+          "nextLevel": 14,
+          "matchWinner": "NORTH_SOUTH"
+        }
+      ],
+      "actions": 0,
+      "violations": 0,
+      "samples": 1485,
+      "semanticsChecks": 1485,
+      "rejoin": null,
+      "events": [
+        "1792140969808 found t5382e6ad3849c5ae",
+        "1792140971896 admitted seat=null",
+        "1792141208267 finished playing"
+      ]
+    }
+  },
+  "timings": {
+    "installed_s": 16.4,
+    "all_admitted_s": 77.0,
+    "match_started_s": 78.4,
+    "match_finished_s": 313.5,
+    "total_s": 335.9
+  },
+  "outcome": "PASS",
+  "reason": null,
+  "logs": "build/e2e/2026-10-16-165456"
+}

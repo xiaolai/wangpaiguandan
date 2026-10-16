@@ -38,8 +38,7 @@ class LanRig(private val seed: Long) {
     val network: RoomNetwork = LanRoomNetwork(directory, bindAddress = InetAddress.getLoopbackAddress())
     private val made = ArrayList<Phone>()
 
-    fun phone(name: String): Phone {
-        val identity = IdentityRepository(InMemoryKeyValueStore())
+    fun phone(name: String, identity: IdentityRepository = IdentityRepository(InMemoryKeyValueStore())): Phone {
         val owner = SessionOwner(
             OwnerDependencies(
                 profiles = TestProfiles.profiles,

@@ -12,7 +12,9 @@ import cn.wpgd.app.owner.ExecutorSessionLoop
 import cn.wpgd.app.owner.OwnerDependencies
 import cn.wpgd.app.owner.OwnerLifecycle
 import cn.wpgd.app.owner.SessionOwner
+import cn.wpgd.app.room.AddressJoin
 import cn.wpgd.app.room.LocalVersion
+import cn.wpgd.app.room.NetworkAddressLookup
 import cn.wpgd.app.room.RoomFinder
 import cn.wpgd.app.room.RoomMedium
 import cn.wpgd.app.room.RoomNetwork
@@ -232,6 +234,9 @@ class AppGraph(
         bleReport = null
         reportOwner = null
     }
+
+    /** C10: a join-by-address lookup over the LAN room network, on the finder's thread. */
+    fun addressJoin(): AddressJoin = AddressJoin(NetworkAddressLookup(platform.network, finderLoop))
 
     /** The hosted tables saved on this device (H3, H6, H7). */
     fun savedTables(): SavedTables = SavedTables(TableRepository(platform.storage), rooms, identity, clock, profiles)

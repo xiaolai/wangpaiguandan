@@ -135,6 +135,17 @@ step "r8check (WI-12): the minified check build and its on-device test APK build
 #   -Pandroid.testInstrumentationRunnerArguments.class=cn.wpgd.app.R8SerializationTest
 ./gradlew -Pwpgd.testBuildType=r8check :app:assembleR8check :app:assembleR8checkAndroidTest
 
+step "Automation hook (debug only, dev-docs/automation-hook.md): absent from the release and r8check APKs, present in debug"
+# Self-test first: the same scanner must find every identifier of the hook in the debug build.
+python3 -I tools/check_automation_hook.py present \
+  --apk app/build/outputs/apk/debug/app-debug.apk --classes app/build/tmp/kotlin-classes/debug
+python3 -I tools/check_automation_hook.py absent \
+  --apk "$release_apk" --classes app/build/tmp/kotlin-classes/release \
+  --manifest app/build/intermediates/merged_manifests/release/processReleaseManifest/AndroidManifest.xml \
+  --mapping app/build/outputs/mapping/release/mapping.txt --mapping app/build/outputs/mapping/r8check/mapping.txt \
+  --apk app/build/outputs/apk/r8check/app-r8check.apk --classes app/build/tmp/kotlin-classes/r8check \
+  --manifest app/build/intermediates/merged_manifests/r8check/processR8checkManifest/AndroidManifest.xml
+
 allow=app/permissions-allowlist.txt
 [ -f "$allow" ] || { echo "allow-list not found at $allow" >&2; exit 1; }
 # Untagged lines: every build. "bleTransport:" lines: only the flag-on build (WI-10).
@@ -163,6 +174,8 @@ check_manifest() {
 
 step "Merged app manifest (bleTransport off, the default) requests exactly the untagged allow-list (libraries can merge some in)"
 check_manifest app/build/intermediates/merged_manifests/debug/processDebugManifest/AndroidManifest.xml "$base" "default debug"
+check_manifest app/build/intermediates/merged_manifests/release/processReleaseManifest/AndroidManifest.xml "$base" "release"
+check_manifest app/build/intermediates/merged_manifests/r8check/processR8checkManifest/AndroidManifest.xml "$base" "r8check"
 
 step "bleTransport on (-Pwpgd.bleTransport=true, its own build directory app/build-ble): builds, lints, and adds exactly the tagged permissions"
 ./gradlew -Pwpgd.bleTransport=true :app:assembleDebug :app:lintDebug

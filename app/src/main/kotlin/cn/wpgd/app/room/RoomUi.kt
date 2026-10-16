@@ -87,9 +87,18 @@ data class LobbyUiState(
     val pending: List<PendingJoiner>,
     /** Host only: nearby devices can no longer find or reach this room; leave and host again. */
     val hostingFailed: Boolean = false,
+    /** Host only, LAN rooms: the port others type in join by address (with [LobbyUi.joinAddresses]). */
+    val listenPort: Int? = null,
 )
 
+/** One way to reach the host by address: what to type in each field, and both as one line. */
+data class JoinAddress(val host: String, val port: Int, val display: String)
+
 object LobbyUi {
+    /** The host's [addresses] (its Wi-Fi or hotspot interface, [cn.wpgd.app.lan.HostAddresses]) with [port]; none without either. */
+    fun joinAddresses(port: Int?, addresses: List<String>): List<JoinAddress> =
+        if (port == null) emptyList() else addresses.map { JoinAddress(it, port, ManualAddress.format(it, port)) }
+
     /**
      * [seenSettingsRevision] is the settings revision this player last looked at (D1), or null if it
      * never opened the rules; a player who has seen older settings than the current ones is told.
@@ -122,6 +131,7 @@ object LobbyUi {
             canStart = hosting && connected && blockers.isEmpty(),
             pending = t.hostSide?.pending.orEmpty(),
             hostingFailed = t.hostSide?.hostingFailed == true,
+            listenPort = t.hostSide?.listenPort?.takeIf { hosting && info.medium == RoomMedium.LAN },
         )
     }
 }
