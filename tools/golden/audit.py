@@ -92,6 +92,8 @@ def effective(cards, decl, level):
     wild = "H" + level
     nw = cards.count(wild)
     if nw == 0:
+        if decl:
+            return None, "declaration_mismatch"  # Classifier: a declaration with no wildcard played
         return [parse(c) for c in cards], None
     if decl is None:
         return None, "missing_declaration"  # R7.8 (D6)
@@ -121,7 +123,7 @@ def seq_mappings(ranks):
     return out
 
 
-def classify(eff, level):
+def classify(eff):
     n = len(eff)
     ranks = [r for r, _ in eff]
     cnt = Counter(ranks)
@@ -194,10 +196,32 @@ def evaluate(cards, decl, level):
     eff, rej = effective(cards, decl, level)
     if rej:
         return [], rej
-    rs = classify(eff, level)
+    rs = classify(eff)
     if not rs:
         return [], ("declared_reading_illegal" if ("H" + level) in cards else "no_combination")
     return rs, None
+
+
+def all_readings(cards, level):
+    """Every distinct reading of these cards under any legal declaration (R7.3: a wildcard is never a joker;
+    R7.10/D6: one suit, if any, for all of a play's wildcards). `exclusive` claims there is exactly one."""
+    wild = "H" + level
+    nw = cards.count(wild)
+    if nw == 0:
+        return evaluate(cards, None, level)[0]
+    out = []
+    for ranks in itertools.combinations_with_replacement(list(NAT), nw):
+        for suit in (None, "S", "H", "C", "D"):
+            decl = [{"card": wild, "as_rank": r} | ({"as_suit": suit} if suit else {}) for r in ranks]
+            for x in evaluate(cards, decl, level)[0]:
+                if x not in out:
+                    out.append(x)
+    return out
+
+
+# R8.1/D10: a profile may set registered options; the spec names its registry options in backticks
+# (for example `sequence.wrapAroundA`). Any other key is unregistered and rejected as unknown.
+SPEC_OPTIONS = set(re.findall(r"`([a-z]+[A-Za-z]*\.[a-z][A-Za-z]*)`", spec))
 
 
 # ------------------------------------------------------------------ per-case audit
@@ -280,7 +304,7 @@ def check(c):
         if st["table"]:
             trs, trej = evaluate(st["table"]["cards"], st["table"]["declaration"], level)
             if st["table"]["classification"] not in [public(x) for x in trs]:
-                probs.append(f"table classification not a valid reading ({[public(x) for x in trs]})")
+                probs.append(f"table classification not a valid reading ({[public(x) for x in trs]}, reject={trej})")
         valid = bool(rs)
         if exp["classification"] is None:
             if valid:
@@ -297,8 +321,10 @@ def check(c):
                 probs.append(f"classification {exp['classification']} not among {[public(x) for x in rs]} (reject={rej})")
             else:
                 m = match[0]
-                if exp["exclusive"] and len(rs) != 1:
-                    probs.append(f"exclusive but evaluator has {len(rs)} readings")
+                if exp["exclusive"]:
+                    every = all_readings(p["cards"], level)
+                    if len(every) != 1:
+                        probs.append(f"exclusive but the cards have {len(every)} readings over all declarations ({[public(x) for x in every]})")
                 bs = m.get("size") if m["type"] == "bomb" else None
                 if exp["bomb_size"] != bs:
                     probs.append(f"bomb_size {exp['bomb_size']} != {bs}")
@@ -367,11 +393,20 @@ def check(c):
                 rs, _ = evaluate(hand, r["declaration"], level)
                 if r["classification"] not in [public(x) for x in rs]:
                     probs.append(f"declaration {r['declaration']} does not give {r['classification']}")
+        else:
+            # A generator case with no evaluator here is unchecked, never "agrees".
+            probs.append(f"no audit evaluator for generator case {c['id']}")
         notes.append("evaluator agrees" if not probs else "")
     elif c["kind"] == "profile":
-        if "rejected" not in rules["R8.1"][0]:
-            probs.append("R8.1 does not say options are rejected")
-        notes.append("R8.1 text says unknown option keys are rejected")
+        if "An option key that is not registered is rejected" not in rules["R8.1"][0]:
+            probs.append("R8.1 does not say unregistered option keys are rejected")
+        unknown = sorted(k for k in st["options"] if k not in SPEC_OPTIONS)
+        want = {"accepted": not unknown, "rejected_reason": "unknown_option" if unknown else None}
+        if exp != want:
+            probs.append(f"expected {exp} != evaluator {want} (unregistered keys: {unknown or 'none'})")
+        notes.append("evaluator agrees (R8.1: unregistered option keys are rejected)" if not probs else "")
+    else:
+        probs.append(f"no audit evaluator for case kind {c['kind']}")
     return probs, notes
 
 

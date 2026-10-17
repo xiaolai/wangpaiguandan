@@ -129,8 +129,16 @@ class Device:
         return self.adb_port is not None
 
     @property
+    def endpoint(self):
+        """The serial and, for another adb server, its port: emulator-5554 on two servers is two devices."""
+        return f"{self.serial}@{self.adb_port}" if self.adb_port else self.serial
+
+    @property
     def name(self):
-        return f"{self.role}{'-' + self.seat if self.seat else ''}({self.serial})"
+        return f"{self.role}{'-' + self.seat if self.seat else ''}({self.endpoint})"
+
+    def log_file(self, logdir, tag):
+        return os.path.join(logdir, f"{self.role}-{self.seat or self.endpoint}-{tag}.log")
 
     def adb_cmd(self, *args):
         cmd = [ADB]
@@ -175,7 +183,7 @@ class Device:
         for k, v in extra.items():
             args += ["-e", k, str(v)]
         args.append(RUNNER)
-        self.log_path = os.path.join(logdir, f"{self.role}-{self.seat or self.serial}-{tag}.log")
+        self.log_path = self.log_file(logdir, tag)
         out = open(self.log_path, "w")
         self.proc = subprocess.Popen(self.adb_cmd(*args), stdout=out, stderr=subprocess.STDOUT)
 
@@ -230,6 +238,9 @@ class Relay:
                     s.shutdown(socket.SHUT_RDWR)
                 except OSError:
                     pass
+                # Close too: shutdown alone leaks the descriptor. The other direction's thread then
+                # fails its recv with OSError and ends; closing twice is harmless.
+                s.close()
 
     def close(self):
         self.server.close()
@@ -264,7 +275,7 @@ def check_agents_alive(devices):
             raise Failure(f"{d.name}: driver exited early ({code}):\n{tail}")
 
 
-def main():
+def parse_args(argv=None):
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--host", required=True, help="device spec of the host")
     ap.add_argument("--player", action="append", required=True, help="device spec; three of them (EAST, NORTH, WEST)")
@@ -277,7 +288,9 @@ def main():
     ap.add_argument("--relay-port", type=int, default=47000)
     ap.add_argument("--relay-allow", action="append", default=[], help="source addresses the relay accepts (default: any)")
     ap.add_argument("--deals", type=int, default=0, help="stop after this many deals; 0 plays the whole match")
-    ap.add_argument("--restart-seat", default="EAST", help="player seat to kill and restart mid-match; empty for none")
+    # A misspelt seat must not silently skip the restart check: only the three seats or empty.
+    ap.add_argument("--restart-seat", default="EAST", choices=["EAST", "NORTH", "WEST", ""],
+                    help="player seat to kill and restart mid-match; empty for none")
     ap.add_argument("--restart-mode", choices=["emulator", "process"], default="process")
     ap.add_argument("--restart-avd", help="emulator restart: the AVD name of that player (local emulators only)")
     ap.add_argument("--restart-after-deal", type=int, default=1, help="restart once this deal has ended and the next is being played")
@@ -285,8 +298,11 @@ def main():
     ap.add_argument("--out", default=os.path.join(REPO, "dev-docs/evidence"))
     ap.add_argument("--note", action="append", default=[], help="a line for the report (for example why fewer watchers ran)")
     ap.add_argument("--skip-install", action="store_true")
-    a = ap.parse_args()
+    return ap.parse_args(argv)
 
+
+def main():
+    a = parse_args()
     if len(a.player) != 3:
         raise SystemExit("exactly three --player devices (EAST, NORTH, WEST)")
     if len(a.watcher) > 2:
@@ -299,6 +315,8 @@ def main():
     watchers = [Device(s, "watcher", f"Kan{i + 1}") for i, s in enumerate(a.watcher)]
     joiners = players + watchers
     devices = [host] + joiners
+    if len({d.endpoint for d in devices}) != len(devices):
+        raise SystemExit("each device spec must name a different device (serial, and @PORT for another adb server)")
     if any(d.remote for d in joiners) and not a.host_address:
         raise SystemExit("devices on another adb server need --host-address (this machine's LAN address) for the relay")
     if host.remote:
@@ -420,12 +438,7 @@ def main():
         for d in joiners:
             d.command("finish")
         host.command("finish")
-        for d in devices:
-            try:
-                d.proc.wait(timeout=90)
-            except subprocess.TimeoutExpired:
-                d.proc.kill()
-        record["agentsExit"] = {d.name: d.agent_exit() for d in devices}
+        record["agentsExit"], record["agentsTimedOut"] = finish_agents(devices, 90)
 
         # 7. Checks.
         checks = record["checks"]
@@ -474,38 +487,62 @@ def main():
             failures.append("the match did not reach its end")
         if restart and not (restart_record and restart_record.get("ok")):
             failures.append("the restarted player did not rejoin by ticket")
-        sp = checks["spectatorPrivacy"]
-        if watchers and (sp["leaks"] or sp["pairsCompared"] == 0 or sp["semanticsChecks"] == 0):
-            failures.append("spectator privacy check failed or compared nothing")
-        if any(code not in (0, None) for code in record["agentsExit"].values()):
+        failures += privacy_failures(checks["spectatorPrivacy"])
+        if record["agentsTimedOut"]:
+            failures.append(f"a driver did not finish in time and was killed ({', '.join(record['agentsTimedOut'])})")
+        if any(code != 0 for code in record["agentsExit"].values()):
             failures.append("a driver did not exit cleanly")
+        record["agentResults"] = instrumentation_problems(devices)
+        if record["agentResults"]:
+            failures.append("a driver's test did not pass (" + "; ".join(f"{n}: {p}" for n, p in record["agentResults"].items()) + ")")
         outcome = "PASS" if not failures else "FAIL"
         reason = "; ".join(failures) or None
     except Failure as e:
         reason = str(e)
         log(f"FAILED: {e}")
+    except (subprocess.SubprocessError, OSError) as e:
+        # An adb timeout or a socket error is an operational failure: record it rather than escape with reason null.
+        reason = f"{type(e).__name__}: {e}"
+        log(f"FAILED: {reason}")
     finally:
-        for d, spec in forwards:
-            d.adb("forward", "--remove", spec, check=False)
-        for d in joiners:
-            if d.dial and d.dial[0] == "127.0.0.1":
-                d.adb("reverse", "--remove", f"tcp:{d.dial[1]}", check=False)
-        for d in devices:
-            if d.proc and d.proc.poll() is None:
-                d.proc.kill()
-        if relay:
-            record["relayConnections"] = relay.connections
-            record["relayRejected"] = relay.rejected
-            record["relayTargetErrors"] = relay.target_errors
-            relay.close()
-        timings["total_s"] = round(time.time() - t0, 1)
-        record["timings"] = timings
-        record["outcome"] = outcome
-        record["reason"] = reason
-        record["devices"] = {d.name: {"serial": d.serial, "remoteAdb": d.remote, "dial": d.dial, **d.info} for d in devices}
-        record["logs"] = os.path.relpath(logdir, REPO)
-        write_outputs(a.out, stamp, record, lan_placeholders(a.host_address, a.relay_allow))
+        cleanup_errors = []
+        try:
+            cleanup_errors = cleanup(forwards, joiners, devices)
+            if relay:
+                record["relayConnections"] = relay.connections
+                record["relayRejected"] = relay.rejected
+                record["relayTargetErrors"] = relay.target_errors
+                relay.close()
+        finally:
+            # The report is written whatever cleanup did: losing it would lose the failure it records.
+            if cleanup_errors:
+                record["cleanupErrors"] = cleanup_errors
+            timings["total_s"] = round(time.time() - t0, 1)
+            record["timings"] = timings
+            record["outcome"] = outcome
+            record["reason"] = reason
+            record["devices"] = {d.name: {"serial": d.serial, "remoteAdb": d.remote, "dial": d.dial, **d.info} for d in devices}
+            record["logs"] = os.path.relpath(logdir, REPO)
+            write_outputs(a.out, stamp, record, lan_placeholders(a.host_address, a.relay_allow))
     return 0 if outcome == "PASS" else 1
+
+
+def cleanup(forwards, joiners, devices):
+    """Removes port forwards and reverses and kills drivers. Each step is tried on its own: one adb
+    timeout must not skip the rest, nor the report. Returns the errors met."""
+    steps = [(f"{d.name}: forward --remove {spec}", lambda d=d, spec=spec: d.adb("forward", "--remove", spec, check=False))
+             for d, spec in forwards]
+    steps += [(f"{d.name}: reverse --remove tcp:{d.dial[1]}", lambda d=d: d.adb("reverse", "--remove", f"tcp:{d.dial[1]}", check=False))
+              for d in joiners if d.dial and d.dial[0] == "127.0.0.1"]
+    steps += [(f"{d.name}: kill driver", lambda d=d: d.proc.kill()) for d in devices if d.proc and d.proc.poll() is None]
+    errors = []
+    for what, step in steps:
+        try:
+            step()
+        except (subprocess.SubprocessError, OSError, Failure) as e:
+            errors.append(f"{what}: {e}")
+            log(f"cleanup: {what} failed: {e}")
+    return errors
 
 
 def do_restart(a, d, host, common, logdir, t0):
@@ -590,29 +627,104 @@ def startup_anr(d):
 
 
 def privacy(players, watchers, samples, results):
-    """For every revision a watcher saw, no card it saw (state or screen) was in a player's hand then."""
+    """For every revision a watcher saw, no card it saw (state or screen) was in a player's hand then.
+    A revision is compared only when every player's hand at it was sampled: with one hand missing, a
+    card leaked from that hand would go unseen. Such revisions are counted as unverified."""
     hands = {}
+    sampled = {}
     for p in players:
         for s in samples.get(p.name, []):
-            hands.setdefault((s["deal"], s["rev"]), set()).update(s["hand"])
-    pairs = 0
+            key = (s["deal"], s["rev"])
+            hands.setdefault(key, set()).update(s["hand"])
+            sampled.setdefault(key, set()).add(p.name)
+    everyone = {p.name for p in players}
     leaks = []
+    per = {}
     for w in watchers:
+        pairs = 0
+        unverified = 0
         for s in samples.get(w.name, []):
             key = (s["deal"], s["rev"])
-            if key in hands:
+            if sampled.get(key) != everyone:
+                unverified += 1
+            else:
                 pairs += 1
                 seen = set(s["visible"]) | set(s["screen"])
                 leaked = seen & hands[key]
                 if leaked:
                     leaks.append({"watcher": w.name, "deal": key[0], "rev": key[1], "cards": sorted(leaked)})
+        per[w.name] = {
+            "samples": len(samples.get(w.name, [])),
+            "pairsCompared": pairs,
+            "unverified": unverified,
+            "semanticsChecks": results[w.name].get("semanticsChecks", 0),
+        }
     return {
         "watchers": len(watchers),
-        "watcherSamples": sum(len(samples.get(w.name, [])) for w in watchers),
-        "pairsCompared": pairs,
-        "semanticsChecks": sum(results[w.name].get("semanticsChecks", 0) for w in watchers),
+        "watcherSamples": sum(x["samples"] for x in per.values()),
+        "pairsCompared": sum(x["pairsCompared"] for x in per.values()),
+        "unverified": sum(x["unverified"] for x in per.values()),
+        "semanticsChecks": sum(x["semanticsChecks"] for x in per.values()),
+        "perWatcher": per,
         "leaks": leaks,
     }
+
+
+def privacy_failures(sp):
+    """Failures of the spectator privacy check: any leak, or any watcher that was not actually checked.
+    Totals alone could pass with one watcher fully checked and another never sampled."""
+    out = ["a watcher saw a card in a player's hand"] if sp["leaks"] else []
+    for name, x in sp["perWatcher"].items():
+        missing = [k for k in ("samples", "pairsCompared", "semanticsChecks") if not x[k]]
+        if missing:
+            out.append(f"spectator privacy compared nothing for {name} (zero {', '.join(missing)})")
+    return out
+
+
+def instrumentation_problem(text):
+    """Why a driver's `am instrument -w -r` output is not a passing run, or None. adb exits 0 even when
+    the test failed or the process crashed, so the exit code alone proves nothing."""
+    lines = text.splitlines()
+    for line in lines:
+        if line.startswith("INSTRUMENTATION_RESULT: shortMsg="):
+            return line.split("=", 1)[1].strip() or "instrumentation aborted"
+        if line.startswith("INSTRUMENTATION_STATUS_CODE: -"):
+            return f"a test did not pass ({line.strip()})"
+    if not any(re.fullmatch(r"OK \(\d+ tests?\)", line.strip()) for line in lines):
+        return "no OK summary"
+    if "INSTRUMENTATION_CODE: -1" not in (line.strip() for line in lines):
+        return "no successful INSTRUMENTATION_CODE"
+    return None
+
+
+def instrumentation_problems(devices):
+    """{name: problem} for every device whose current driver log does not record a passing run."""
+    out = {}
+    for d in devices:
+        try:
+            with open(d.log_path, encoding="utf-8", errors="replace") as f:
+                text = f.read()
+        except (OSError, TypeError) as e:
+            out[d.name] = f"driver log unreadable: {e}"
+            continue
+        problem = instrumentation_problem(text)
+        if problem:
+            out[d.name] = problem
+    return out
+
+
+def finish_agents(devices, timeout):
+    """Waits for every driver to exit; kills and reaps one that does not, so its exit is never None.
+    Returns ({name: exit code}, [names that timed out])."""
+    timed_out = []
+    for d in devices:
+        try:
+            d.proc.wait(timeout=timeout)
+        except subprocess.TimeoutExpired:
+            timed_out.append(d.name)
+            d.proc.kill()
+            d.proc.wait()
+    return {d.name: d.agent_exit() for d in devices}, timed_out
 
 
 def lan_placeholders(host_address, relay_allow):

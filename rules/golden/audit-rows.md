@@ -150,6 +150,6 @@
 | GE01 | default-dependent | D2, D6 | R4.1, R4.2, R4.4, R4.5, R7.8 | PASS | evaluator agrees; quotes found at CG22a:211, HA17:160, HA17:212, JS17:20, JS17:47, NJMU:15, SEU:5 |
 | GE02 | sourced | — | R6.1, R6.3 | PASS | evaluator agrees; quotes found at CG22a:199, HA17:201, JS17:48 |
 | GE03 | default-dependent | D6 | R7.6, R7.8, R7.10, R2.9, R2.10 | PASS | evaluator agrees; quotes found at HA17:140, HA17:148, HA17:206, HA17:251, JS17:41, JS17:43 |
-| PR01 | default-dependent | D10 | R8.1 | PASS | R8.1 text says unknown option keys are rejected; quotes found at n/a (PRODUCT/UNSOURCED rows) |
+| PR01 | default-dependent | D10 | R8.1 | PASS | evaluator agrees (R8.1: unregistered option keys are rejected); quotes found at n/a (PRODUCT/UNSOURCED rows) |
 | UN01 | unsourced | — | R7.8, R7.9 | PASS | no expected result (unresolved); quotes found at n/a (PRODUCT/UNSOURCED rows) |
 | UN02 | unsourced | — | R7.10 | PASS | no expected result (unresolved); quotes found at n/a (PRODUCT/UNSOURCED rows) |

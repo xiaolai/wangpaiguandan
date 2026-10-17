@@ -412,7 +412,7 @@ Updated 2026-10-15. `verify.yml` has one step, `./tools/ci.sh`; the repository h
 | Clean-room guard (no tracked or untracked source names `page.codeberg.lanticy`) | `tools/ci.sh` | Yes |
 | `python3 tools/generate_design_tokens.py --check` | `tools/generate_design_tokens.py` (argparse `--check`), README | Not run directly; the same parity predicate runs inside `verify_design_import.py` |
 | `python3 tools/verify_design_import.py` | README, `tools/ci.sh` | Yes |
-| `python3 -I tools/golden/build.py` then `tools/golden/audit.py` | `tools/golden/`, `rules/golden/README.md` | Yes (fails on any FAIL) |
+| `python3 -I tools/golden/build.py --check` then `tools/golden/audit.py` | `tools/golden/`, `rules/golden/README.md` | Yes (fails if the committed file differs from the generator, and on any FAIL) |
 | `./gradlew :core:test :session:test :app:testDebugUnitTest :app:assembleDebug :app:lintDebug :app:assembleDebugAndroidTest :app:assembleRelease` | `tools/ci.sh` | Yes |
 | `./gradlew :app:verifyReleaseDistributable` | `tools/ci.sh`, `app/build.gradle.kts` | Yes; it must refuse while a profile is provisional or lacks a signed decision record, or the project license is unrecorded. Since 2026-10-16 it passes; `tools/ci.sh` first runs it against unsigned copies of the profiles (`-Pwpgd.gateProfilesDir`) and requires a refusal, and reports a missing release signing key |
 | `cd ios/GuandanCore && swift build && swift test` (warnings as errors) | `tools/ci.sh`, `ios/GuandanCore/` | Yes when a Swift toolchain is installed (G3, 2026-10-16); skipped with a message otherwise |

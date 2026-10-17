@@ -39,12 +39,15 @@ esac
 step "Design import and token parity"
 python3 tools/verify_design_import.py
 
-step "Golden rule cases: regenerate, then audit (audit fails on any FAIL)"
-python3 -I tools/golden/build.py "$repo"
+step "Golden rule cases: the committed file must match the generator (never regenerated here), then audit (audit fails on any FAIL)"
+python3 -I tools/golden/build.py --check "$repo"
 python3 -I tools/golden/audit.py "$repo" | grep -E "^(cases|FAIL|consistency problems|quotes checked)"
 
 step "End-to-end harness (tools/e2e): report writing keeps LAN addresses out of the evidence files"
 python3 -I -m unittest discover -s tools/e2e 2>&1 | tail -n 3
+
+step "Tool tests (tools/tests): the golden audit fails wrong cases; the automation-hook self-test needs every needle"
+python3 -I -m unittest discover -s tools/tests 2>&1 | tail -n 3
 
 step "iPhone Swift core skeleton (G3, ios/GuandanCore): builds, and its conformance tests read the shared fixtures"
 # The rules engine is not ported (WI-11); these tests only check that every shared fixture is found and parses.
@@ -99,6 +102,28 @@ for f in "$unsigned_dir"/*.json; do
   printf '%s\n' "$control_out" | grep -q "rule profile $id .* is provisional" || { echo "the distribution gate did not name unsigned $id (negative control)" >&2; printf '%s\n' "$control_out" >&2; exit 1; }
 done
 echo "negative control: the gate refuses unsigned copies of $(ls "$unsigned_dir" | wc -l | tr -d ' ') profiles"
+
+# Negative control 2: a signed profile whose option changed under the same id and version no longer
+# has the hash its signed decision names, so the gate must refuse it.
+changed_dir=$(mktemp -d)
+trap 'rm -f "$gradle_log"; rm -rf "$unsigned_dir" "$changed_dir"' EXIT
+cp rules/profiles/*.json "$changed_dir/"
+sed -e 's/"sequence.wrapAroundA": false/"sequence.wrapAroundA": true/' rules/profiles/P1-base-v1.json > "$changed_dir/P1-base-v1.json"
+grep -q '"sequence.wrapAroundA": true' "$changed_dir/P1-base-v1.json" || { echo "could not change an option in a copy of P1-base-v1" >&2; exit 1; }
+grep -q '"provisional": false' "$changed_dir/P1-base-v1.json" || { echo "the changed copy of P1-base-v1 is not marked signed" >&2; exit 1; }
+control_status=0
+control_out=$(./gradlew -q :app:verifyReleaseDistributable -Pwpgd.gateProfilesDir="$changed_dir" 2>&1) || control_status=$?
+[ "$control_status" -ne 0 ] || { echo "the distribution gate passed a signed profile whose options changed (negative control)" >&2; exit 1; }
+printf '%s\n' "$control_out" | grep -q "rule profile P1-base-v1 1.0.0 (hash [0-9a-f]\{64\}) has no signed decision" || { echo "the distribution gate did not name the changed P1-base-v1 (negative control)" >&2; printf '%s\n' "$control_out" >&2; exit 1; }
+if printf '%s\n' "$control_out" | grep -q "rule profile M1-match-v1 "; then echo "the distribution gate refused the unchanged M1-match-v1 (negative control)" >&2; printf '%s\n' "$control_out" >&2; exit 1; fi
+echo "negative control: the gate refuses a signed profile whose options changed under the same id and version"
+
+# Negative control 3: a signed release build must gate the profiles it packages, never an override.
+control_status=0
+control_out=$(./gradlew -q help -Pwpgd.releaseSigning=true -Pwpgd.gateProfilesDir="$changed_dir" 2>&1) || control_status=$?
+[ "$control_status" -ne 0 ] || { echo "a signed release build accepted wpgd.gateProfilesDir (negative control)" >&2; exit 1; }
+printf '%s\n' "$control_out" | grep -q "wpgd.gateProfilesDir is for gate tests only" || { echo "a signed release build with wpgd.gateProfilesDir failed for another reason (negative control)" >&2; printf '%s\n' "$control_out" >&2; exit 1; }
+echo "negative control: a signed release build refuses the gate's profile-folder override"
 
 provisional=$(grep -l '"provisional": *true' rules/profiles/*.json || true)
 license_open=no

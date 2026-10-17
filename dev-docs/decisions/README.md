@@ -2,8 +2,9 @@
 
 Signed or recorded gate decisions (`dev-docs/implementation-plan.md` section 3). The release gate
 reads this folder: `:app:verifyReleaseDistributable` needs, for every packaged rule profile, a file
-here marked `**Status: SIGNED**` that names the profile's id and version, and `CapabilityCatalogTest`
-needs the decision a `release` profile cites to name its exact hash.
+here marked `**Status: SIGNED**` that names the profile's id, version and exact canonical hash
+(computed by the app's own loader, `:core:ruleProfileDigests`), and `CapabilityCatalogTest` needs
+the decision a `release` profile cites to name the same three facts.
 
 | Gate | Record | Status (2026-10-16) |
 |---|---|---|

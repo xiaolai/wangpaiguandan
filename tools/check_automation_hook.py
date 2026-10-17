@@ -111,8 +111,9 @@ def main():
         print(f"{root}: {count} classes, found: {sorted(found) or 'nothing'}")
         if a.mode == "absent" and found:
             problems.append(f"{root} compiles the automation hook ({', '.join(sorted(found))})")
-        if a.mode == "present" and "package directory" not in found:
-            problems.append(f"self-test: {root} should hold {CLASS_DIR}")
+        # The directory alone does not prove the class-content scan works: require every needle too.
+        if a.mode == "present" and found != set(NEEDLES) | {"package directory"}:
+            problems.append(f"self-test: {root} should hold {CLASS_DIR} and every needle, missing {sorted((set(NEEDLES) | {'package directory'}) - found)}")
     for m in a.manifest:
         found = scan_manifest(m)
         print(f"{m}: found: {sorted(found) or 'nothing'}")

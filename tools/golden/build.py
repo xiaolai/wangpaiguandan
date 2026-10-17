@@ -2,7 +2,8 @@
 
 Every expected value below is written by hand from rules/base-v1.md.
 Nothing here computes an expected result; the independent check lives in audit.py.
-Usage: python3 -I tools/golden/build.py <repo-root>
+Usage: python3 -I tools/golden/build.py <repo-root>          (writes the file)
+       python3 -I tools/golden/build.py --check <repo-root>  (fails if the file differs; CI runs this)
 """
 import json
 import sys
@@ -723,11 +724,11 @@ CASES.append({
 # ---------------------------------------------------------------- PR: profile
 CASES.append({
     "id": "PR01", "kind": "profile",
-    "description": "base-v1 rejects any option key.",
+    "description": "base-v1 rejects the unregistered option key allowWrapAround.",
     "status": D_, "decisions": ["D10"], "rules": ["R8.1"],
     "setup": {"profile": "base-v1", "options": {"allowWrapAround": True}},
     "expected": {"accepted": False, "rejected_reason": "unknown_option"},
-    "why": "R8.1 default (D10): base-v1 has no options; any key is unknown and rejected.",
+    "why": "R8.1 (D10): a profile may set registered options; allowWrapAround is not a registered key (the registered wrap-around option is sequence.wrapAroundA), so it is unknown and rejected.",
 })
 
 # ---------------------------------------------------------------- UN: unresolved (no expected result)
@@ -756,12 +757,28 @@ CASES.append({
 
 
 def main():
-    repo = Path(sys.argv[1])
+    # build.py REPO writes the golden file; build.py --check REPO only compares it (CI: drift must fail, not be repaired).
+    args = sys.argv[1:]
+    check = args[:1] == ["--check"]
+    if check:
+        args = args[1:]
+    if len(args) != 1:
+        sys.exit("usage: build.py [--check] REPO")
+    repo = Path(args[0])
     out = repo / GOLDEN
-    out.parent.mkdir(parents=True, exist_ok=True)
     ids = [c["id"] for c in CASES]
     assert len(ids) == len(set(ids)), "duplicate ids"
-    out.write_text(json.dumps(CASES, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    text = json.dumps(CASES, ensure_ascii=False, indent=2) + "\n"
+    if check:
+        current = out.read_text(encoding="utf-8") if out.is_file() else None
+        if current != text:
+            state = "is missing" if current is None else "differs from tools/golden/build.py"
+            print(f"{out} {state}: run python3 -I tools/golden/build.py REPO and review the change", file=sys.stderr)
+            sys.exit(1)
+        print(f"{out} matches the generator ({len(CASES)} cases)")
+        return
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(text, encoding="utf-8")
     print(f"wrote {len(CASES)} cases to {out}")
 
 
