@@ -1,0 +1,174 @@
+{
+    "schema": 1,
+    "protocolVersion": 3,
+    "description": "Client commands: capability, idempotent commandId, expectedRevision, typed body. The seat is never in the body.",
+    "cases": [
+        {
+            "name": "play-natural",
+            "wire": {
+                "type": "command",
+                "epoch": 3,
+                "capability": "ICEiIyQlJicoKSorLC0uLzAxMjM0NTY3ODk6Ozw9Pj8",
+                "commandId": "c-1",
+                "expectedRevision": 17,
+                "body": {
+                    "type": "play",
+                    "cardIds": [
+                        "0S3",
+                        "1S3"
+                    ],
+                    "declaration": [],
+                    "combinationType": null
+                }
+            }
+        },
+        {
+            "name": "play-wildcard",
+            "wire": {
+                "type": "command",
+                "epoch": 3,
+                "capability": "ICEiIyQlJicoKSorLC0uLzAxMjM0NTY3ODk6Ozw9Pj8",
+                "commandId": "c-2",
+                "expectedRevision": 18,
+                "body": {
+                    "type": "play",
+                    "cardIds": [
+                        "0H2",
+                        "0C7"
+                    ],
+                    "declaration": [
+                        {
+                            "rank": 7,
+                            "suit": "HEART"
+                        }
+                    ],
+                    "combinationType": "PAIR"
+                }
+            }
+        },
+        {
+            "name": "pass",
+            "wire": {
+                "type": "command",
+                "epoch": 3,
+                "capability": "ICEiIyQlJicoKSorLC0uLzAxMjM0NTY3ODk6Ozw9Pj8",
+                "commandId": "c-3",
+                "expectedRevision": 19,
+                "body": {
+                    "type": "pass"
+                }
+            }
+        },
+        {
+            "name": "give-tribute",
+            "wire": {
+                "type": "command",
+                "epoch": 3,
+                "capability": "ICEiIyQlJicoKSorLC0uLzAxMjM0NTY3ODk6Ozw9Pj8",
+                "commandId": "c-4",
+                "expectedRevision": 20,
+                "body": {
+                    "type": "give_tribute",
+                    "cardId": "1BJ"
+                }
+            }
+        },
+        {
+            "name": "return-tribute",
+            "wire": {
+                "type": "command",
+                "epoch": 3,
+                "capability": "ICEiIyQlJicoKSorLC0uLzAxMjM0NTY3ODk6Ozw9Pj8",
+                "commandId": "c-5",
+                "expectedRevision": 21,
+                "body": {
+                    "type": "return_tribute",
+                    "cardId": "0D4"
+                }
+            }
+        },
+        {
+            "name": "resist",
+            "wire": {
+                "type": "command",
+                "epoch": 3,
+                "capability": "ICEiIyQlJicoKSorLC0uLzAxMjM0NTY3ODk6Ozw9Pj8",
+                "commandId": "c-6",
+                "expectedRevision": 20,
+                "body": {
+                    "type": "resist"
+                }
+            }
+        },
+        {
+            "name": "ask-count",
+            "wire": {
+                "type": "command",
+                "epoch": 3,
+                "capability": "ICEiIyQlJicoKSorLC0uLzAxMjM0NTY3ODk6Ozw9Pj8",
+                "commandId": "c-7",
+                "expectedRevision": 22,
+                "body": {
+                    "type": "ask_count",
+                    "target": "EAST"
+                }
+            }
+        },
+        {
+            "name": "follow-request",
+            "wire": {
+                "type": "command",
+                "epoch": 3,
+                "capability": "ICEiIyQlJicoKSorLC0uLzAxMjM0NTY3ODk6Ozw9Pj8",
+                "commandId": "c-8",
+                "expectedRevision": 22,
+                "body": {
+                    "type": "follow_request",
+                    "seat": "NORTH"
+                }
+            }
+        },
+        {
+            "name": "consent",
+            "wire": {
+                "type": "command",
+                "epoch": 3,
+                "capability": "ICEiIyQlJicoKSorLC0uLzAxMjM0NTY3ODk6Ozw9Pj8",
+                "commandId": "c-9",
+                "expectedRevision": 22,
+                "body": {
+                    "type": "consent",
+                    "grantId": "g1",
+                    "approve": true
+                }
+            }
+        },
+        {
+            "name": "revoke",
+            "wire": {
+                "type": "command",
+                "epoch": 3,
+                "capability": "ICEiIyQlJicoKSorLC0uLzAxMjM0NTY3ODk6Ozw9Pj8",
+                "commandId": "c-10",
+                "expectedRevision": 22,
+                "body": {
+                    "type": "revoke",
+                    "grantId": "g1"
+                }
+            }
+        },
+        {
+            "name": "leave",
+            "wire": {
+                "type": "command",
+                "epoch": 3,
+                "capability": "ICEiIyQlJicoKSorLC0uLzAxMjM0NTY3ODk6Ozw9Pj8",
+                "commandId": "c-11",
+                "expectedRevision": 22,
+                "body": {
+                    "type": "leave"
+                }
+            }
+        }
+    ]
+}

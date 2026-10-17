@@ -17,5 +17,7 @@ jobs:
       - uses: android-actions/setup-android@v3
       - uses: gradle/actions/setup-gradle@v4
       - run: sdkmanager 'platforms;android-36' 'build-tools;35.0.0'
-      - run: python3 tools/verify_design_import.py
-      - run: ./gradlew :core:test :app:assembleDebug :app:lintDebug --no-daemon
+      # One source of truth: the same script as local CI (clean-room guard, design import and token
+      # parity, golden rule cases, Gradle tests/build/lint, the merged-manifest permission guard for the
+      # default build and for the bleTransport-on build).
+      - run: ./tools/ci.sh

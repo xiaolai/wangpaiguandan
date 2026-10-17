@@ -1,12 +1,57 @@
 [versions]
+# Lint dependency-version warnings (WI-01). Each held version below names the reason it is held.
+# Gradle itself is upgraded to 8.14.6 in gradle/wrapper/gradle-wrapper.properties (patch release,
+# inside AGP 8.11's supported Gradle range), which clears that warning.
+#
+# AndroidGradlePluginVersion: held at the 8.11.0 pin (dev-docs/implementation-plan.md section 2:
+# "Keep the repo pins. Any bump is its own reviewed change."). Lint offers 9.4.1 (major, breaking
+# DSL and built-in Kotlin changes) and 8.11.2 (patch); either is a separate reviewed change.
+# Known: AGP 8.11.0's lint input code (ArtifactUtils.isAndroidProjectDependency) triggers Gradle's
+# "Retrieving attribute with a null key" deprecation (an error only from Gradle 10).
 agp = "8.11.0"
-kotlin = "2.2.0"
+# NewerVersionAvailable x3 (kotlin.android, kotlin.jvm, kotlin.plugin.compose share this version):
+# upgraded from 2.2.0 to 2.4.21; verified with AGP 8.11.0 by :core:test :session:test
+# :app:assembleDebug :app:lintDebug. The serialization plugin shares this version.
+kotlin = "2.4.21"
+# WI-12: R8 override. Kotlin 2.4 needs R8 9.1.29 or newer (https://developer.android.com/build/kotlin-support);
+# AGP 8.11.0 bundles an 8.11-series R8, which cannot read Kotlin 2.4 metadata ("An error occurred when
+# parsing kotlin metadata" during minifyReleaseWithR8). Pinned on the root buildscript classpath, which
+# replaces the bundled R8. 9.5.26 is the newest release (lint GradleDependency); with AGP 8.11.0 it builds
+# the release with no R8 warning, and R8SerializationTest passes on the r8check build (emulator, API 36).
+# Drop this override when AGP bundles an R8 that reads the Kotlin version in use.
+r8 = "9.5.26"
+# GradleDependency: held. compose-bom 2026.09.00 pulls Compose 1.12 artifacts (e.g.
+# androidx.compose.runtime:runtime-saveable-android:1.12.1) whose AAR metadata requires
+# AGP >= 9.1.0 and compileSdk >= 37; AGP 8.11 supports compileSdk 36 at most. Fails checkDebugAarMetadata.
 compose-bom = "2025.06.01"
-activity = "1.10.1"
+# GradleDependency: upgraded from 1.10.1 to 1.13.0; its AAR metadata accepts AGP 8.11 / compileSdk 36
+# (checkDebugAarMetadata passes).
+activity = "1.13.0"
+# GradleDependency: held. core-ktx 1.19.1 AAR metadata requires AGP >= 9.1.0 and compileSdk >= 37
+# (checkDebugAarMetadata failure under AGP 8.11.0).
 core-ktx = "1.16.0"
 junit = "4.13.2"
+# Fixture and wire format (WI-01): JSON fixtures for :core tests and the :session protocol.
+kotlinx-serialization = "1.11.0"
+# WI-08: StateFlow/SharedFlow for the session owner's immutable UI state, and one cancellable job
+# scope per owner and view model (so shutdown provably cancels every collector). Pure JVM.
+kotlinx-coroutines = "1.11.0"
+# WI-08: TableViewModel survives rotation and owns a cancellable scope (ViewModel(CoroutineScope)).
+# GradleDependency: held. lifecycle 2.11.0 pulls lifecycle-runtime-compose-android 2.11.0, whose AAR
+# metadata requires AGP >= 9.1.0 (checkDebugAarMetadata failure under AGP 8.11.0).
+lifecycle = "2.10.0"
+# WI-08b: instrumentation tests (Compose UI tests on a device or emulator). The Compose test
+# artifacts (ui-test-junit4, ui-test-manifest) take their version from the Compose BOM above.
+# androidx.test 1.7.0 / ext-junit 1.3.0 are the newest releases; their AAR metadata accepts
+# AGP 8.11 and compileSdk 36 (checkDebugAndroidTestAarMetadata passes).
+androidx-test = "1.7.0"
+androidx-test-ext-junit = "1.3.0"
+# Pinned above what ui-test-junit4 brings (3.5.x): espresso-core before 3.6 calls the hidden
+# InputManager.getInstance(), removed in API 35, so every Compose test fails on an API 36 device.
+espresso = "3.7.0"
 
 [libraries]
+r8 = { module = "com.android.tools:r8", version.ref = "r8" }
 compose-bom = { module = "androidx.compose:compose-bom", version.ref = "compose-bom" }
 compose-ui = { module = "androidx.compose.ui:ui" }
 compose-preview = { module = "androidx.compose.ui:ui-tooling-preview" }
@@ -15,9 +60,19 @@ compose-material3 = { module = "androidx.compose.material3:material3" }
 activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activity" }
 core-ktx = { module = "androidx.core:core-ktx", version.ref = "core-ktx" }
 junit = { module = "junit:junit", version.ref = "junit" }
+kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
+lifecycle-viewmodel = { module = "androidx.lifecycle:lifecycle-viewmodel", version.ref = "lifecycle" }
+compose-ui-test-junit4 = { module = "androidx.compose.ui:ui-test-junit4" }
+compose-ui-test-manifest = { module = "androidx.compose.ui:ui-test-manifest" }
+androidx-test-runner = { module = "androidx.test:runner", version.ref = "androidx-test" }
+androidx-test-core = { module = "androidx.test:core", version.ref = "androidx-test" }
+androidx-test-espresso-core = { module = "androidx.test.espresso:espresso-core", version.ref = "espresso" }
+androidx-test-ext-junit = { module = "androidx.test.ext:junit", version.ref = "androidx-test-ext-junit" }
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }

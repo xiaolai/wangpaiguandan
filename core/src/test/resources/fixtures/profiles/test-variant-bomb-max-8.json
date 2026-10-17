@@ -1,0 +1,10 @@
+{
+  "id": "test-variant-bomb-max-8",
+  "version": "0.1.0",
+  "displayName": "Test variant: bombs of at most 8 cards",
+  "provisional": true,
+  "sourceRefs": ["test fixture only; not a rule document"],
+  "options": {
+    "bomb.maxSize": 8
+  }
+}

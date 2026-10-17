@@ -1,0 +1,19 @@
+# The only permissions the merged app manifest may request (WI-09, WI-10). One name per line; '#' comments.
+# Read by tools/ci.sh (each merged manifest must request exactly its set) and ManifestPermissionsTest.
+#
+# Untagged lines: every build. Each must be a normal install-time permission (no runtime prompt); the
+# on-device RequestedPermissionsTest checks that against the platform.
+#
+# INTERNET: LAN rooms connect phones on the same Wi-Fi over TCP (GDN-021). NSD discovery needs no
+# permission; solo play opens no socket (SoloNeedsNoNetworkTest).
+android.permission.INTERNET
+#
+# "bleTransport:" lines: only builds with the bleTransport flag on (-Pwpgd.bleTransport=true; off by
+# default), declared in app/src/bleTransport/AndroidManifest.xml. The default debug build's merged
+# manifest must NOT contain them (tools/ci.sh checks both builds exactly). They are runtime
+# permissions of the "Nearby devices" group (Android 12+), requested only when the user opens a
+# Bluetooth room, never for solo play or Wi-Fi rooms (BleGate). No location permission and no legacy
+# BLUETOOTH / BLUETOOTH_ADMIN: Bluetooth rooms are offered on Android 12+ only.
+bleTransport: android.permission.BLUETOOTH_SCAN
+bleTransport: android.permission.BLUETOOTH_CONNECT
+bleTransport: android.permission.BLUETOOTH_ADVERTISE

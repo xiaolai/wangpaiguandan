@@ -1,2 +1,471 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources><string name="app_name">掼蛋 · 设计预览</string></resources>
+<resources>
+    <string name="app_name">王牌掼蛋</string>
+
+    <!-- Main menu (A1) and solo start (A3) -->
+    <string name="menu_title">掼蛋</string>
+    <string name="menu_subtitle">单机练习 · 不需要网络</string>
+    <string name="menu_solo">单人练习</string>
+    <string name="menu_continue">回到牌桌</string>
+    <string name="menu_settings">设置</string>
+    <string name="default_nickname">玩家</string>
+    <string name="table_starting">正在发牌…</string>
+    <string name="table_none">没有进行中的牌桌</string>
+    <string name="table_failed">牌桌出错，已停止。可以回到首页重新开始。</string>
+    <string name="table_closed">牌桌已关闭</string>
+    <string name="back_to_menu">回到首页</string>
+    <string name="back">返回</string>
+
+    <!-- Settings (A4), shared by the menu and the in-table sheet (GDN-081) -->
+    <string name="settings_title">设置</string>
+    <string name="settings_sound">声音</string>
+    <string name="settings_vibration">振动</string>
+    <string name="settings_vibration_hint">默认关闭；使用系统触感，不需要权限</string>
+    <string name="settings_reduced_motion">减少动态效果</string>
+    <string name="settings_reduced_motion_hint">不播放炸弹闪光和出牌动画</string>
+    <string name="settings_large_cards">大牌模式（130%）</string>
+    <string name="settings_four_color">四色花色</string>
+    <string name="settings_four_color_hint">梅花绿色、方块蓝色</string>
+    <string name="settings_sort">手牌排序</string>
+    <string name="settings_in_table_note">修改设置不会断开牌桌</string>
+
+    <!-- Table header and in-table menu (T12, T13) -->
+    <string name="table_level">打 %1$s · 第 %2$d 副</string>
+    <string name="table_levels">我方 %1$s · 对方 %2$s</string>
+    <string name="table_menu">牌桌菜单</string>
+    <string name="table_menu_rules">本桌规则</string>
+    <string name="table_menu_pause">暂停牌桌</string>
+    <string name="table_menu_resume">继续牌桌</string>
+    <string name="table_menu_leave">离开牌桌</string>
+    <string name="table_leave_confirm_title">离开牌桌？</string>
+    <string name="table_leave_confirm_body">单人牌局会结束，不能再回来。</string>
+    <string name="table_leave_confirm_yes">离开</string>
+    <string name="cancel">取消</string>
+    <string name="close">关闭</string>
+    <string name="rules_base">牌型规则：%1$s（%2$s）</string>
+    <string name="rules_match">比赛规则：%1$s（%2$s）</string>
+    <string name="rules_hash">规则指纹：%1$s / %2$s</string>
+    <string name="rules_provisional">开发版规则，尚未签署，不能用于正式比赛。</string>
+    <string name="rules_a_failures">打 A 失败 %1$d 次退回</string>
+    <string name="rules_a_failures_none">打 A 失败不限次数</string>
+    <string name="rules_resistance_claimed">抗贡：两张大王在同一人手中，需要主动声明</string>
+    <string name="rules_resistance_automatic">抗贡：自动生效</string>
+
+    <!-- Connection and room banners (T8, H8, GDN-088) -->
+    <string name="banner_connecting">正在连接牌桌…</string>
+    <string name="banner_stale">连接不稳定，画面可能不是最新的</string>
+    <string name="banner_disconnected">已断开，正在等待重连</string>
+    <string name="banner_paused">牌桌已暂停，所有人都不能出牌</string>
+    <string name="banner_suspended">牌桌已挂起</string>
+    <string name="banner_ended">牌桌已结束</string>
+    <string name="banner_quarantined">存档校验失败，牌桌已停止</string>
+    <string name="banner_unknown">牌桌状态未知</string>
+    <string name="button_reconnect">重新连接</string>
+
+    <!-- Seats (relative names, never compass names) -->
+    <string name="seat_self">你</string>
+    <string name="seat_next">下家</string>
+    <string name="seat_partner">对家</string>
+    <string name="seat_previous">上家</string>
+    <string name="team_own">我方</string>
+    <string name="team_opponents">对方</string>
+    <string name="team_north_south">南北队</string>
+    <string name="team_east_west">东西队</string>
+    <string name="seat_acting">正在出牌</string>
+    <string name="marker_acting">▲</string>
+    <string name="marker_trick_owner">●</string>
+    <string name="seat_trick_owner">桌上最大</string>
+    <string name="seat_last_none">还没出牌</string>
+    <string name="seat_last_passed">不要</string>
+    <string name="seat_last_played">出了 %1$s</string>
+    <string name="seat_finished">第 %1$d 名出完</string>
+    <string name="seat_public_count">报牌：剩 %1$d 张</string>
+    <string name="seat_name_south">南家</string>
+    <string name="seat_name_east">东家</string>
+    <string name="seat_name_north">北家</string>
+    <string name="seat_name_west">西家</string>
+    <string name="play_text">%1$s %2$s</string>
+
+    <!-- Hand and cards (GDN-073–076, GDN-097) -->
+    <string name="hand_count">手牌 %1$d 张</string>
+    <string name="hand_selected">已选 %1$d 张</string>
+    <string name="card_selected">已选</string>
+    <string name="card_not_selected">未选</string>
+    <string name="card_wildcard">逢人配（万能牌）</string>
+    <string name="card_wildcard_badge">配</string>
+    <string name="card_description">%1$s %2$s</string>
+    <string name="card_description_wild">%1$s %2$s，%3$s</string>
+    <string name="suit_spade">黑桃</string>
+    <string name="suit_heart">红桃</string>
+    <string name="suit_club">梅花</string>
+    <string name="suit_diamond">方块</string>
+    <string name="rank_small_joker">小王</string>
+    <string name="rank_big_joker">大王</string>
+    <string name="rank_small_joker_short">小</string>
+    <string name="rank_big_joker_short">大</string>
+    <string name="rank_joker_slot">王</string>
+    <string name="button_sort">排序 · %1$s</string>
+    <string name="button_group">理成一组</string>
+    <string name="button_ungroup">取消分组</string>
+    <string name="button_clear">清空</string>
+    <string name="sort_rank">按点数</string>
+    <string name="sort_suit">按花色</string>
+    <string name="sort_combination">按牌型</string>
+
+    <!-- Combination types -->
+    <string name="combo_single">单张</string>
+    <string name="combo_pair">对子</string>
+    <string name="combo_triple">三张</string>
+    <string name="combo_triple_with_pair">三带二</string>
+    <string name="combo_straight">顺子</string>
+    <string name="combo_consecutive_pairs">连对</string>
+    <string name="combo_consecutive_triples">钢板</string>
+    <string name="combo_straight_flush">同花顺</string>
+    <string name="combo_bomb">炸弹</string>
+    <string name="combo_four_jokers">四王</string>
+
+    <!-- Play preview (GDN-076): built from the exact payload that will be sent -->
+    <string name="preview_play">将出：%1$s</string>
+    <string name="preview_wild_as">%1$s 当 %2$s</string>
+    <string name="preview_choose">这些牌有 %1$d 种出法，请选一种：</string>
+    <string name="table_preview_not_a_combination">这些牌不成牌型</string>
+    <string name="table_preview_does_not_beat">这些牌压不过桌上的牌</string>
+
+    <!-- Actions -->
+    <string name="button_play">出牌</string>
+    <string name="button_pass">不要</string>
+    <string name="button_give_tribute">进贡</string>
+    <string name="button_return_tribute">还贡</string>
+    <string name="button_resist">抗贡</string>
+    <string name="button_next_deal">下一副</string>
+    <string name="button_dismiss">知道了</string>
+    <string name="pending">已发送，等待确认…</string>
+
+    <!-- Trick area -->
+    <string name="trick_empty">桌上没有牌</string>
+    <string name="trick_play">%1$s：%2$s</string>
+    <string name="bomb_flash">炸弹！</string>
+    <string name="tribute_resisted">抗贡成功，本副不进贡</string>
+    <string name="tribute_given">%1$s 向 %2$s 进贡 %3$s</string>
+    <string name="tribute_given_unrouted">%1$s 进贡 %2$s</string>
+    <string name="tribute_returned">%1$s 还给 %2$s %3$s</string>
+
+    <!-- Turn line (GDN-077): keys from TurnKey -->
+    <string name="turn_no_deal">等待发牌</string>
+    <string name="turn_you_lead">轮到你领出新一轮</string>
+    <string name="turn_you_beat_or_pass">轮到你：要压过%1$s的%2$s，或者不要</string>
+    <string name="turn_other_leads">轮到%1$s领出</string>
+    <string name="turn_other_follows">轮到%1$s出牌，要压过%2$s的%3$s</string>
+    <string name="turn_you_give_tribute">请进贡：选一张可进贡的最大牌</string>
+    <string name="turn_you_return_tribute">请还贡：选一张牌还给对方</string>
+    <string name="turn_waiting_for_tribute">等待进贡：%1$s</string>
+    <string name="turn_waiting_for_return">等待还贡：%1$s</string>
+    <string name="turn_between_steps">准备下一步…</string>
+    <string name="turn_deal_over">本副结束</string>
+    <string name="turn_match_over">整场结束</string>
+    <string name="list_separator">、</string>
+    <string name="clause_separator">，</string>
+
+    <!-- Cues (GDN-080): the announcement text that keeps muted play understandable -->
+    <string name="cue_deal_started">新的一副开始了</string>
+    <string name="cue_tribute_started">进贡开始</string>
+    <string name="cue_play">%1$s出牌</string>
+    <string name="cue_bomb">%1$s出了炸弹</string>
+    <string name="cue_pass">%1$s不要</string>
+    <string name="cue_your_turn">轮到你了</string>
+    <string name="cue_seat_finished">%1$s出完了，第 %2$d 名</string>
+    <string name="cue_count_reported">%1$s报牌：剩 %2$d 张</string>
+    <string name="cue_deal_settled">本副结束</string>
+    <string name="cue_match_over">整场结束</string>
+    <string name="cue_command_rejected">刚才的操作没有被接受</string>
+
+    <!-- Rejections (GDN-050, audit A20): keys from RejectionKey -->
+    <string name="table_reject_table_moved_on">牌桌已经变化，请重新选择</string>
+    <string name="table_reject_not_your_turn">还没轮到你</string>
+    <string name="table_reject_already_finished">你已经出完了</string>
+    <string name="table_reject_wrong_phase">现在不能这样做</string>
+    <string name="table_reject_nothing_selected">没有选牌</string>
+    <string name="table_reject_cards_not_in_hand">选中的牌不在手里</string>
+    <string name="table_reject_not_a_combination">这些牌不成牌型</string>
+    <string name="table_reject_does_not_beat">压不过桌上的牌</string>
+    <string name="table_reject_leader_must_play">领出时不能不要</string>
+    <string name="table_reject_choose_a_reading">请先选择万能牌的出法</string>
+    <string name="table_reject_tribute_card_not_allowed">这张牌不能进贡</string>
+    <string name="table_reject_return_card_not_allowed">这张牌不能还贡</string>
+    <string name="table_reject_resistance_not_available">现在不能抗贡</string>
+    <string name="table_reject_asking_not_allowed">不能询问牌数</string>
+    <string name="table_reject_room_paused">牌桌已暂停</string>
+    <string name="table_reject_room_quarantined">牌桌已停止</string>
+    <string name="table_reject_not_connected">没有连上牌桌，操作没有发出</string>
+    <string name="table_reject_outcome_unknown">连接中断，不确定是否已出牌；以桌面为准</string>
+    <string name="table_reject_settings_changed">房主修改了规则，请重新查看后准备</string>
+    <string name="table_reject_refused_by_host">房主没有接受这个操作</string>
+    <string name="rejection_title">没有出成：%1$s</string>
+
+    <!-- Results (GDN-082, R1–R3): keys from ResultHeadline and ResultLine -->
+    <string name="result_own_team_won_deal">我方赢下本副</string>
+    <string name="result_own_team_lost_deal">对方赢下本副</string>
+    <string name="result_own_team_won_match">我方赢得整场</string>
+    <string name="result_own_team_lost_match">对方赢得整场</string>
+    <string name="result_team_won_deal">%1$s赢下本副</string>
+    <string name="result_team_won_match">%1$s赢得整场</string>
+    <string name="result_placing">%1$s：第 %2$d 名</string>
+    <string name="result_placing_range">%1$s：第 %2$d–%3$d 名</string>
+    <string name="result_places_inferred">双下提前结束：第 3、4 名是推定的</string>
+    <string name="result_level_change">%1$s升级：%2$s → %3$s（升 %4$d 级）</string>
+    <string name="result_a_passed">%1$s过 A！</string>
+    <string name="result_a_failed">%1$s打 A 没过（第 %2$d 次，%3$d 次退回）</string>
+    <string name="result_a_failed_no_limit">%1$s打 A 没过（第 %2$d 次）</string>
+    <string name="result_a_reset">%1$s打 A 失败次数用完，退回 %2$s</string>
+    <string name="result_a_interrupted">%1$s在 A 级，但本副不是打 A：不计失败</string>
+    <string name="result_tribute_next">下一副：%1$s向%2$s进贡（%3$s）</string>
+    <string name="tribute_single">单贡</string>
+    <string name="tribute_double">双贡</string>
+    <string name="tribute_role_you_give">你要进贡</string>
+    <string name="tribute_role_you_receive">你会收到进贡</string>
+    <string name="tribute_role_partner_gives">对家要进贡</string>
+    <string name="tribute_role_partner_receives">对家会收到进贡</string>
+    <string name="result_waiting_next">等待下一副</string>
+
+    <!-- WI-09 main menu: rooms on the local network -->
+    <string name="menu_host">开一桌</string>
+    <string name="menu_join">找桌加入</string>
+    <string name="menu_saved">我开过的牌桌</string>
+    <string name="menu_rooms_note">开桌和加入需要大家连同一个 Wi-Fi</string>
+    <string name="menu_new_tables_off">新牌局暂停提供：本版本停用了规则配置。已保存的牌局仍可恢复，也可以加入别人的房间。</string>
+
+    <!-- B1 create a room -->
+    <string name="create_title">开一桌</string>
+    <string name="create_name">桌名</string>
+    <string name="create_name_default">掼蛋桌</string>
+    <string name="create_name_invalid">桌名要 1–12 个字，不能有特殊字符</string>
+    <string name="create_mode">辅助</string>
+    <string name="mode_friendly">友好局：可以提示，观众可以请求看某人的牌</string>
+    <string name="mode_competitive">比赛局：没有提示，观众不能看任何手牌</string>
+    <string name="create_absence">有人断线时</string>
+    <string name="absence_substitute">宽限期过后由 AI 代打</string>
+    <string name="absence_pause">宽限期过后暂停牌桌</string>
+    <string name="create_grace">宽限期</string>
+    <string name="grace_seconds">%1$d 秒</string>
+    <string name="create_button">开桌</string>
+
+    <!-- C1–C3 find a room -->
+    <string name="find_title">找桌加入</string>
+    <string name="find_searching">正在寻找同一个 Wi-Fi 下的牌桌…</string>
+    <string name="find_none">没有找到牌桌。请确认和房主连的是同一个 Wi-Fi，并且房主已经开桌。仍在继续寻找。</string>
+    <string name="find_retry">重新寻找</string>
+    <string name="find_room_host">房主 %1$s · 桌号 %2$s</string>
+    <string name="find_open_seats">空座 %1$d 个</string>
+    <string name="find_full">座位已满，可以观看</string>
+    <string name="find_hotspot_hint">用手机热点或访客 Wi-Fi 时常常找不到牌桌：这类网络会挡住搜索，甚至不让手机互相连接。找不到时，请房主念出大厅里显示的地址，点下面的「按地址加入」输入。</string>
+    <string name="find_by_address">按地址加入</string>
+    <string name="address_title">按地址加入</string>
+    <string name="address_intro">输入房主大厅里显示的地址和端口，例如地址 192.168.43.1，端口 41234。加入时仍要和房主核对确认码。</string>
+    <string name="address_host_label">房主的地址</string>
+    <string name="address_port_label">端口</string>
+    <string name="address_lookup">查找牌桌</string>
+    <string name="address_looking">正在连接 %1$s…</string>
+    <string name="address_host_empty">请填写房主的地址，例如 192.168.43.1。</string>
+    <string name="address_host_has_scheme">只填地址本身，不要带 http:// 这类开头。</string>
+    <string name="address_host_has_path">只填地址本身，不要带斜杠 / 或问号后面的内容。</string>
+    <string name="address_host_has_port">端口请填在下面的「端口」框里，这里只填冒号前面的部分。</string>
+    <string name="address_host_invalid">这个地址的格式不对。请照房主大厅里显示的抄，例如 192.168.43.1。</string>
+    <string name="address_port_empty">请填写端口，就是房主大厅里地址冒号后面的数字。</string>
+    <string name="address_port_invalid">端口只能填数字。</string>
+    <string name="address_port_out_of_range">端口应在 1 到 65535 之间，请再核对一下。</string>
+    <string name="address_unreachable">连不上这个地址。请确认地址没有抄错，两台手机连的是同一个 Wi-Fi 或同一个热点。访客 Wi-Fi 常常不让手机互相连接，可以改用其中一台手机开热点。</string>
+    <string name="address_wrong_port">能连到这台手机，但这个端口上没有牌桌。请核对端口号；房主重新开桌后端口会变。</string>
+    <string name="address_closed">房主的手机断开了连接，可能连接的人太多，或者房主刚关了桌。请稍后再试。</string>
+    <string name="address_no_room">房主的应用开着，但现在没有开桌。请房主先开桌。</string>
+    <string name="address_not_a_room">这个地址和端口上不是王牌掼蛋的牌桌。请核对端口号。</string>
+    <string name="address_timeout">连上了，但等了太久没有回应。请房主保持应用打开、屏幕亮着，然后再试。</string>
+    <string name="lobby_addresses_title">别人找不到这桌时，可以在「按地址加入」里输入下面的地址和端口：</string>
+    <string name="lobby_address_line">地址 %1$s，端口 %2$d</string>
+    <string name="compat_update_app">要先更新本应用才能加入</string>
+    <string name="compat_host_must_update">房主的应用版本较旧，请房主更新</string>
+    <string name="compat_other_rules">这桌用的规则和你的不同，不能加入</string>
+
+    <!-- C4 play or watch -->
+    <string name="pow_title">加入「%1$s」</string>
+    <string name="pow_check_code">房主 %1$s · 桌号 %2$s：请和房主屏幕上的桌号核对</string>
+    <string name="pow_play_at">坐%1$s（%2$s）</string>
+    <string name="pow_watch">观看（不占座位，不影响 AI）</string>
+    <string name="pow_replace">接替%1$s（%2$s）：原来的玩家暂时离开，需要房主同意</string>
+    <string name="pow_no_seat">没有空座</string>
+
+    <!-- C5–C9, H2 joining -->
+    <string name="join_connecting">正在连接「%1$s」…</string>
+    <string name="join_waiting">等待房主同意</string>
+    <string name="join_code">确认码 %1$s</string>
+    <string name="join_code_hint">房主屏幕上会显示同样的数字</string>
+    <string name="join_denied">房主没有同意你加入</string>
+    <string name="join_seat_taken">这个座位刚被别人坐了，可以重新选座或观看</string>
+    <string name="join_full">这桌坐满了，观众也满了（最多两位）</string>
+    <string name="join_incompatible">版本或规则不一致，不能加入</string>
+    <string name="join_failed">没能连上这桌。请确认和房主在同一个 Wi-Fi 下。</string>
+    <string name="join_host_lost">联系不上房主，正在自动重连（第 %1$d 次）…</string>
+    <string name="join_suspended">房主把这桌挂起了，之后可以再找到它回到原座</string>
+    <string name="join_ended">你已经不在这桌了（牌桌结束或你已离开）</string>
+    <string name="join_find_again">重新找桌</string>
+
+    <!-- WI-10 Bluetooth rooms (only in builds with the bleTransport flag on) -->
+    <string name="menu_bluetooth">蓝牙牌桌</string>
+    <string name="bt_title">蓝牙牌桌</string>
+    <string name="bt_intro">不用 Wi-Fi，也不联网：附近的手机打开蓝牙就能同桌打牌。</string>
+    <string name="bt_trial">蓝牙牌桌还在测试中：一桌能坐几人、能连多久，还没有在真机上测过。连不稳时请改用同一 Wi-Fi。</string>
+    <string name="bt_host">用蓝牙开桌</string>
+    <string name="bt_join">用蓝牙找桌</string>
+    <string name="gate_needs_title">需要“附近设备”权限</string>
+    <string name="gate_needs_body_host">开桌时，附近的手机要能通过蓝牙找到你。不会获取你的位置，也不会联网。</string>
+    <string name="gate_needs_body_join">找桌时，要用蓝牙搜索附近的牌桌。不会获取你的位置，也不会联网。</string>
+    <string name="gate_needs_note">只在开桌或加入蓝牙牌桌时询问。单人练习和同一 Wi-Fi 的牌桌不需要这个权限。</string>
+    <string name="gate_continue">继续</string>
+    <string name="gate_denied_title">没有“附近设备”权限，无法使用蓝牙牌桌</string>
+    <string name="gate_denied_body">可以再试一次，或者改用同一 Wi-Fi。</string>
+    <string name="gate_retry">再试一次</string>
+    <string name="gate_settings_path">打开：设置 › 应用 › 掼蛋 › 权限 › 附近设备 › 允许。回到这里后会自动检查。</string>
+    <string name="gate_open_settings">去系统设置</string>
+    <string name="gate_radio_off_title">手机蓝牙已关闭</string>
+    <string name="gate_radio_off_body">打开蓝牙后会自动继续。</string>
+    <string name="gate_enable_radio">打开蓝牙</string>
+    <string name="gate_unsupported_title">这台手机的系统版本不支持蓝牙牌桌</string>
+    <string name="gate_unsupported_body">蓝牙牌桌需要 Android 12 或更新的版本。更早的版本要先给“位置信息”权限才能搜索蓝牙，本应用不申请位置权限。</string>
+    <string name="gate_no_ble_title">这台手机没有低功耗蓝牙</string>
+    <string name="gate_no_ble_body">不能使用蓝牙牌桌。</string>
+    <string name="gate_cannot_host_title">这台手机不能用蓝牙开桌</string>
+    <string name="gate_cannot_host_body">它的蓝牙不能广播，别人找不到这一桌。可以用蓝牙加入别人开的桌。</string>
+    <string name="gate_use_wifi">改用同一 Wi-Fi</string>
+    <string name="gate_solo">单人练习</string>
+    <string name="create_title_bluetooth">用蓝牙开桌</string>
+    <string name="rooms_note_bluetooth">附近的手机打开蓝牙就能找到这一桌，不需要 Wi-Fi。</string>
+    <string name="find_title_bluetooth">附近的蓝牙牌桌</string>
+    <string name="find_searching_bluetooth">正在用蓝牙搜索…请房主保持屏幕亮着</string>
+    <string name="find_none_bluetooth">附近没有找到蓝牙牌桌。请靠近房主的手机，并确认房主已经开桌。仍在继续寻找。</string>
+    <string name="join_failed_bluetooth">蓝牙连接中断。把两台手机靠近一点再试，或者改用同一 Wi-Fi。</string>
+    <string name="room_medium_bluetooth">连接方式：蓝牙</string>
+    <string name="room_medium_lan">连接方式：同一 Wi-Fi</string>
+
+    <!-- B7–B10, D1, D2 lobby -->
+    <string name="lobby_title">%1$s · 桌号 %2$s</string>
+    <string name="lobby_host">房主 %1$s</string>
+    <string name="lobby_seat">%1$s · %2$s</string>
+    <string name="lobby_seat_empty">空座</string>
+    <string name="lobby_seat_ai">AI</string>
+    <string name="lobby_you">（你）</string>
+    <string name="lobby_ready">已准备</string>
+    <string name="lobby_not_ready">未准备</string>
+    <string name="lobby_away">暂时离开，还剩 %1$d 秒</string>
+    <string name="lobby_ready_button">准备</string>
+    <string name="lobby_unready_button">取消准备</string>
+    <string name="lobby_rules_button">查看本桌规则</string>
+    <string name="lobby_hosting_failed">附近的手机找不到这个房间了：请离开后重新开房</string>
+    <string name="lobby_rules_changed">房主改了设置，请先查看规则再准备</string>
+    <string name="lobby_start">开始</string>
+    <string name="lobby_block_empty_seat">还有空座：等人加入，或点空座放一个 AI</string>
+    <string name="lobby_block_not_ready">还有人没准备</string>
+    <string name="lobby_block_away">有人暂时离开</string>
+    <string name="lobby_watchers">观众：%1$s</string>
+    <string name="lobby_no_watchers">没有观众</string>
+    <string name="lobby_settings">修改设置</string>
+    <string name="lobby_settings_save">保存设置</string>
+    <string name="lobby_leave">离开</string>
+    <string name="lobby_waiting_host">等房主开始</string>
+    <string name="seat_put_ai">放一个 AI</string>
+    <string name="seat_remove_ai">移走 AI</string>
+    <string name="seat_swap">和%1$s换座</string>
+
+    <!-- B8 admission -->
+    <string name="admit_title">%1$s 想加入</string>
+    <string name="admit_as_player">坐%1$s</string>
+    <string name="admit_as_watcher">观看</string>
+    <string name="admit_replace">接替%1$s（原来的玩家暂时离开）</string>
+    <string name="admit_code">确认码 %1$s</string>
+    <string name="admit_code_hint">请对方读出他屏幕上的确认码，数字一致才同意</string>
+    <string name="admit_yes">数字一致，同意</string>
+    <string name="admit_no">拒绝</string>
+
+    <!-- D1 rules before ready -->
+    <string name="rules_title">本桌规则</string>
+    <string name="rules_return_max">还贡：最大还 %1$s</string>
+    <string name="rules_return_any">还贡：任意一张</string>
+    <string name="rules_resistance_split">两张大王分在搭档两人手中也可以抗贡</string>
+    <string name="rules_pass_a">过 A：本副要升 %1$d 级</string>
+    <string name="rules_reset">打 A 失败次数用完后退回 %1$s</string>
+    <string name="rules_reporting">报牌：剩 %1$d 张及以下要报</string>
+    <string name="rules_reporting_off">不报牌</string>
+    <string name="rules_absence">断线：宽限 %1$d 秒，之后%2$s</string>
+    <string name="absence_short_substitute">由 AI 代打</string>
+    <string name="absence_short_pause">暂停牌桌</string>
+
+    <!-- G1–G7 watching -->
+    <string name="watch_title">观看 · %1$s</string>
+    <string name="watch_seat">%1$s · %2$s</string>
+    <string name="watch_ask">请求看%1$s的牌</string>
+    <string name="watch_waiting">等待%1$s同意…</string>
+    <string name="watch_following">你正在看%1$s的手牌（只能看）</string>
+    <string name="watch_stop">不看了</string>
+    <string name="watch_denied">%1$s没有同意</string>
+    <string name="watch_revoked">%1$s收回了看牌许可，手牌已从你的手机上清除</string>
+    <string name="watch_player_left">%1$s离开了座位，看牌结束</string>
+    <string name="watch_ended">这桌的设置变了，看%1$s的牌已结束</string>
+    <string name="watch_refused">请求没有被接受（每副只能看一次，或这桌不允许）</string>
+    <string name="watch_follow_disabled">比赛局：不能看任何人的手牌</string>
+    <string name="watch_public_only">你只能看到公开的牌桌信息</string>
+    <string name="watch_holder_away">%1$s（暂时离开）</string>
+
+    <!-- T6, T7, T9, T10, H1, H9 at the table -->
+    <string name="seat_presence_away">暂时离开（%1$d 秒）</string>
+    <string name="seat_presence_stand_in">AI 代打中</string>
+    <string name="seat_presence_awaiting">等玩家回来</string>
+    <string name="seat_presence_ai">AI</string>
+    <string name="follow_request_title">%1$s 想看你的手牌</string>
+    <string name="follow_request_body">同意后对方只能看你的手牌，不能出牌；你随时可以收回。</string>
+    <string name="follow_allow">同意</string>
+    <string name="follow_deny">不同意</string>
+    <string name="menu_watchers">观众</string>
+    <string name="watcher_sees">%1$s（正在看你的牌）</string>
+    <string name="watcher_revoke">收回</string>
+    <string name="host_absent">%1$s 暂时离开</string>
+    <string name="host_absent_grace">%1$s 暂时离开，还剩 %2$d 秒</string>
+    <string name="host_awaiting_player">等 %1$s 回来</string>
+    <string name="host_stand_in">现在让 AI 代打</string>
+    <string name="button_rematch">再来一场</string>
+    <string name="rematch_waiting">等房主决定是否再来一场</string>
+    <string name="leave_host_body_saved">挂起：保留 %1$d 小时，%2$s 前可以从「我开过的牌桌」接着打，大家回到原座。
+结束：所有人退出，存档删除，不能再继续。</string>
+    <string name="leave_host_body_unsaved">结束后所有人退出，不能再继续。</string>
+    <string name="leave_suspend">挂起牌桌</string>
+    <string name="leave_end">结束牌桌</string>
+    <string name="leave_joined_body">你的座位会按本桌规则由 AI 代打或暂停。</string>
+    <string name="leave_watcher_body">离开后不再观看这桌。</string>
+
+    <!-- H3, H6, H7 saved tables -->
+    <string name="saved_title">我开过的牌桌</string>
+    <string name="saved_empty">没有保存的牌桌</string>
+    <string name="saved_unnamed">未命名的牌桌</string>
+    <string name="saved_expires">保留到 %1$s</string>
+    <string name="saved_active">上次意外退出，可以接着打</string>
+    <string name="saved_damaged">存档损坏，不能继续，只能删除</string>
+    <string name="saved_newer">由更新版本的应用保存，请先更新</string>
+    <string name="saved_restore">接着打</string>
+    <string name="saved_delete">删除</string>
+    <string name="saved_loading">正在读取保存的牌桌…</string>
+    <string name="saved_failed">读取保存的牌桌时出错，可以再试一次。</string>
+    <string name="saved_delete_failed">没能删除这张牌桌，可以再试一次。</string>
+    <string name="saved_expired">这张牌桌刚刚过期，已不能接着打。</string>
+    <string name="retry">再试一次</string>
+    <string name="delete_confirm_title">删除「%1$s」？</string>
+    <string name="delete_confirm_body">存档和所有人回到原座的资格都会删除，不能恢复。</string>
+    <string name="delete_confirm_yes">删除</string>
+    <!-- WI-12: local diagnostics in settings (GDN-108). -->
+    <string name="diagnostics_title">诊断信息</string>
+    <string name="diagnostics_note">只在本机生成和显示，应用不会发送。内容只有计数、版本号和规则版本，不含手牌、身份或房间信息。可长按选择复制。</string>
+    <string name="diagnostics_show">生成诊断信息</string>
+    <string name="diagnostics_failed">诊断信息没能生成，可以再试一次。</string>
+    <!-- Win counts in settings, from the local history only (头游所在队赢下一副). -->
+    <string name="history_stats_title">战绩</string>
+    <string name="history_stats_none">还没有对局记录。</string>
+    <string name="history_stats_matches">共 %1$d 场：我方胜 %2$d 场，对方胜 %3$d 场，未分胜负 %4$d 场</string>
+    <string name="history_stats_deals">赢下的副数（头游所在队）：我方 %1$d 副，对方 %2$d 副</string>
+    <string name="history_stats_note">只统计本机记录里你上场打的牌局，观战不计；没打完或中途离开的一场算未分胜负。</string>
+</resources>

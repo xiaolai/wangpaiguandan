@@ -1,0 +1,550 @@
+{
+  "schema": 1,
+  "about": "WI-12 / GDN-107 license inventory of the release APK. LicenseInventoryTest checks it against the components Gradle resolves for releaseRuntimeClasspath (app/build/licenses/release-runtime-components.txt) and against the files the app packages. 'declared' is the license name the component's POM declares (or its parent POM's). MIT = the project's own license, recorded by the project owner on 2026-10-16 (release/PROJECT-LICENSE.md, LICENSE). OWNER-DECISION = material supplied to the project whose distribution terms the owner must record.",
+  "projectLicense": "release/PROJECT-LICENSE.md",
+  "firstParty": [
+    {
+      "component": "project :core",
+      "license": "MIT",
+      "origin": "first-party module of this repository"
+    },
+    {
+      "component": "project :session",
+      "license": "MIT",
+      "origin": "first-party module of this repository"
+    }
+  ],
+  "dependencies": [
+    {
+      "module": "androidx.activity:activity-compose:1.13.0",
+      "license": "Apache-2.0",
+      "declared": "The Apache Software License, Version 2.0"
+    },
+    {
+      "module": "androidx.activity:activity-ktx:1.13.0",
+      "license": "Apache-2.0",
+      "declared": "The Apache Software License, Version 2.0"
+    },
+    {
+      "module": "androidx.activity:activity:1.13.0",
+      "license": "Apache-2.0",
+      "declared": "The Apache Software License, Version 2.0"
+    },
+    {
+      "module": "androidx.annotation:annotation-experimental:1.4.1",
+      "license": "Apache-2.0",
+      "declared": "The Apache Software License, Version 2.0"
+    },
+    {
+      "module": "androidx.annotation:annotation-jvm:1.9.1",
+      "license": "Apache-2.0",
+      "declared": "The Apache Software License, Version 2.0"
+    },
+    {
+      "module": "androidx.annotation:annotation:1.9.1",
+      "license": "Apache-2.0",
+      "declared": "The Apache Software License, Version 2.0"
+    },
+    {
+      "module": "androidx.arch.core:core-common:2.2.0",
+      "license": "Apache-2.0",
+      "declared": "The Apache Software License, Version 2.0"
+    },
+    {
+      "module": "androidx.arch.core:core-runtime:2.2.0",
+      "license": "Apache-2.0",
+      "declared": "The Apache Software License, Version 2.0"
+    },
+    {
+      "module": "androidx.autofill:autofill:1.0.0",
+      "license": "Apache-2.0",
+      "declared": "The Apache Software License, Version 2.0"
+    },
+    {
+      "module": "androidx.collection:collection-jvm:1.5.0",
+      "license": "Apache-2.0",
+      "declared": "The Apache Software License, Version 2.0"
+    },
+    {
+      "module": "androidx.collection:collection-ktx:1.5.0",
+      "license": "Apache-2.0",
+      "declared": "The Apache Software License, Version 2.0"
+    },
+    {
+      "module": "androidx.collection:collection:1.5.0",
+      "license": "Apache-2.0",
+      "declared": "The Apache Software License, Version 2.0"
+    },
+    {
+      "module": "androidx.compose.animation:animation-android:1.8.3",
+      "license": "Apache-2.0",
+      "declared": "The Apache Software License, Version 2.0"
+    },
+    {
+      "module": "androidx.compose.animation:animation-core-android:1.8.3",
+      "license": "Apache-2.0",
+      "declared": "The Apache Software License, Version 2.0"
+    },
+    {
+      "module": "androidx.compose.animation:animation-core:1.8.3",
+      "license": "Apache-2.0",
+      "declared": "The Apache Software License, Version 2.0"
+    },
+    {
+      "module": "androidx.compose.animation:animation:1.8.3",
+      "license": "Apache-2.0",
+      "declared": "The Apache Software License, Version 2.0"
+    },
+    {
+      "module": "androidx.compose.foundation:foundation-android:1.8.3",
+      "license": "Apache-2.0",
+      "declared": "The Apache Software License, Version 2.0"
+    },
+    {
+      "module": "androidx.compose.foundation:foundation-layout-android:1.8.3",
+      "license": "Apache-2.0",
+      "declared": "The Apache Software License, Version 2.0"
+    },
+    {
+      "module": "androidx.compose.foundation:foundation-layout:1.8.3",
+      "license": "Apache-2.0",
+      "declared": "The Apache Software License, Version 2.0"
+    },
+    {
+      "module": "androidx.compose.foundation:foundation:1.8.3",
+      "license": "Apache-2.0",
+      "declared": "The Apache Software License, Version 2.0"
+    },
+    {
+      "module": "androidx.compose.material3:material3-android:1.3.2",
+      "license": "Apache-2.0",
+      "declared": "The Apache Software License, Version 2.0"
+    },
+    {
+      "module": "androidx.compose.material3:material3:1.3.2",
+      "license": "Apache-2.0",
+      "declared": "The Apache Software License, Version 2.0"
+    },
+    {
+      "module": "androidx.compose.material:material-icons-core-android:1.7.8",
+      "license": "Apache-2.0",
+      "declared": "The Apache Software License, Version 2.0"
+    },
+    {
+      "module": "androidx.compose.material:material-icons-core:1.7.8",
+      "license": "Apache-2.0",
+      "declared": "The Apache Software License, Version 2.0"
+    },
+    {
+      "module": "androidx.compose.material:material-ripple-android:1.8.3",
+      "license": "Apache-2.0",
+      "declared": "The Apache Software License, Version 2.0"
+    },
+    {
+      "module": "androidx.compose.material:material-ripple:1.8.3",
+      "license": "Apache-2.0",
+      "declared": "The Apache Software License, Version 2.0"
+    },
+    {
+      "module": "androidx.compose.runtime:runtime-android:1.9.2",
+      "license": "Apache-2.0",
+      "declared": "The Apache Software License, Version 2.0"
+    },
+    {
+      "module": "androidx.compose.runtime:runtime-annotation-android:1.9.2",
+      "license": "Apache-2.0",
+      "declared": "The Apache Software License, Version 2.0"
+    },
+    {
+      "module": "androidx.compose.runtime:runtime-annotation:1.9.2",
+      "license": "Apache-2.0",
+      "declared": "The Apache Software License, Version 2.0"
+    },
+    {
+      "module": "androidx.compose.runtime:runtime-saveable-android:1.9.2",
+      "license": "Apache-2.0",
+      "declared": "The Apache Software License, Version 2.0"
+    },
+    {
+      "module": "androidx.compose.runtime:runtime-saveable:1.9.2",
+      "license": "Apache-2.0",
+      "declared": "The Apache Software License, Version 2.0"
+    },
+    {
+      "module": "androidx.compose.runtime:runtime:1.9.2",
+      "license": "Apache-2.0",
+      "declared": "The Apache Software License, Version 2.0"
+    },
+    {
+      "module": "androidx.compose.ui:ui-android:1.9.2",
+      "license": "Apache-2.0",
+      "declared": "The Apache Software License, Version 2.0"
+    },
+    {
+      "module": "androidx.compose.ui:ui-geometry-android:1.9.2",
+      "license": "Apache-2.0",
+      "declared": "The Apache Software License, Version 2.0"
+    },
+    {
+      "module": "androidx.compose.ui:ui-geometry:1.9.2",
+      "license": "Apache-2.0",
+      "declared": "The Apache Software License, Version 2.0"
+    },
+    {
+      "module": "androidx.compose.ui:ui-graphics-android:1.9.2",
+      "license": "Apache-2.0",
+      "declared": "The Apache Software License, Version 2.0"
+    },
+    {
+      "module": "androidx.compose.ui:ui-graphics:1.9.2",
+      "license": "Apache-2.0",
+      "declared": "The Apache Software License, Version 2.0"
+    },
+    {
+      "module": "androidx.compose.ui:ui-text-android:1.9.2",
+      "license": "Apache-2.0",
+      "declared": "The Apache Software License, Version 2.0"
+    },
+    {
+      "module": "androidx.compose.ui:ui-text:1.9.2",
+      "license": "Apache-2.0",
+      "declared": "The Apache Software License, Version 2.0"
+    },
+    {
+      "module": "androidx.compose.ui:ui-tooling-preview-android:1.9.2",
+      "license": "Apache-2.0",
+      "declared": "The Apache Software License, Version 2.0"
+    },
+    {
+      "module": "androidx.compose.ui:ui-tooling-preview:1.9.2",
+      "license": "Apache-2.0",
+      "declared": "The Apache Software License, Version 2.0"
+    },
+    {
+      "module": "androidx.compose.ui:ui-unit-android:1.9.2",
+      "license": "Apache-2.0",
+      "declared": "The Apache Software License, Version 2.0"
+    },
+    {
+      "module": "androidx.compose.ui:ui-unit:1.9.2",
+      "license": "Apache-2.0",
+      "declared": "The Apache Software License, Version 2.0"
+    },
+    {
+      "module": "androidx.compose.ui:ui-util-android:1.9.2",
+      "license": "Apache-2.0",
+      "declared": "The Apache Software License, Version 2.0"
+    },
+    {
+      "module": "androidx.compose.ui:ui-util:1.9.2",
+      "license": "Apache-2.0",
+      "declared": "The Apache Software License, Version 2.0"
+    },
+    {
+      "module": "androidx.compose.ui:ui:1.9.2",
+      "license": "Apache-2.0",
+      "declared": "The Apache Software License, Version 2.0"
+    },
+    {
+      "module": "androidx.compose:compose-bom:2025.06.01",
+      "license": "Apache-2.0",
+      "declared": "The Apache Software License, Version 2.0"
+    },
+    {
+      "module": "androidx.concurrent:concurrent-futures:1.1.0",
+      "license": "Apache-2.0",
+      "declared": "The Apache Software License, Version 2.0"
+    },
+    {
+      "module": "androidx.core:core-ktx:1.18.0",
+      "license": "Apache-2.0",
+      "declared": "The Apache Software License, Version 2.0"
+    },
+    {
+      "module": "androidx.core:core-viewtree:1.0.0",
+      "license": "Apache-2.0",
+      "declared": "The Apache Software License, Version 2.0"
+    },
+    {
+      "module": "androidx.core:core:1.18.0",
+      "license": "Apache-2.0",
+      "declared": "The Apache Software License, Version 2.0"
+    },
+    {
+      "module": "androidx.customview:customview-poolingcontainer:1.0.0",
+      "license": "Apache-2.0",
+      "declared": "The Apache Software License, Version 2.0"
+    },
+    {
+      "module": "androidx.emoji2:emoji2:1.4.0",
+      "license": "Apache-2.0",
+      "declared": "The Apache Software License, Version 2.0"
+    },
+    {
+      "module": "androidx.graphics:graphics-path:1.0.1",
+      "license": "Apache-2.0",
+      "declared": "The Apache Software License, Version 2.0"
+    },
+    {
+      "module": "androidx.interpolator:interpolator:1.0.0",
+      "license": "Apache-2.0",
+      "declared": "The Apache Software License, Version 2.0"
+    },
+    {
+      "module": "androidx.lifecycle:lifecycle-common-java8:2.10.0",
+      "license": "Apache-2.0",
+      "declared": "The Apache Software License, Version 2.0"
+    },
+    {
+      "module": "androidx.lifecycle:lifecycle-common-jvm:2.10.0",
+      "license": "Apache-2.0",
+      "declared": "The Apache Software License, Version 2.0"
+    },
+    {
+      "module": "androidx.lifecycle:lifecycle-common:2.10.0",
+      "license": "Apache-2.0",
+      "declared": "The Apache Software License, Version 2.0"
+    },
+    {
+      "module": "androidx.lifecycle:lifecycle-livedata-core:2.10.0",
+      "license": "Apache-2.0",
+      "declared": "The Apache Software License, Version 2.0"
+    },
+    {
+      "module": "androidx.lifecycle:lifecycle-process:2.10.0",
+      "license": "Apache-2.0",
+      "declared": "The Apache Software License, Version 2.0"
+    },
+    {
+      "module": "androidx.lifecycle:lifecycle-runtime-android:2.10.0",
+      "license": "Apache-2.0",
+      "declared": "The Apache Software License, Version 2.0"
+    },
+    {
+      "module": "androidx.lifecycle:lifecycle-runtime-compose-android:2.10.0",
+      "license": "Apache-2.0",
+      "declared": "The Apache Software License, Version 2.0"
+    },
+    {
+      "module": "androidx.lifecycle:lifecycle-runtime-compose:2.10.0",
+      "license": "Apache-2.0",
+      "declared": "The Apache Software License, Version 2.0"
+    },
+    {
+      "module": "androidx.lifecycle:lifecycle-runtime-ktx-android:2.10.0",
+      "license": "Apache-2.0",
+      "declared": "The Apache Software License, Version 2.0"
+    },
+    {
+      "module": "androidx.lifecycle:lifecycle-runtime-ktx:2.10.0",
+      "license": "Apache-2.0",
+      "declared": "The Apache Software License, Version 2.0"
+    },
+    {
+      "module": "androidx.lifecycle:lifecycle-runtime:2.10.0",
+      "license": "Apache-2.0",
+      "declared": "The Apache Software License, Version 2.0"
+    },
+    {
+      "module": "androidx.lifecycle:lifecycle-viewmodel-android:2.10.0",
+      "license": "Apache-2.0",
+      "declared": "The Apache Software License, Version 2.0"
+    },
+    {
+      "module": "androidx.lifecycle:lifecycle-viewmodel-ktx:2.10.0",
+      "license": "Apache-2.0",
+      "declared": "The Apache Software License, Version 2.0"
+    },
+    {
+      "module": "androidx.lifecycle:lifecycle-viewmodel-savedstate-android:2.10.0",
+      "license": "Apache-2.0",
+      "declared": "The Apache Software License, Version 2.0"
+    },
+    {
+      "module": "androidx.lifecycle:lifecycle-viewmodel-savedstate:2.10.0",
+      "license": "Apache-2.0",
+      "declared": "The Apache Software License, Version 2.0"
+    },
+    {
+      "module": "androidx.lifecycle:lifecycle-viewmodel:2.10.0",
+      "license": "Apache-2.0",
+      "declared": "The Apache Software License, Version 2.0"
+    },
+    {
+      "module": "androidx.navigationevent:navigationevent-android:1.0.0",
+      "license": "Apache-2.0",
+      "declared": "The Apache Software License, Version 2.0"
+    },
+    {
+      "module": "androidx.navigationevent:navigationevent-compose-android:1.0.0",
+      "license": "Apache-2.0",
+      "declared": "The Apache Software License, Version 2.0"
+    },
+    {
+      "module": "androidx.navigationevent:navigationevent-compose:1.0.0",
+      "license": "Apache-2.0",
+      "declared": "The Apache Software License, Version 2.0"
+    },
+    {
+      "module": "androidx.navigationevent:navigationevent:1.0.0",
+      "license": "Apache-2.0",
+      "declared": "The Apache Software License, Version 2.0"
+    },
+    {
+      "module": "androidx.profileinstaller:profileinstaller:1.4.0",
+      "license": "Apache-2.0",
+      "declared": "The Apache Software License, Version 2.0"
+    },
+    {
+      "module": "androidx.savedstate:savedstate-android:1.4.0",
+      "license": "Apache-2.0",
+      "declared": "The Apache Software License, Version 2.0"
+    },
+    {
+      "module": "androidx.savedstate:savedstate-compose-android:1.4.0",
+      "license": "Apache-2.0",
+      "declared": "The Apache Software License, Version 2.0"
+    },
+    {
+      "module": "androidx.savedstate:savedstate-compose:1.4.0",
+      "license": "Apache-2.0",
+      "declared": "The Apache Software License, Version 2.0"
+    },
+    {
+      "module": "androidx.savedstate:savedstate-ktx:1.4.0",
+      "license": "Apache-2.0",
+      "declared": "The Apache Software License, Version 2.0"
+    },
+    {
+      "module": "androidx.savedstate:savedstate:1.4.0",
+      "license": "Apache-2.0",
+      "declared": "The Apache Software License, Version 2.0"
+    },
+    {
+      "module": "androidx.startup:startup-runtime:1.1.1",
+      "license": "Apache-2.0",
+      "declared": "The Apache Software License, Version 2.0"
+    },
+    {
+      "module": "androidx.tracing:tracing:1.2.0",
+      "license": "Apache-2.0",
+      "declared": "The Apache Software License, Version 2.0"
+    },
+    {
+      "module": "androidx.versionedparcelable:versionedparcelable:1.1.1",
+      "license": "Apache-2.0",
+      "declared": "The Apache Software License, Version 2.0"
+    },
+    {
+      "module": "com.google.guava:listenablefuture:1.0",
+      "license": "Apache-2.0",
+      "declared": "The Apache Software License, Version 2.0"
+    },
+    {
+      "module": "org.jetbrains.kotlin:kotlin-stdlib-common:2.4.21",
+      "license": "Apache-2.0",
+      "declared": "Apache-2.0"
+    },
+    {
+      "module": "org.jetbrains.kotlin:kotlin-stdlib:2.4.21",
+      "license": "Apache-2.0",
+      "declared": "Apache-2.0"
+    },
+    {
+      "module": "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.11.0",
+      "license": "Apache-2.0",
+      "declared": "Apache-2.0"
+    },
+    {
+      "module": "org.jetbrains.kotlinx:kotlinx-coroutines-bom:1.11.0",
+      "license": "Apache-2.0",
+      "declared": "Apache-2.0"
+    },
+    {
+      "module": "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.11.0",
+      "license": "Apache-2.0",
+      "declared": "Apache-2.0"
+    },
+    {
+      "module": "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0",
+      "license": "Apache-2.0",
+      "declared": "Apache-2.0"
+    },
+    {
+      "module": "org.jetbrains.kotlinx:kotlinx-serialization-bom:1.11.0",
+      "license": "Apache-2.0",
+      "declared": "Apache-2.0"
+    },
+    {
+      "module": "org.jetbrains.kotlinx:kotlinx-serialization-core-jvm:1.11.0",
+      "license": "Apache-2.0",
+      "declared": "Apache-2.0"
+    },
+    {
+      "module": "org.jetbrains.kotlinx:kotlinx-serialization-core:1.11.0",
+      "license": "Apache-2.0",
+      "declared": "Apache-2.0"
+    },
+    {
+      "module": "org.jetbrains.kotlinx:kotlinx-serialization-json-jvm:1.11.0",
+      "license": "Apache-2.0",
+      "declared": "Apache-2.0"
+    },
+    {
+      "module": "org.jetbrains.kotlinx:kotlinx-serialization-json:1.11.0",
+      "license": "Apache-2.0",
+      "declared": "Apache-2.0"
+    },
+    {
+      "module": "org.jetbrains:annotations:23.0.0",
+      "license": "Apache-2.0",
+      "declared": "The Apache Software License, Version 2.0"
+    },
+    {
+      "module": "org.jspecify:jspecify:1.0.0",
+      "license": "Apache-2.0",
+      "declared": "The Apache License, Version 2.0"
+    }
+  ],
+  "assets": [
+    {
+      "path": "rules/profiles/P1-base-v1.json",
+      "license": "MIT",
+      "origin": "project-authored rule profile, packaged as an APK asset (app/build.gradle.kts)"
+    },
+    {
+      "path": "rules/profiles/M1-match-v1.json",
+      "license": "MIT",
+      "origin": "project-authored match profile, packaged as an APK asset (app/build.gradle.kts)"
+    },
+    {
+      "path": "app/src/main/res/drawable/ic_launcher.xml",
+      "license": "MIT",
+      "origin": "project-authored vector launcher icon"
+    },
+    {
+      "path": "app/src/main/res/values/strings.xml",
+      "license": "MIT",
+      "origin": "project-authored UI text"
+    },
+    {
+      "path": "app/src/main/res/values/themes.xml",
+      "license": "MIT",
+      "origin": "project-authored theme"
+    },
+    {
+      "path": "app/src/main/res/xml/data_extraction_rules.xml",
+      "license": "MIT",
+      "origin": "project-authored backup exclusion rules"
+    },
+    {
+      "path": "app/src/main/kotlin/cn/wpgd/app/ui/DesignTokens.kt",
+      "license": "OWNER-DECISION",
+      "origin": "colors and scales generated by tools/generate_design_tokens.py from design/tokens.json, extracted from the design team's 'Guandan mobile redesign.zip' (design/original/)"
+    }
+  ],
+  "fonts": [],
+  "fontsNote": "No font file is bundled: the app uses the system CJK and serif fonts (design/tokens.json font_resolution). A bundled font must be added here with its license before it ships (plan section 3, Fonts).",
+  "aiAssets": [],
+  "aiAssetsNote": "No AI model or data file is shipped. The AI (core.ai, policy baseline-heuristic 1.0.0) is project-authored code under the project license (MIT) (GDN-064)."
+}

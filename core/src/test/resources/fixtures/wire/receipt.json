@@ -1,0 +1,106 @@
+{
+    "schema": 1,
+    "protocolVersion": 3,
+    "description": "Host deliveries: receipt (keyed digest of the issuer's own projection), snapshot, follow_snapshot, status.",
+    "cases": [
+        {
+            "name": "receipt",
+            "wire": {
+                "type": "receipt",
+                "epoch": 3,
+                "commandId": "c-1",
+                "revision": 18,
+                "digest": "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8"
+            }
+        },
+        {
+            "name": "snapshot",
+            "wire": {
+                "type": "snapshot",
+                "epoch": 3,
+                "revision": 18,
+                "view": "{\"schemaVersion\":1}"
+            }
+        },
+        {
+            "name": "follow-snapshot",
+            "wire": {
+                "type": "follow_snapshot",
+                "epoch": 3,
+                "revision": 18,
+                "grantId": "g1",
+                "grantRevision": 2,
+                "seat": "NORTH",
+                "view": "{\"schemaVersion\":1}"
+            }
+        },
+        {
+            "name": "status",
+            "wire": {
+                "type": "status",
+                "epoch": 3,
+                "statusRevision": 4,
+                "grants": [
+                    {
+                        "grantId": "g1",
+                        "observerName": "watcher",
+                        "seat": "NORTH",
+                        "status": "ACTIVE",
+                        "grantRevision": 2,
+                        "playerName": "player",
+                        "end": null
+                    }
+                ],
+                "room": {
+                    "lobby": false,
+                    "paused": false,
+                    "settings": {
+                        "policy": {
+                            "mode": "FRIENDLY",
+                            "hints": true,
+                            "privateFollow": true
+                        },
+                        "graceMs": 30000,
+                        "afterGrace": "SUBSTITUTE",
+                        "afterLeave": "SUBSTITUTE"
+                    },
+                    "settingsRevision": 2,
+                    "seats": [
+                        {
+                            "seat": "SOUTH",
+                            "occupant": "HUMAN",
+                            "nickname": "south",
+                            "ready": true,
+                            "graceRemainingMs": null
+                        },
+                        {
+                            "seat": "EAST",
+                            "occupant": "ABSENT",
+                            "nickname": "east",
+                            "ready": false,
+                            "graceRemainingMs": 12500
+                        },
+                        {
+                            "seat": "NORTH",
+                            "occupant": "STAND_IN",
+                            "nickname": "north",
+                            "ready": false,
+                            "graceRemainingMs": null
+                        },
+                        {
+                            "seat": "WEST",
+                            "occupant": "AI",
+                            "nickname": null,
+                            "ready": false,
+                            "graceRemainingMs": null
+                        }
+                    ],
+                    "observers": [
+                        "watcher"
+                    ],
+                    "yourSeat": "NORTH"
+                }
+            }
+        }
+    ]
+}

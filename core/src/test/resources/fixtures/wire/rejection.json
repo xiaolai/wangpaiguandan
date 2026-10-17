@@ -1,0 +1,62 @@
+{
+    "schema": 1,
+    "protocolVersion": 3,
+    "description": "Typed rejection receipts (audit A20).",
+    "cases": [
+        {
+            "name": "rule",
+            "wire": {
+                "type": "rejection",
+                "epoch": 3,
+                "commandId": "c-3",
+                "revision": 18,
+                "code": "RULE",
+                "reason": "Deal.WrongSeat"
+            }
+        },
+        {
+            "name": "stale-revision",
+            "wire": {
+                "type": "rejection",
+                "epoch": 3,
+                "commandId": "c-4",
+                "revision": 19,
+                "code": "STALE_REVISION",
+                "reason": "now 19"
+            }
+        },
+        {
+            "name": "not-a-player",
+            "wire": {
+                "type": "rejection",
+                "epoch": 3,
+                "commandId": "c-5",
+                "revision": 19,
+                "code": "NOT_A_PLAYER",
+                "reason": "observers cannot act"
+            }
+        },
+        {
+            "name": "stale-epoch",
+            "wire": {
+                "type": "rejection",
+                "epoch": 3,
+                "commandId": "c-6",
+                "revision": 19,
+                "code": "STALE_EPOCH",
+                "reason": "epoch 2"
+            }
+        },
+        {
+            "name": "one-view-per-deal",
+            "wire": {
+                "type": "rejection",
+                "epoch": 3,
+                "commandId": "c-7",
+                "revision": 19,
+                "code": "ONE_VIEW_PER_DEAL",
+                "reason": "viewed SOUTH this deal"
+            }
+        }
+    ]
+}
