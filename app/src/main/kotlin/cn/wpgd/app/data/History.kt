@@ -57,7 +57,10 @@ class HistoryRepository(private val store: KeyValueStore) {
         // by (table, match number, deal number): a rematch numbers its deals from 1 again under the next
         // match number, so its deal 1 is a new entry even for a player who missed the match boundary.
         if (entries().any { it.tableId == entry.tableId && it.matchNumber == entry.matchNumber && it.dealNumber == entry.dealNumber }) return
-        val seq = (store.get(NEXT)?.toLongOrNull() ?: 0L)
+        // Above every stored entry as well as the counter: a missing, malformed or stale counter (a crash
+        // between the entry write and the counter write) never hands out a number an entry still holds.
+        val highest = entryKeys().mapNotNull { it.removePrefix(PREFIX).toLongOrNull() }.maxOrNull()
+        val seq = maxOf(store.get(NEXT)?.toLongOrNull() ?: 0L, highest?.plus(1) ?: 0L)
         store.put(key(seq), encode(entry))
         store.put(NEXT, (seq + 1).toString())
         val keys = entryKeys()
@@ -80,9 +83,15 @@ class HistoryRepository(private val store: KeyValueStore) {
 
     private fun key(seq: Long) = "$PREFIX$seq"
 
-    private fun encode(e: HistoryEntry) = listOf(
-        VERSION, e.tableId, e.matchNumber?.toString() ?: "-", e.dealNumber, e.dealLevel, e.ownTeamWon?.toString() ?: "-", e.gain, e.matchOver, e.settledAtMillis,
-    ).joinToString(SEP)
+    /**
+     * v2 always carries a match number. An entry without one (read from v1, appended again) is written
+     * in v1, the one format that has none, so it reads back exactly instead of being refused (audit #10).
+     */
+    private fun encode(e: HistoryEntry): String {
+        val tail = listOf(e.dealNumber, e.dealLevel, e.ownTeamWon?.toString() ?: "-", e.gain, e.matchOver, e.settledAtMillis)
+        val head = if (e.matchNumber == null) listOf(VERSION_1, e.tableId) else listOf(VERSION, e.tableId, e.matchNumber)
+        return (head + tail).joinToString(SEP)
+    }
 
     /** Format v2 carries the match number; a v1 entry (before match numbers) reads with none, never a guessed one. */
     private fun decode(s: String): HistoryEntry? {

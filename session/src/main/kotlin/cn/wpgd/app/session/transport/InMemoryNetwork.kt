@@ -118,12 +118,13 @@ class InMemoryLink internal constructor(
         val delay = faults.latencyMs + (if (faults.jitterMs > 0) r.nextLong(faults.jitterMs + 1) else 0) +
             (if (r.nextDouble() < faults.reorderRate) r.nextLong(faults.reorderDelayMs + 1) else 0)
         val payload = if (r.nextDouble() < faults.truncateRate && copy.size > 1) copy.copyOf(r.nextInt(copy.size)) else copy
-        deliver(to, payload, delay)
-        if (r.nextDouble() < faults.duplicateRate) deliver(to, payload.copyOf(), delay + 1 + r.nextLong(faults.reorderDelayMs + 1))
+        deliver(from, to, payload, delay)
+        if (r.nextDouble() < faults.duplicateRate) deliver(from, to, payload.copyOf(), delay + 1 + r.nextLong(faults.reorderDelayMs + 1))
         return true
     }
 
-    private fun deliver(to: InMemoryEndpoint, bytes: ByteArray, delay: Long) {
+    private fun deliver(from: InMemoryEndpoint, to: InMemoryEndpoint, bytes: ByteArray, delay: Long) {
+        from.lastArrivalAt = maxOf(from.lastArrivalAt, scheduler.now + delay)
         scheduler.schedule(delay) {
             if (blackholed || disconnected) return@schedule
             if (to.closed && !deliverAfterClose) return@schedule
@@ -136,8 +137,18 @@ class InMemoryLink internal constructor(
         end.closed = true
         val other = if (end.isHost) clientEnd else hostEnd
         val faults = if (end.isHost) faultsToClient else faultsToHost
-        scheduler.schedule(faults.latencyMs) {
-            if (!blackholed && !other.closed) other.listener?.onClosed()
+        // A graceful close follows every chunk this end already handed over (Transport.close): the peer
+        // learns of it no earlier than the last of them arrives. A scheduled task at the same time runs
+        // after them, being queued later. disconnect() stays abrupt.
+        val now = scheduler.now
+        val delay = if (end.lastArrivalAt > now) maxOf(faults.latencyMs, end.lastArrivalAt - now) else faults.latencyMs
+        scheduler.schedule(delay) {
+            if (!blackholed && !other.closed) {
+                // The connection is gone for the other end too: mark it terminal before telling it, so
+                // nothing it sends from now on (even from inside onClosed) is accepted.
+                other.closed = true
+                other.listener?.onClosed()
+            }
         }
     }
 }
@@ -147,6 +158,9 @@ class InMemoryEndpoint internal constructor(private val link: InMemoryLink, inte
     internal var closed = false
     internal var inFlight = 0
     internal var wantsWritable = false
+
+    /** Virtual time at which the last chunk this end sent is due to arrive (a graceful close waits for it). */
+    internal var lastArrivalAt = Long.MIN_VALUE
 
     /** The listener its owner installed; tests replay stale callbacks through it. */
     val installedListener: TransportListener? get() = listener

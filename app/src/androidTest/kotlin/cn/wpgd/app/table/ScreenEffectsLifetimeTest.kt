@@ -118,8 +118,8 @@ class ScreenEffectsLifetimeTest {
             WatchSeatUi(s, s.team, "阿明", Occupant.HUMAN, false, if (done) SeatLastAction.Finished(1) else SeatLastAction.None, if (done) 1 else null, null, false)
         }
         val w = WatchUiState(
-            null, MatchPhase.PLAYING, 1, 2, emptyMap(), seats, TrickDisplay.EMPTY, TurnClarity.NONE, null, null, null, null,
-            false, false, emptyList(), null, ConnectionState.CONNECTED, RoomCondition.ACTIVE,
+            null, MatchPhase.PLAYING, 1, 2, emptyMap(), seats, TrickDisplay.EMPTY, TurnClarity.NONE, null, null, null,
+            false, emptyList(), null, ConnectionState.CONNECTED, RoomCondition.ACTIVE,
         )
         val session = Proxy.newProxyInstance(RoomSession::class.java.classLoader, arrayOf(RoomSession::class.java)) { _, _, _ -> null } as RoomSession
         rule.setContent { WpgdTheme { WatchScreen(w, session, onDismissNotice = {}, onLeave = {}) } }

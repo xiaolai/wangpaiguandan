@@ -82,6 +82,8 @@ class NetworkAddressLookup(
         private fun outcome(r: LookupResult, transport: Transport): AddressLookupOutcome = when (r) {
             is LookupResult.Found -> advertOf(r.listing)?.let { AddressLookupOutcome.Found(it) } ?: AddressLookupOutcome.Failed(LookupFailure.NOT_A_ROOM)
             LookupResult.NotListed -> AddressLookupOutcome.Failed(LookupFailure.NO_ROOM)
+            // CLOSED's message already names "too many connections"; the host answered that it is full.
+            LookupResult.Full -> AddressLookupOutcome.Failed(LookupFailure.CLOSED)
             LookupResult.NotARoom -> AddressLookupOutcome.Failed(LookupFailure.NOT_A_ROOM)
             LookupResult.TimedOut -> AddressLookupOutcome.Failed(LookupFailure.TIMEOUT)
             LookupResult.Closed -> AddressLookupOutcome.Failed(closedBecause(transport as? ConnectReport))

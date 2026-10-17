@@ -1,9 +1,11 @@
 package cn.wpgd.app.core.rules
 
+import cn.wpgd.app.core.readOnlyCopy
+
 /** A fixed set of known options. Construction fails fast on a duplicate or malformed id. */
 class OptionRegistry(options: List<RuleOption<*>>) {
-    /** A snapshot of the constructor's list, so the caller cannot change the registry afterwards. */
-    val all: List<RuleOption<*>> = options.toList()
+    /** A read-only snapshot of the constructor's list: neither the caller nor a reader can change the registry afterwards. */
+    val all: List<RuleOption<*>> = options.readOnlyCopy()
 
     init {
         val ids = all.map { it.id }
@@ -15,7 +17,7 @@ class OptionRegistry(options: List<RuleOption<*>>) {
     private val byId: Map<String, RuleOption<*>> = all.associateBy { it.id }
 
     /** Options that are not retired. Their effective values define a profile's rules. */
-    val active: List<RuleOption<*>> = all.filter { it.deprecatedSince == null }
+    val active: List<RuleOption<*>> = all.filter { it.deprecatedSince == null }.readOnlyCopy()
 
     operator fun get(id: String): RuleOption<*>? = byId[id]
 

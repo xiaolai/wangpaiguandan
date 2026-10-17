@@ -323,33 +323,39 @@ class SessionOwner(private val deps: OwnerDependencies) : RoomSession {
 
     private fun begin(create: () -> Unit): Boolean {
         synchronized(lifecycle) {
-            if (closed.get() || !started.compareAndSet(false, true)) return false
+            // A failed owner stays failed: starting would report RUNNING over a table that never opens.
+            if (closed.get() || failure.get() != null || !started.compareAndSet(false, true)) return false
             stateFlow.update { it.copy(lifecycle = OwnerLifecycle.RUNNING) }
-            loop.post { onLoop { create() } }
+            // A failure before the loop gets here (a task queued ahead of it threw) opens no table.
+            loop.post { onLoop { if (failure.get() == null) create() else publish() } }
         }
         return true
     }
 
     override fun submit(body: CommandBody): SubmitResult {
-        if (closed.get()) return SubmitResult.Refused(SubmitRefusal.SHUT_DOWN)
-        if (failure.get() != null) return SubmitResult.Refused(SubmitRefusal.FAILED)
-        val t = stateFlow.value.table ?: return SubmitResult.Refused(SubmitRefusal.NO_TABLE)
-        if (t.connection != ConnectionState.CONNECTED) return SubmitResult.Refused(SubmitRefusal.NOT_CONNECTED)
-        if (t.room != RoomCondition.ACTIVE) return SubmitResult.Refused(SubmitRefusal.ROOM_NOT_ACTIVE)
-        val p = PendingCommand(tickets.incrementAndGet(), body, t.revision, t.epoch)
-        // The single guard against duplicate commands (GDN-050): one pending command at a time.
-        if (!pending.compareAndSet(null, p)) return SubmitResult.Refused(SubmitRefusal.ALREADY_PENDING)
-        rejection.set(null)
-        refreshLocal()
-        loop.post { onLoop { send(p) } }
-        return SubmitResult.Sent(p.ticket)
+        // Under the lifecycle lock: a shutdown cannot close between these checks and the post, so a
+        // command reported Sent is always queued ahead of the teardown.
+        synchronized(lifecycle) {
+            if (closed.get()) return SubmitResult.Refused(SubmitRefusal.SHUT_DOWN)
+            if (failure.get() != null) return SubmitResult.Refused(SubmitRefusal.FAILED)
+            val t = stateFlow.value.table ?: return SubmitResult.Refused(SubmitRefusal.NO_TABLE)
+            if (t.connection != ConnectionState.CONNECTED) return SubmitResult.Refused(SubmitRefusal.NOT_CONNECTED)
+            if (t.room != RoomCondition.ACTIVE) return SubmitResult.Refused(SubmitRefusal.ROOM_NOT_ACTIVE)
+            val p = PendingCommand(tickets.incrementAndGet(), body, t.revision, t.epoch)
+            // The single guard against duplicate commands (GDN-050): one pending command at a time.
+            if (!pending.compareAndSet(null, p)) return SubmitResult.Refused(SubmitRefusal.ALREADY_PENDING)
+            rejection.set(null)
+            refreshLocal()
+            loop.post { onLoop { send(p) } }
+            return SubmitResult.Sent(p.ticket)
+        }
     }
 
     override fun continueToNextDeal(): Boolean {
         val t = stateFlow.value.table ?: return false
         val view = t.view ?: return false
-        if (closed.get() || !t.hosting || view.match.phase != MatchPhase.AWAITING_DEAL || view.match.dealNumber == 0 || t.room != RoomCondition.ACTIVE) return false
-        onHost { _, host -> if (host.state.phase == MatchPhase.AWAITING_DEAL && host.state.dealNumber > 0) host.advance() }
+        if (closed.get() || failure.get() != null || !t.hosting || view.match.phase != MatchPhase.AWAITING_DEAL || view.match.dealNumber == 0 || t.room != RoomCondition.ACTIVE) return false
+        onHostInput { _, host -> if (host.state.phase == MatchPhase.AWAITING_DEAL && host.state.dealNumber > 0) host.advance() }
         return true
     }
 
@@ -361,7 +367,7 @@ class SessionOwner(private val deps: OwnerDependencies) : RoomSession {
     /** Host only: pauses the table (game commands refused until [resume]). */
     override fun pause() = onHost { _, host -> host.pause() }
 
-    override fun resume() = onHost { _, host -> host.resume() }
+    override fun resume() = onHostInput { _, host -> host.resume() }
 
     /**
      * Drops the current link and rejoins over a new one with the stored ticket, by proof (same epoch,
@@ -381,14 +387,18 @@ class SessionOwner(private val deps: OwnerDependencies) : RoomSession {
 
     // ---- Room requests (WI-09) ---------------------------------------------------------------------
 
-    override fun setReady(ready: Boolean) = onTable { t ->
-        val room = t.client.room?.takeIf { it.lobby } ?: return@onTable
+    override fun setReady(ready: Boolean) = onTableInput { t ->
+        val room = t.client.room?.takeIf { it.lobby } ?: return@onTableInput
         sessionCommand(t, ReadyBody(ready, room.settingsRevision), SessionAction.READY)
     }
 
-    override fun requestFollow(seat: Seat) = onTable { t -> sessionCommand(t, FollowRequestBody(seat), SessionAction.FOLLOW_REQUEST) }
+    override fun requestFollow(seat: Seat) = onTableInput { t -> sessionCommand(t, FollowRequestBody(seat), SessionAction.FOLLOW_REQUEST) }
 
-    override fun answerFollow(grantId: String, approve: Boolean) = onTable { t -> sessionCommand(t, ConsentBody(grantId, approve), SessionAction.CONSENT) }
+    override fun answerFollow(grantId: String, approve: Boolean) {
+        val answer = { t: OwnerTable -> sessionCommand(t, ConsentBody(grantId, approve), SessionAction.CONSENT) }
+        // Granting a view is input; refusing one only winds the table down.
+        if (approve) onTableInput(answer) else onTable(answer)
+    }
 
     override fun stopFollow(grantId: String) = onTable { t -> sessionCommand(t, RevokeBody(grantId), SessionAction.REVOKE) }
 
@@ -400,33 +410,33 @@ class SessionOwner(private val deps: OwnerDependencies) : RoomSession {
         sessionCommand(t, LeaveBody, SessionAction.LEAVE)
     }
 
-    override fun approve(connectionId: Long) = onHost { t, host ->
-        if (connectionId == t.ownConnection) return@onHost
-        val p = host.pendingAdmissions().singleOrNull { it.connectionId == connectionId } ?: return@onHost
+    override fun approve(connectionId: Long) = onHostInput { t, host ->
+        if (connectionId == t.ownConnection) return@onHostInput
+        val p = host.pendingAdmissions().singleOrNull { it.connectionId == connectionId } ?: return@onHostInput
         // G2 (owner-delegated default): the host user compared this code with the joiner's screen before tapping.
         host.approve(connectionId, p.confirmationCode)
     }
 
     override fun deny(connectionId: Long) = onHost { t, host -> if (connectionId != t.ownConnection) host.deny(connectionId) }
 
-    override fun swapSeats(a: Seat, b: Seat) = onHost { _, host -> host.swapSeats(a, b) }
+    override fun swapSeats(a: Seat, b: Seat) = onHostInput { _, host -> host.swapSeats(a, b) }
 
-    override fun setAiSeat(seat: Seat) = onHost { t, host -> host.setAi(seat, checkNotNull(t.driver).policy) }
+    override fun setAiSeat(seat: Seat) = onHostInput { t, host -> host.setAi(seat, checkNotNull(t.driver).policy) }
 
-    override fun clearAiSeat(seat: Seat) = onHost { _, host -> host.clearAiSeat(seat) }
+    override fun clearAiSeat(seat: Seat) = onHostInput { _, host -> host.clearAiSeat(seat) }
 
-    override fun updateSettings(settings: RoomSettings) = onHost { t, host ->
+    override fun updateSettings(settings: RoomSettings) = onHostInput { t, host ->
         if (host.updateSettings(settings.policy(), settings.recovery(checkNotNull(t.driver).policy))) {
             t.info = t.info?.copy(tableName = settings.tableName)
             deps.rooms?.takeIf { host.tableId != null }?.save(t.tableId, settings)
         }
     }
 
-    override fun startMatch() = onHost { _, host -> host.start() }
+    override fun startMatch() = onHostInput { _, host -> host.start() }
 
-    override fun rematch() = onHost { _, host -> host.rematch() }
+    override fun rematch() = onHostInput { _, host -> host.rematch() }
 
-    override fun standInNow(seat: Seat) = onHost { _, host -> host.standInNow(seat) }
+    override fun standInNow(seat: Seat) = onHostInput { _, host -> host.standInNow(seat) }
 
     override fun prepareLeave(): LeavePrompt? {
         val t = stateFlow.value.table ?: return null
@@ -677,6 +687,19 @@ class SessionOwner(private val deps: OwnerDependencies) : RoomSession {
     private fun onHost(block: (OwnerTable, SessionHost) -> Unit) = onTable { t -> t.host?.let { block(t, it) } }
 
     /**
+     * Like [onTable], for input that moves the game or the room on (start, rematch, seats, settings,
+     * approvals): a failed owner's table accepts no more of it, checked at the call and again on the
+     * loop (the failure can land while the task waits). Leaving, pausing, denying and revoking stay
+     * open: they only wind the table down.
+     */
+    private fun onTableInput(block: (OwnerTable) -> Unit) {
+        if (failure.get() != null) return
+        onTable { t -> if (failure.get() == null) block(t) }
+    }
+
+    private fun onHostInput(block: (OwnerTable, SessionHost) -> Unit) = onTableInput { t -> t.host?.let { block(t, it) } }
+
+    /**
      * Hands a network callback to the loop; dropped once the table is torn down. Not at [shutdown]:
      * until the teardown the link must still carry the table's last messages (a leave waiting for room).
      */
@@ -733,7 +756,8 @@ class SessionOwner(private val deps: OwnerDependencies) : RoomSession {
                 else -> SessionHost(config, deps.profiles.base, deps.profiles.match, deps.crypto, tracked)
             }
         } catch (e: IOException) {
-            error("the table could not be saved: ${e.message}")
+            // Still an IOException, with its cause: diagnostics classify it as a storage failure.
+            throw IOException("the table could not be saved: ${e.message}", e)
         }
         if (storage != null) {
             deps.rooms?.save(roomId, settings)
@@ -1105,7 +1129,9 @@ class SessionOwner(private val deps: OwnerDependencies) : RoomSession {
             if (old.lifecycle == OwnerLifecycle.SHUT_DOWN) return@update old
             OwnerState(
                 lifecycle = if (failure.get() != null) OwnerLifecycle.FAILED else OwnerLifecycle.RUNNING,
-                table = table,
+                // Read here, not in [snapshot]: a submit or dismissal on another thread between the two
+                // would otherwise be overwritten by the older values (a retried update reads them again).
+                table = table.copy(pending = pending.get(), lastRejection = rejection.get()),
                 failure = failure.get(),
             )
         }
@@ -1232,8 +1258,13 @@ class SessionOwner(private val deps: OwnerDependencies) : RoomSession {
     private fun fail(t: Throwable) {
         metrics.failures.incrementAndGet()
         failureKind.compareAndSet(FailureKind.NONE, failureKind(t))
-        failure.compareAndSet(null, "${t::class.simpleName}: ${t.message}")
+        val first = failure.compareAndSet(null, "${t::class.simpleName}: ${t.message}")
         stateFlow.update { it.copy(lifecycle = if (it.lifecycle == OwnerLifecycle.SHUT_DOWN) it.lifecycle else OwnerLifecycle.FAILED, failure = failure.get()) }
+        // The local player can no longer act, so the game must not go on without them: the host pauses
+        // (AI seats, deadlines and remote commands stop; members see the pause) and stays paused, since
+        // resuming is input a failed owner refuses. Once, as its own loop task: a pause that throws
+        // fails nothing further.
+        if (first) loop.post { onLoop { table?.host?.pause(); publish() } }
     }
 
     private companion object {

@@ -7,6 +7,7 @@ import cn.wpgd.app.session.host.SessionHost
 import cn.wpgd.app.session.wire.AdmissionDenial
 import cn.wpgd.app.session.wire.AdmissionDenied
 import cn.wpgd.app.session.wire.AdmissionPending
+import cn.wpgd.app.session.wire.PROTOCOL_VERSION
 import cn.wpgd.app.session.wire.Heartbeat
 import cn.wpgd.app.session.wire.HelloRejectReason
 import cn.wpgd.app.session.wire.HelloRejected
@@ -70,14 +71,14 @@ class AdmissionTest {
         val t = Table(seed = 54)
         val players = t.fourPlayers()
         t.startDeal()
-        // Protocol 2 (G2, match number): a newer-only client and a version-1 client are both refused at hello.
-        for (range in listOf(3..4, 1..1)) {
+        // Protocol 3 (grant reasons): a newer-only client and an older client are both refused at hello.
+        for (range in listOf(4..5, 2..2)) {
             val other = t.joiner(t.config(Role.PLAYER, "v${range.first}", Seat.SOUTH, replace = true).copy(protocolMin = range.first, protocolMax = range.last))
             t.until(5_000) { other.client.phase == ClientPhase.REJECTED }
             val rejected = assertIs<HelloRejected>(other.received.single(), "the only message is the rejection")
             assertEquals(HelloRejectReason.VERSION_UNSUPPORTED, rejected.reason)
-            assertEquals(2, rejected.protocolMin)
-            assertEquals(2, rejected.protocolMax)
+            assertEquals(PROTOCOL_VERSION, rejected.protocolMin)
+            assertEquals(PROTOCOL_VERSION, rejected.protocolMax)
         }
         assertTrue(t.host.pendingAdmissions().isEmpty())
         assertEquals(4, players.size)

@@ -95,7 +95,7 @@ class RoomTablePartsTest {
     }
 
     @Test fun aWatchersRequestIsAnsweredOnlyOffTurn() {
-        val pending = listOf(GrantView("g1", "陈阿姨", Seat.SOUTH, GrantStatus.PENDING, 1))
+        val pending = listOf(GrantView("g1", "陈阿姨", Seat.SOUTH, GrantStatus.PENDING, 1, "阿梅", null))
         val room = screen(turn = Seat.NORTH, grants = pending, east = Occupant.HUMAN)
         assertTrue("T9", has("follow:request"))
         assertTrue(text("follow:request").contains("陈阿姨"))
@@ -104,12 +104,12 @@ class RoomTablePartsTest {
     }
 
     @Test fun noRequestInterruptsThePlayersOwnTurn() {
-        screen(turn = Seat.SOUTH, grants = listOf(GrantView("g1", "陈阿姨", Seat.SOUTH, GrantStatus.PENDING, 1)), east = Occupant.HUMAN)
+        screen(turn = Seat.SOUTH, grants = listOf(GrantView("g1", "陈阿姨", Seat.SOUTH, GrantStatus.PENDING, 1, "阿梅", null)), east = Occupant.HUMAN)
         assertFalse("G3: shown after the player's action, not during it", has("follow:request"))
     }
 
     @Test fun theMenuListsWatchersAndWhoSeesThisHand() {
-        val active = listOf(GrantView("g2", "陈阿姨", Seat.SOUTH, GrantStatus.ACTIVE, 2))
+        val active = listOf(GrantView("g2", "陈阿姨", Seat.SOUTH, GrantStatus.ACTIVE, 2, "阿梅", null))
         val room = screen(turn = Seat.NORTH, grants = active, east = Occupant.HUMAN)
         rule.onNodeWithTag("button:menu").performClick()
         rule.waitUntil(5_000) { has("menu:watchers") }

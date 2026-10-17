@@ -39,7 +39,7 @@ object DesignTokens {
         "danger" to Color(0xFFFF8A80),
         "wild" to Color(0xFFEE7E62),
         "card" to Color(0xFFECE9E2),
-        "sel" to Color(0xFFEE7E62),
+        "sel" to Color(0xFFC8543C),
         "selFill" to Color(0xFFF6D3C7),
         "suit.red" to Color(0xFFA8321D),
         "suit.black" to Color(0xFF141414),

@@ -23,4 +23,19 @@ class HandEvaluatorTest {
     @Test fun loneWildcardIsOnePlay() {
         assertEquals(1, plays("0H2"))
     }
+
+    /** Two sevens and both wildcards are a four-card bomb, not a low pair with spare wildcards. */
+    @Test fun twoWildcardsMakeAPairABomb() {
+        val shape = HandEvaluator.shape(listOf("0S7", "1S7", "0H2", "1H2").map { StandardDeck[it]!! }, 2)
+        assertEquals(1, shape.bombs)
+        assertEquals(1, shape.plays)
+        assertEquals(0.0, shape.lowPenalty)
+    }
+
+    /** A wildcard that turns a low single into a pair carries the pair's penalty, not the single's. */
+    @Test fun wildcardJoiningASingleScoresThePair() {
+        val shape = HandEvaluator.shape(listOf("0S3", "0H2").map { StandardDeck[it]!! }, 2)
+        assertEquals(0, shape.bombs)
+        assertEquals((11 - 3) * 0.03, shape.lowPenalty, 1e-9)
+    }
 }

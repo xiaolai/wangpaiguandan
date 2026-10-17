@@ -39,4 +39,42 @@ class VirtualSchedulerTest {
         s.runFor(10)
         assertEquals(3, ran[0])
     }
+
+    /** A deadline past Long.MAX_VALUE is refused instead of wrapping into the past and running early. */
+    @Test fun anOverflowingDeadlineIsRefused() {
+        val s = VirtualScheduler(start = Long.MAX_VALUE - 1)
+        val ran = IntArray(1)
+        assertFailsWith<IllegalArgumentException> { s.schedule(2) { ran[0]++ } }
+        s.runFor(0)
+        assertEquals(0, ran[0])
+        assertEquals(0, s.pending)
+        assertFailsWith<IllegalArgumentException> { s.runFor(2) }
+        assertFailsWith<IllegalArgumentException> { s.runUntil(2) { false } }
+        s.schedule(1) { ran[0]++ }
+        s.runFor(1)
+        assertEquals(1, ran[0], "the last representable millisecond still works")
+        assertEquals(Long.MAX_VALUE, s.now)
+    }
+
+    /** Round 2 of #70: a negative window is refused, and the overflow guard holds at a negative clock. */
+    @Test fun negativeWindowsAndNegativeClocksCannotWrap() {
+        val low = VirtualScheduler(start = Long.MIN_VALUE + 1)
+        val ran = IntArray(1)
+        low.schedule(0) { ran[0]++ }
+        // now - 5 would wrap to a far-future end and run every task, then jump the clock forward.
+        assertFailsWith<IllegalArgumentException> { low.runFor(-5) }
+        assertFailsWith<IllegalArgumentException> { low.runUntil(-5) { false } }
+        assertEquals(0, ran[0])
+        assertEquals(Long.MIN_VALUE + 1, low.now)
+
+        // At a negative clock, Long.MAX_VALUE - now itself overflows: the old guard refused deadlines
+        // that fit (and so cannot be trusted to refuse the ones that do not).
+        val negative = VirtualScheduler(start = -10)
+        negative.schedule(Long.MAX_VALUE) { ran[0]++ }
+        negative.runFor(Long.MAX_VALUE)
+        assertEquals(1, ran[0], "the largest deadline from a negative clock fits and runs")
+        assertEquals(Long.MAX_VALUE - 10, negative.now)
+        assertFailsWith<IllegalArgumentException> { negative.schedule(11) { ran[0]++ } }
+        assertFailsWith<IllegalArgumentException> { negative.runFor(11) }
+    }
 }

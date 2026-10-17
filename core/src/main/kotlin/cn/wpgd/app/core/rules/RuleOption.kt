@@ -105,12 +105,15 @@ class BoolOption(
 class ChoiceOption(
     override val id: String,
     override val default: String,
-    val choices: Set<String>,
+    choices: Set<String>,
     override val source: String,
     override val decision: Decision?,
     override val pending: Boolean = false,
     override val deprecatedSince: String? = null,
 ) : RuleOption<String>() {
+    /** A copy: the caller's set must not be able to change which values the registry accepts. */
+    val choices: Set<String> = choices.toSet()
+
     init { require(default in choices) { "Default of $id is not one of $choices" } }
     override val typeName get() = "one of ${choices.sorted()}"
     override fun decode(element: JsonElement): Decoded<String> {
@@ -127,6 +130,12 @@ private fun decodeBounded(element: JsonElement, range: IntRange): RuleOption.Dec
     return if (n in range) RuleOption.Decoded.Ok(n) else RuleOption.Decoded.OutOfRange("$n is outside $range")
 }
 
-/** A JSON number literal that is an exact Int: rejects strings ("4"), fractions (4.5) and null. */
+/**
+ * A JSON number literal that is an exact Int: rejects strings ("4"), fractions (4.5), null, and
+ * spellings JSON does not allow (010, +4), which the lenient number reader would otherwise accept.
+ */
 private fun JsonElement.strictInt(): Int? =
-    if (this !is JsonPrimitive || this is JsonNull || isString) null else intOrNull
+    if (this !is JsonPrimitive || this is JsonNull || isString || !JSON_INTEGER.matches(content)) null else intOrNull
+
+/** RFC 8259 integer syntax: an optional minus, then 0 or a digit string without a leading zero. */
+private val JSON_INTEGER = Regex("-?(0|[1-9][0-9]*)")

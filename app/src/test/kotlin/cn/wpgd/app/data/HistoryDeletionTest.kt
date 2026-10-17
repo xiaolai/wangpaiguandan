@@ -47,6 +47,16 @@ class HistoryDeletionTest {
         assertEquals(100 + HistoryRepository.MAX_ENTRIES + 9, history.entries().last().dealNumber)
     }
 
+    @Test fun anEntryWithoutAMatchNumberReadsBackAfterAppend() {
+        // Audit #10: a null match number was written as v2 with "-", which decode refused, so the entry vanished.
+        val store = InMemoryKeyValueStore()
+        val legacy = entry(3).copy(matchNumber = null)
+        HistoryRepository(store).append(legacy)
+        val reread = HistoryRepository(store)
+        assertEquals(listOf(legacy), reread.entries())
+        assertEquals(0, reread.unreadable)
+    }
+
     @Test fun aRematchKeepsItsDealsAlthoughTheirNumbersRepeat() {
         val history = HistoryRepository(InMemoryKeyValueStore())
         (1..6).forEach { history.append(entry(it)) }
@@ -71,6 +81,25 @@ class HistoryDeletionTest {
         assertEquals("match 1 deal 3 is not the unnumbered old entry", listOf(null to 3, 1 to 3), history.entries().map { it.matchNumber to it.dealNumber })
         store.put("deal.9", "v2|solo-ab12|-|3|5|true|2|false|3000")
         assertEquals("a v2 entry must carry its match number", 1, history.entries().size.let { history.unreadable })
+    }
+
+    /**
+     * Round 3 #5: a missing or stale counter (a crash between the entry write and the counter write)
+     * must never hand out a sequence number an existing entry already holds.
+     */
+    @Test fun aMissingOrStaleCounterNeverOverwritesAnEntry() {
+        val store = InMemoryKeyValueStore()
+        store.put("deal.0", "v2|solo-ab12|1|1|3|true|2|false|1000")
+        store.put("deal.1", "v2|solo-ab12|1|2|4|false|2|false|2000")
+        store.put("next", "1") // stale: deal.1 was written but the counter was not
+        val history = HistoryRepository(store)
+        history.append(entry(3))
+        assertEquals(listOf(1, 2, 3), history.entries().map { it.dealNumber })
+        store.remove("next") // missing
+        history.append(entry(4))
+        store.put("next", "garbage") // malformed
+        history.append(entry(5))
+        assertEquals(listOf(1, 2, 3, 4, 5), history.entries().map { it.dealNumber })
     }
 
     @Test fun storesMustBeSeparate() {

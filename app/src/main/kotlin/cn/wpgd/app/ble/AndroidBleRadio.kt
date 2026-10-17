@@ -160,8 +160,12 @@ class AndroidBleRadio(private val context: Context) : BleRadio {
 
             override fun onDescriptorReadRequest(device: BluetoothDevice, requestId: Int, offset: Int, descriptor: BluetoothGattDescriptor) {
                 handler.post {
-                    val on = peers[device.address]?.subscribed == true
-                    respond(device, requestId, BluetoothGatt.GATT_SUCCESS, if (on) BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE else BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE)
+                    val value = BleCccd.read(peers[device.address]?.subscribed == true, offset)
+                    if (value == null) {
+                        respond(device, requestId, BluetoothGatt.GATT_INVALID_OFFSET, null)
+                    } else {
+                        respond(device, requestId, BluetoothGatt.GATT_SUCCESS, value, offset)
+                    }
                 }
             }
 
@@ -289,7 +293,9 @@ class AndroidBleRadio(private val context: Context) : BleRadio {
 
         private fun writeRequest(device: BluetoothDevice, requestId: Int, characteristic: BluetoothGattCharacteristic, prepared: Boolean, responseNeeded: Boolean, offset: Int, value: ByteArray?) {
             val port = peers[device.address]
-            val ok = characteristic.uuid == UUID.fromString(BleGattSpec.TO_HOST) && !prepared && offset == 0 && value != null && port != null && port.subscribed
+            // A write the port cannot hold yet (its early buffer is full) is refused, so the central
+            // sees a failed send instead of a success for a packet that was dropped.
+            val ok = characteristic.uuid == UUID.fromString(BleGattSpec.TO_HOST) && !prepared && offset == 0 && value != null && port != null && port.subscribed && port.early.canReceive
             if (responseNeeded) respond(device, requestId, if (ok) BluetoothGatt.GATT_SUCCESS else BluetoothGatt.GATT_REQUEST_NOT_SUPPORTED, null)
             if (ok) port.received(value)
         }
@@ -297,14 +303,16 @@ class AndroidBleRadio(private val context: Context) : BleRadio {
         private fun descriptorWrite(device: BluetoothDevice, requestId: Int, descriptor: BluetoothGattDescriptor, prepared: Boolean, responseNeeded: Boolean, offset: Int, value: ByteArray?) {
             val port = peers[device.address]
             val isCccd = descriptor.uuid == UUID.fromString(BleGattSpec.CCCD) && descriptor.characteristic?.uuid == UUID.fromString(BleGattSpec.TO_PEER)
-            val ok = isCccd && !prepared && offset == 0 && port != null && value != null && value.size == 2
+            // Only notifications on or off: an indication request or any other value is refused, not acknowledged.
+            val write = BleCccd.parse(value)
+            val ok = isCccd && !prepared && offset == 0 && port != null && write != null
             if (responseNeeded) respond(device, requestId, if (ok) BluetoothGatt.GATT_SUCCESS else BluetoothGatt.GATT_REQUEST_NOT_SUPPORTED, null)
             if (!ok) return
-            if (value.contentEquals(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE) && !port.subscribed) {
+            if (write == CccdWrite.ENABLE && !port.subscribed) {
                 port.subscribed = true
                 stats.subscribed = peers.values.count { it.subscribed }
                 onPeer(port)
-            } else if (value.contentEquals(BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE) && port.subscribed) {
+            } else if (write == CccdWrite.DISABLE && port.subscribed) {
                 port.close()
             }
         }
@@ -407,10 +415,21 @@ class AndroidBleRadio(private val context: Context) : BleRadio {
         @Volatile var closed = false
         private val pending = java.util.concurrent.atomic.AtomicReference<ByteArray?>(null)
 
+        /**
+         * Packets the central wrote after subscribing and before the room opened this port (the room
+         * opens it from its own loop): held, then handed over in order once [open] installs [events].
+         */
+        val early = EarlyPackets(MAX_EARLY_PACKETS)
+
         override fun open(events: BlePortEvents) {
             handler.post {
                 this.events = events
-                if (!closed) events.onReady(mtu - 3) else events.onDisconnected()
+                if (!closed) {
+                    events.onReady(mtu - 3)
+                    early.attach(events::onPacket)
+                } else {
+                    events.onDisconnected()
+                }
             }
         }
 
@@ -433,7 +452,7 @@ class AndroidBleRadio(private val context: Context) : BleRadio {
         }
 
         fun received(packet: ByteArray) {
-            if (!closed) events?.onPacket(packet)
+            if (!closed) early.receive(packet)
         }
 
         override fun close() {
@@ -464,6 +483,7 @@ class AndroidBleRadio(private val context: Context) : BleRadio {
 
         @Volatile private var closed = false
         private val inFlight = AtomicBoolean(false)
+        private val setup = ConnectSetup { stats.connectFailures++ }
 
         private val callback = object : BluetoothGattCallback() {
             override fun onConnectionStateChange(g: BluetoothGatt, status: Int, newState: Int) {
@@ -471,7 +491,6 @@ class AndroidBleRadio(private val context: Context) : BleRadio {
                     guard({ }) { g.requestConnectionPriority(BluetoothGatt.CONNECTION_PRIORITY_HIGH) }
                     requestMtuOrDiscover(g) { fail() }
                 } else {
-                    if (!ready) stats.connectFailures++
                     fail()
                 }
             }
@@ -504,6 +523,7 @@ class AndroidBleRadio(private val context: Context) : BleRadio {
                 }
                 if (ready || closed) return
                 ready = true
+                setup.ready()
                 events?.onReady(attPayload)
             }
 
@@ -527,18 +547,20 @@ class AndroidBleRadio(private val context: Context) : BleRadio {
         override fun open(events: BlePortEvents) {
             handler.post {
                 this.events = events
+                // Closed before this task ran: its shutdown had no events to report to, and must not
+                // be followed by a connection nothing would ever close.
+                if (!setup.mayConnect) {
+                    events.onDisconnected()
+                    return@post
+                }
                 val g = connectGatt(address, callback)
                 if (g == null) {
-                    stats.connectFailures++
                     fail()
                     return@post
                 }
                 gatt = g
                 handler.postDelayed({
-                    if (!ready && !closed) {
-                        stats.connectFailures++
-                        fail()
-                    }
+                    if (!ready && !closed) fail()
                 }, CONNECT_TIMEOUT_MS)
             }
         }
@@ -574,10 +596,22 @@ class AndroidBleRadio(private val context: Context) : BleRadio {
         }
 
         override fun close() {
-            handler.post { fail() }
+            handler.post {
+                setup.closed()
+                shutDown()
+            }
         }
 
+        /**
+         * Every end the app did not ask for: a refused or lost connection, a timeout, and a failed
+         * MTU, discovery or subscription step. Before ready it is a setup failure, counted once.
+         */
         private fun fail() {
+            setup.failed()
+            shutDown()
+        }
+
+        private fun shutDown() {
             if (closed) return
             closed = true
             ready = false
@@ -732,6 +766,93 @@ class AndroidBleRadio(private val context: Context) : BleRadio {
 
         /** Scanned devices remembered for connecting (well above [BleBrowserConfig.maxHosts]). */
         const val MAX_DEVICES = 64
+
+        /** Packets a host port holds before the room opens it (each write waits for its response). */
+        const val MAX_EARLY_PACKETS = 64
+    }
+}
+
+/**
+ * Packets that arrive before their consumer exists: held (at most [capacity]) until [attach], then
+ * handed over in arrival order, and every later one at once. Not thread-safe: one thread (the radio's
+ * handler) calls everything.
+ */
+internal class EarlyPackets(private val capacity: Int) {
+    init {
+        require(capacity >= 1)
+    }
+
+    private var sink: ((ByteArray) -> Unit)? = null
+    private val held = ArrayDeque<ByteArray>()
+
+    /** False while the buffer is full and nobody consumes yet: the next packet would be lost. */
+    val canReceive: Boolean get() = sink != null || held.size < capacity
+
+    fun receive(packet: ByteArray) {
+        val s = sink
+        when {
+            s != null -> s(packet)
+            held.size < capacity -> held.addLast(packet)
+            else -> error("early packet buffer full (check canReceive first)")
+        }
+    }
+
+    fun attach(consumer: (ByteArray) -> Unit) {
+        check(sink == null) { "already attached" }
+        sink = consumer
+        while (held.isNotEmpty()) consumer(held.removeFirst())
+    }
+}
+
+/**
+ * Counts one joiner connection's setup failure ([countFailure]): once, and only when the connection
+ * ended before it was ready and not by the app's own [closed]. The first end settles it: callbacks
+ * after it count nothing. Not thread-safe: the radio's handler thread calls everything.
+ */
+internal class ConnectSetup(private val countFailure: () -> Unit) {
+    private var ready = false
+    private var ended = false
+
+    /** False once the connection ended (closed or failed): it must not connect (again). */
+    val mayConnect: Boolean get() = !ended
+
+    fun ready() {
+        if (!ended) ready = true
+    }
+
+    /** The app closed the connection: never a setup failure. */
+    fun closed() {
+        ended = true
+    }
+
+    /** The connection ended for any other reason (refused, lost, timed out, a failed setup step). */
+    fun failed() {
+        if (ended) return
+        ended = true
+        if (!ready) countFailure()
+    }
+}
+
+internal enum class CccdWrite { ENABLE, DISABLE }
+
+/** The notify characteristic's client configuration descriptor: notifications only, never indications. */
+internal object BleCccd {
+    private val ENABLE = byteArrayOf(1, 0)
+    private val DISABLE = byteArrayOf(0, 0)
+
+    /** A write's meaning, or null for any value but notifications on or off (indications included). */
+    fun parse(value: ByteArray?): CccdWrite? = when {
+        value == null -> null
+        value.contentEquals(ENABLE) -> CccdWrite.ENABLE
+        value.contentEquals(DISABLE) -> CccdWrite.DISABLE
+        else -> null
+    }
+
+    /** The value from [offset] on (a long read), or null when [offset] lies outside it. */
+    fun read(subscribed: Boolean, offset: Int): ByteArray? {
+        val value = if (subscribed) ENABLE else DISABLE
+        if (offset !in 0..value.size) return null
+        return value.copyOfRange(offset, value.size)
     }
 }
 

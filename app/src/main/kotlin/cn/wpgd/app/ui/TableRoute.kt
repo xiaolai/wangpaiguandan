@@ -44,6 +44,19 @@ class TableEffectsState {
     var motion by mutableStateOf<EffectOutput.Motion?>(null)
     var announce by mutableStateOf<EffectOutput.Announce?>(null)
 
+    /** The motion cue a trick area last started (not composition state: it outlives a layout). */
+    private var motionStarted: String? = null
+
+    /**
+     * Whether [m] may start now: once per cue. A resize mid-animation swaps the layout, which cancels
+     * the running animation before [motion] is cleared; the new trick area must not replay it (round 3 #31).
+     */
+    fun startMotion(m: EffectOutput.Motion): Boolean {
+        if (motionStarted == m.cueId) return false
+        motionStarted = m.cueId
+        return true
+    }
+
     /** [systemReducedMotion]: the system animator scale is zero, which counts as reduced motion too. */
     fun show(output: EffectOutput, systemReducedMotion: Boolean) {
         when (output) {

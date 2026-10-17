@@ -5,6 +5,7 @@ import cn.wpgd.app.ble.BleRoomNetwork
 import cn.wpgd.app.data.HistoryRepository
 import cn.wpgd.app.data.IdentityRepository
 import cn.wpgd.app.data.LocalStores
+import cn.wpgd.app.data.Nickname
 import cn.wpgd.app.data.NicknameRepository
 import cn.wpgd.app.data.PreferencesRepository
 import cn.wpgd.app.data.WallClock
@@ -20,6 +21,7 @@ import cn.wpgd.app.room.RoomMedium
 import cn.wpgd.app.room.RoomNetwork
 import cn.wpgd.app.room.RoomStore
 import cn.wpgd.app.room.SavedTables
+import cn.wpgd.app.room.TableUse
 import cn.wpgd.app.session.crypto.JcaCrypto
 import cn.wpgd.app.session.transport.Cancellable
 import cn.wpgd.app.session.storage.Storage
@@ -59,6 +61,8 @@ class AppGraph(
     bluetooth: (() -> BluetoothPlatform)? = null,
     /** How often the Bluetooth diagnostics line is reported while a Bluetooth room is active. */
     private val bleReportMs: Long = 10_000,
+    /** How long a new owner waits for the owners closed before it to stop, before it fails ([awaitRetired]). */
+    private val retireWaitMs: Long = 15_000,
 ) {
     val preferences = PreferencesRepository(stores.preferences)
     val nickname = NicknameRepository(stores.profile)
@@ -93,7 +97,7 @@ class AppGraph(
     @Synchronized
     fun roomOwner(medium: RoomMedium = RoomMedium.LAN): SessionOwner {
         current?.takeIf { !it.terminated && it.state.value.lifecycle != OwnerLifecycle.SHUT_DOWN && it.state.value.table != null }?.let { return it }
-        current?.shutdown()
+        if (current != null) closeTableInBackground()
         return newOwner(rooms = true, medium).also { if (medium == RoomMedium.BLUETOOTH) startBleReport(it) }
     }
 
@@ -102,24 +106,61 @@ class AppGraph(
         RoomMedium.BLUETOOTH -> bluetoothPlatform.network
     }
 
-    /** Replaces the current owner, once a closing one has finished; a Bluetooth report for the replaced one stops here. */
-    private fun newOwner(rooms: Boolean, medium: RoomMedium = RoomMedium.LAN): SessionOwner = awaitClosed().let { SessionOwner(
-        OwnerDependencies(
-            profiles = profiles,
-            crypto = JcaCrypto.suite(),
-            loopFactory = { onError -> ExecutorSessionLoop(onError = onError) },
-            history = history,
-            clock = clock,
-            network = if (rooms) network(medium) else null,
-            storage = if (rooms) platform.storage else null,
-            rooms = if (rooms) this.rooms else null,
-            identity = identity,
-        ),
-    ).also {
-        stopBleReport()
-        current = it
-        open.value = it
-    } }
+    /**
+     * Replaces the current owner without waiting (the caller is the UI thread). The new owner's loop
+     * first waits, off the caller's thread, until every owner closed before it has actually stopped
+     * ([awaitRetired]), so the old table's last save and room withdrawal never overlap a new table's:
+     * everything the new owner does runs on that loop, behind the wait. A Bluetooth report for the
+     * replaced owner stops here. Callers hold the lock.
+     */
+    private fun newOwner(rooms: Boolean, medium: RoomMedium = RoomMedium.LAN): SessionOwner {
+        val previous = closing
+        val before = retiring.toList()
+        return SessionOwner(
+            OwnerDependencies(
+                profiles = profiles,
+                crypto = JcaCrypto.suite(),
+                loopFactory = { onError ->
+                    ExecutorSessionLoop(onError = onError).also { loop -> loop.post { awaitRetired(previous, before) } }
+                },
+                history = history,
+                clock = clock,
+                network = if (rooms) network(medium) else null,
+                storage = if (rooms) platform.storage else null,
+                rooms = if (rooms) this.rooms else null,
+                identity = identity,
+            ),
+        ).also {
+            stopBleReport()
+            current = it
+            open.value = it
+        }
+    }
+
+    /**
+     * On a new owner's loop, before anything else runs there: waits for [previous] (the background
+     * close) and for every owner in [owners] to stop for good. An owner whose loop stalled returns from
+     * `shutdown` while its loop still runs, and is torn down only when that loop ends; the new owner
+     * waits for that too. Past [retireWaitMs] it throws, which fails the new owner loudly instead of
+     * letting two tables share storage and the room network.
+     */
+    private fun awaitRetired(previous: Thread?, owners: List<SessionOwner>) {
+        val deadline = System.nanoTime() + retireWaitMs * 1_000_000
+        fun remainingMs() = (deadline - System.nanoTime()) / 1_000_000
+        try {
+            previous?.join(maxOf(1, remainingMs()))
+            while (owners.any { !it.terminated }) {
+                check(remainingMs() > 0) { "the previous table has not finished closing" }
+                Thread.sleep(RETIRE_POLL_MS)
+            }
+        } catch (_: InterruptedException) {
+            // Only the new owner's own shutdown interrupts its loop; that shutdown also drops every
+            // task queued behind this one, so nothing of the new table runs.
+            Thread.currentThread().interrupt()
+            return
+        }
+        synchronized(this) { retiring.removeAll(owners.toSet()) }
+    }
 
     /** The running owner if a table is open, else null; never creates one (the menu asks this). */
     @Synchronized
@@ -134,8 +175,8 @@ class AppGraph(
     /**
      * Ends the current table without blocking the caller (the UI thread): the table is detached at
      * once, and the owner's shutdown — which waits up to seconds for a leave or a host's last words —
-     * runs on its own thread. The next owner is created only after it finished ([newOwner]), so the
-     * old table's last save and room withdrawal never overlap a new table's.
+     * runs on its own thread. The next owner starts its table only after this one has stopped
+     * ([newOwner]), so the old table's last save and room withdrawal never overlap a new table's.
      */
     @Synchronized
     fun closeTableInBackground() {
@@ -143,6 +184,7 @@ class AppGraph(
         val owner = current ?: return
         current = null
         open.value = null
+        retiring += owner
         val previous = closing
         closing = Thread({
             previous?.join()
@@ -150,13 +192,15 @@ class AppGraph(
         }, "wpgd-close").apply { start() }
     }
 
-    /** The shutdown [closeTableInBackground] started, until it is awaited. */
+    /** The shutdown [closeTableInBackground] started last (it joins the one before it). */
     private var closing: Thread? = null
 
-    /** Waits for a background close to finish (callers hold the lock or need none). */
-    @Synchronized
+    /** Owners shut down, or being shut down, that a new owner has not yet seen stop for good. */
+    private val retiring = ArrayList<SessionOwner>()
+
+    /** Waits for a background close to finish. */
     private fun awaitClosed() {
-        val t = closing ?: return
+        val t = synchronized(this) { closing } ?: return
         var interrupted = false
         while (t.isAlive) {
             try {
@@ -165,7 +209,7 @@ class AppGraph(
                 interrupted = true
             }
         }
-        closing = null
+        synchronized(this) { if (closing === t) closing = null }
         if (interrupted) Thread.currentThread().interrupt()
     }
 
@@ -239,5 +283,36 @@ class AppGraph(
     fun addressJoin(): AddressJoin = AddressJoin(NetworkAddressLookup(platform.network, finderLoop))
 
     /** The hosted tables saved on this device (H3, H6, H7). */
-    fun savedTables(): SavedTables = SavedTables(TableRepository(platform.storage), rooms, identity, clock, profiles)
+    fun savedTables(): SavedTables = SavedTables(TableRepository(platform.storage), rooms, identity, clock, profiles, tableUse)
+
+    /** The saved table each owner was asked to restore, until it stops (its table id may not be known yet). */
+    private val restoring = HashMap<SessionOwner, String>()
+
+    /**
+     * Saves in use (round 3 #24): the open owner's and every owner still closing, by their table and
+     * by the table each was asked to restore. Their sessions still write those saves.
+     */
+    @Synchronized
+    private fun tablesInUse(): Set<String> {
+        restoring.keys.removeAll { it.terminated }
+        return (listOfNotNull(current) + retiring).filter { !it.terminated }
+            .flatMap { listOfNotNull(it.state.value.table?.tableId, restoring[it]) }.toSet()
+    }
+
+    private val tableUse = TableUse(::tablesInUse)
+
+    /**
+     * H3: restores the saved table [tableId] over [medium], unless it is being deleted (round 3 #25).
+     * False when it does not start.
+     */
+    fun restoreSaved(tableId: String, medium: RoomMedium, nickname: Nickname): Boolean = tableUse.restoring(tableId) {
+        synchronized(this) {
+            val owner = roomOwner(medium)
+            owner.restoreRoom(tableId, nickname).also { if (it) restoring[owner] = tableId }
+        }
+    }
+
+    private companion object {
+        const val RETIRE_POLL_MS = 10L
+    }
 }

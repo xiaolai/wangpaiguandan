@@ -12,6 +12,7 @@ import cn.wpgd.app.owner.RoomCondition
 import cn.wpgd.app.owner.RoomInfo
 import cn.wpgd.app.owner.SessionAction
 import cn.wpgd.app.owner.SessionNotice
+import cn.wpgd.app.session.wire.GrantEnd
 import cn.wpgd.app.session.wire.GrantStatus
 import cn.wpgd.app.session.wire.GrantView
 import cn.wpgd.app.session.wire.Occupant
@@ -24,6 +25,7 @@ import cn.wpgd.app.table.SeatLastAction
 import cn.wpgd.app.table.TrickDisplay
 import cn.wpgd.app.table.TurnClarity
 import cn.wpgd.app.table.Viewer
+import cn.wpgd.app.table.publicCounts
 
 /** One seat as a watcher sees it: public facts only (no hand size unless the profile made it public). */
 data class WatchSeatUi(
@@ -53,6 +55,9 @@ sealed interface WatchNotice {
     /** G6: the followed player left the seat; consent never passes to whoever plays it next. */
     data class PlayerLeft(val seat: Seat, val nickname: String?) : WatchNotice
 
+    /** The room ended the follow (private follow switched off, or a save failed): nobody revoked it. */
+    data class Ended(val seat: Seat, val nickname: String?) : WatchNotice
+
     /** The host refused the request (one view per deal, private follow off, nobody there). */
     data class Refused(val code: RejectionCode) : WatchNotice
 }
@@ -73,10 +78,7 @@ data class WatchUiState(
     val follow: FollowUi?,
     /** G3: a request waits for this seat's player. */
     val waitingFor: Seat?,
-    val waitingGrantId: String?,
     val notice: WatchNotice?,
-    /** Private follow is allowed in this room and no request or follow is live. */
-    val canRequest: Boolean,
     /** Competitive room: nobody's hand can be watched. */
     val followDisabled: Boolean,
     val observers: List<String>,
@@ -103,14 +105,11 @@ object WatchUi {
         val live = latest?.takeIf { it.status == GrantStatus.PENDING || it.status == GrantStatus.ACTIVE }
         val turn = TurnClarity.of(view)
         val trick = TrickDisplay.of(view)
-        val counts = HashMap<Seat, Int>().apply {
-            match.reports.forEach { put(it.seat, it.count) }
-            match.answers.forEach { put(it.seat, it.count) }
-        }
+        val counts = publicCounts(match)
         val finish = table?.finishOrder.orEmpty()
         val level = table?.level ?: match.dealLevel
         val follow = followed(t.follow, latest, level, names)
-        val notice = notice(t.notice, latest, dismissedThrough, names, occupants)
+        val notice = notice(t.notice, latest, dismissedThrough)
         val running = state.lifecycle == OwnerLifecycle.RUNNING && t.connection == ConnectionState.CONNECTED
         return WatchUiState(
             info = t.info,
@@ -136,9 +135,7 @@ object WatchUi {
             turn = turn,
             follow = follow,
             waitingFor = live?.takeIf { it.status == GrantStatus.PENDING }?.seat,
-            waitingGrantId = live?.takeIf { it.status == GrantStatus.PENDING }?.grantId,
             notice = notice,
-            canRequest = running && privateFollow && live == null,
             followDisabled = room != null && !privateFollow,
             observers = room?.observers.orEmpty(),
             result = match.lastResult?.takeIf { match.phase == MatchPhase.AWAITING_DEAL || match.phase == MatchPhase.OVER }
@@ -156,21 +153,18 @@ object WatchUi {
         return FollowUi(f.grantId, f.seat, names[f.seat], arranged.map { CardUi(it.id, it.suit, it.rank, HandArrangement.isWildcard(it, level), selected = false, eligible = true) })
     }
 
-    /** The outcome of the watcher's last request, unless already dismissed. */
-    private fun notice(
-        sessionNotice: SessionNotice?,
-        latest: GrantView?,
-        dismissedThrough: Long,
-        names: Map<Seat, String?>,
-        occupants: Map<Seat, Occupant>,
-    ): WatchNotice? = when {
+    /**
+     * The outcome of the watcher's last request, unless already dismissed. Named after the grant's
+     * own player and its own reason, never after whoever holds the seat now (round 3 #18).
+     */
+    private fun notice(sessionNotice: SessionNotice?, latest: GrantView?, dismissedThrough: Long): WatchNotice? = when {
         sessionNotice?.action == SessionAction.FOLLOW_REQUEST -> WatchNotice.Refused(sessionNotice.code)
         latest == null || latest.grantRevision <= dismissedThrough -> null
-        latest.status == GrantStatus.DENIED -> WatchNotice.Denied(latest.seat, names[latest.seat])
-        latest.status == GrantStatus.REVOKED -> {
-            val occ = occupants[latest.seat]
-            val stillThere = (occ == Occupant.HUMAN || occ == Occupant.ABSENT) && names[latest.seat] != null
-            if (stillThere) WatchNotice.Revoked(latest.seat, names[latest.seat]) else WatchNotice.PlayerLeft(latest.seat, names[latest.seat])
+        latest.status == GrantStatus.DENIED -> WatchNotice.Denied(latest.seat, latest.playerName)
+        latest.status == GrantStatus.REVOKED -> when (checkNotNull(latest.end) { "a revoked grant says why (wire validation)" }) {
+            GrantEnd.REVOKED -> WatchNotice.Revoked(latest.seat, latest.playerName)
+            GrantEnd.PLAYER_LEFT -> WatchNotice.PlayerLeft(latest.seat, latest.playerName)
+            GrantEnd.ROOM -> WatchNotice.Ended(latest.seat, latest.playerName)
         }
         else -> null
     }

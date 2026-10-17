@@ -80,6 +80,29 @@ class RetentionPolicyTest {
         assertEquals(QuarantineReason.REPLAY_FAILED, assertIs<SessionHost.RestoreResult.Quarantined>(saved.restore()).reason)
     }
 
+    /** A save recovery quarantines at once (no room key, or files under another table's name) is not listed READABLE. */
+    @Test fun aSaveFailingRecoverysPreliminaryChecksIsNotReadable() {
+        val k = SavedTable(1008)
+        k.playersAt(8)
+        k.host.suspend(T0 + 1, T0 + day)
+        k.crash()
+        k.storage.delete(TableFiles(TABLE).hostKey)
+        assertEquals(TableRepository.Condition.UNREADABLE, TableRepository(k.storage).list().single().condition)
+        assertEquals(QuarantineReason.HOST_KEY_UNREADABLE, assertIs<SessionHost.RestoreResult.Quarantined>(k.restore()).reason)
+
+        val m = SavedTable(1009)
+        m.playersAt(8)
+        m.host.suspend(T0 + 1, T0 + day)
+        m.crash()
+        val other = "copied-table"
+        for (name in m.storage.list(TableFiles(TABLE).dir)) {
+            m.storage.replace(TableFiles(other).dir + name.removePrefix(TableFiles(TABLE).dir), m.storage.read(name)!!)
+        }
+        val copied = TableRepository(m.storage).inspect(other)
+        assertEquals(TableRepository.Condition.UNREADABLE, copied.condition, "its meta names table $TABLE")
+        assertEquals(emptyList(), TableRepository(m.storage).sweep(T0 + century, TestProfiles.base, TestProfiles.match).filter { it == other })
+    }
+
     @Test fun retentionNeverRemovesAQuarantinedOrUnreadableSave() {
         // Quarantined.
         val q = SavedTable(1005)

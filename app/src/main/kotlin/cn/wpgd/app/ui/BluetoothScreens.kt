@@ -8,7 +8,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.liveRegion
@@ -58,7 +57,7 @@ fun BluetoothHubScreen(onHost: () -> Unit, onJoin: () -> Unit, onBack: () -> Uni
  * actions [BleGate.actions] lists — the fix first, then the same Wi-Fi and solo play.
  */
 @Composable
-fun BluetoothGateScreen(state: BleGateState, purpose: BlePurpose, onAction: (BleGateAction) -> Unit, onBack: () -> Unit) {
+fun BluetoothGateScreen(state: BleGateState, purpose: BlePurpose, onAction: (BleGateAction) -> Unit, onBack: () -> Unit, newTables: Boolean = Features.TRIBUTE_PROFILE) {
     val c = Wpgd.colors
     val title = stringResource(if (purpose == BlePurpose.HOST) R.string.bt_host else R.string.bt_join)
     RoomPage(title, "gate:${state.name}", onBack) {
@@ -82,7 +81,7 @@ fun BluetoothGateScreen(state: BleGateState, purpose: BlePurpose, onAction: (Ble
             Text(stringResource(body), style = roomBody)
         }
         if (state == BleGateState.NEEDS_PERMISSION) Text(stringResource(R.string.gate_needs_note), style = roomLabel, color = c.ink2)
-        BleGate.actions(state).forEachIndexed { i, action ->
+        BleGate.actions(state, newTables).forEachIndexed { i, action ->
             val label = stringResource(
                 when (action) {
                     BleGateAction.REQUEST_PERMISSION -> if (state == BleGateState.DENIED) R.string.gate_retry else R.string.gate_continue

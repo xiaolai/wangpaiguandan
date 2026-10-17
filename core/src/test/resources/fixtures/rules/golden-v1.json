@@ -7582,7 +7582,7 @@
   {
     "id": "PR01",
     "kind": "profile",
-    "description": "base-v1 rejects any option key.",
+    "description": "base-v1 rejects the unregistered option key allowWrapAround.",
     "status": "default-dependent",
     "decisions": [
       "D10"
@@ -7600,7 +7600,7 @@
       "accepted": false,
       "rejected_reason": "unknown_option"
     },
-    "why": "R8.1 default (D10): base-v1 has no options; any key is unknown and rejected."
+    "why": "R8.1 (D10): a profile may set registered options; allowWrapAround is not a registered key (the registered wrap-around option is sequence.wrapAroundA), so it is unknown and rejected."
   },
   {
     "id": "UN01",

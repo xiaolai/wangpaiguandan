@@ -82,10 +82,39 @@ class EventEffectTest {
         assertEquals(listOf(CueKind.PASS to Seat.SOUTH), cues.map { it.kind to it.seat })
     }
 
+    /**
+     * Audit #24: after skipped revisions the trick that closed may have been won by a later play, so the
+     * previous view's top cannot be assumed to have won and no closing pass is guessed.
+     */
+    @Test fun noClosingPassIsGuessedAcrossSkippedRevisions() {
+        val t = EffectTracker()
+        val east = cn.wpgd.app.core.state.PublicPlay(Seat.EAST, listOf(cn.wpgd.app.card("0C9")), emptyList(), cn.wpgd.app.core.rules.CombinationType.SINGLE)
+        val open = playingView(hand = listOf("0S5"), turn = Seat.SOUTH, trick = listOf(east), passed = listOf(Seat.NORTH, Seat.WEST), revision = 10)
+        // Unseen: SOUTH beat EAST (11), then the others passed (12..14) and the trick closed; SOUTH leads.
+        val closed = playingView(hand = listOf("0S5"), turn = Seat.SOUTH, revision = 14)
+        t.observe(1, 10, open)
+        val cues = t.observe(1, 14, closed)
+        assertEquals(emptyList<Pair<CueKind, Seat?>>(), cues.filter { it.kind == CueKind.PASS }.map { it.kind to it.seat })
+    }
+
     @Test fun aRejectionIsCuedOncePerCommand() {
         val t = EffectTracker()
         val first = t.rejected(1, 5, "abc-1")
         assertEquals(CueKind.COMMAND_REJECTED, first?.kind)
         assertEquals(null, t.rejected(1, 5, "abc-1"))
+    }
+    /** Round 3 #17: a rematch returns everyone to the lobby (deal 0): no deal starts; its first deal does. */
+    @Test fun aRematchLobbyIsNoDealStartAndTheNextMatchsFirstDealIs() {
+        val t = EffectTracker()
+        val m1d1 = playingView(hand = listOf("0S5"), revision = 10).let { v -> v.copy(match = v.match.copy(matchNumber = 1, dealNumber = 1)) }
+        val lobby = m1d1.copy(deal = null, match = m1d1.match.copy(matchNumber = 2, dealNumber = 0, phase = cn.wpgd.app.core.match.MatchPhase.AWAITING_DEAL))
+        t.observe(1, 10, m1d1)
+        assertTrue(t.observe(1, 11, lobby).none { it.kind == CueKind.DEAL_STARTED })
+
+        // The same deal number in the next match is a new deal, even when the lobby view was skipped.
+        val t2 = EffectTracker()
+        val m2d1 = m1d1.copy(match = m1d1.match.copy(matchNumber = 2, dealNumber = 1))
+        t2.observe(1, 10, m1d1)
+        assertEquals(1, t2.observe(1, 20, m2d1).count { it.kind == CueKind.DEAL_STARTED })
     }
 }

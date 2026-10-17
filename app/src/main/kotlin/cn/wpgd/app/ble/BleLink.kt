@@ -141,7 +141,7 @@ class BleLink(
         }
 
         override fun onPacket(packet: ByteArray) {
-            val record = synchronized(lock) {
+            synchronized(lock) {
                 if (disposed) return
                 metrics.packetsIn.incrementAndGet()
                 metrics.packetBytesIn.addAndGet(packet.size.toLong())
@@ -149,7 +149,12 @@ class BleLink(
                     is Reassembly.Record -> {
                         metrics.recordsIn.incrementAndGet()
                         metrics.recordBytesIn.addAndGet(r.bytes.size.toLong())
-                        r.bytes
+                        // Not gated on closing: a peer that sends its last word and closes must still be
+                        // heard. Posted under the lock: a disconnect on another radio thread takes the
+                        // lock after this, so its onClosed is posted after this receive, never before.
+                        val record = r.bytes
+                        post { listener?.onReceive(record) }
+                        return
                     }
                     Reassembly.Incomplete -> return
                     Reassembly.Duplicate -> { metrics.duplicatePackets.incrementAndGet(); return }
@@ -157,13 +162,10 @@ class BleLink(
                     is Reassembly.Fatal -> {
                         metrics.violations[r.violation.ordinal].incrementAndGet()
                         failLocked()
-                        null
                     }
                 }
             }
-            // Not gated on closing: a peer that sends its last word and closes must still be heard;
-            // receives are posted before onClosed, so the loop sees them in order.
-            if (record != null) post { listener?.onReceive(record) } else signalClosed()
+            signalClosed()
         }
 
         override fun onSent(ok: Boolean) {

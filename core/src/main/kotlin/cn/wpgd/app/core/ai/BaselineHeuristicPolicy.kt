@@ -59,29 +59,25 @@ object BaselineHeuristicPolicy : AiPolicy {
         val opponentBound = table.lowestOpponentBound(seat)
         val partnerBound = table.partnerBound(seat)
         val best = Best(context)
-        // Rule 6: a bomb that does not end the hand is led only when no other play exists.
-        val bombs = Best(context, offering = false)
         for (a in input.choices.plays) {
             context.spend()
             val remaining = remove(input.hand, a)
             if (remaining.isEmpty()) return AiAction.Play(a).also(context::offer)
+            // Rule 6: a bomb that does not end the hand is never led. A leader always has a non-bomb
+            // play (any single card), so bombs are neither scored nor offered as a best-so-far answer.
+            if (a.combination.type.isBombClass) continue
             var s = HandEvaluator.score(remaining, input.level)
-            val bomb = a.combination.type.isBombClass
-            if (!bomb && opponentBound != null && opponentBound <= 3 && a.cards.size <= opponentBound) s += 0.6
-            if (!bomb && partnerBound != null && a.combination.key <= 10) {
+            if (opponentBound != null && opponentBound <= 3 && a.cards.size <= opponentBound) s += 0.6
+            if (partnerBound != null && a.combination.key <= 10) {
                 if (partnerBound == 1 && a.cards.size == 1) s -= 2.0
                 else if (partnerBound <= 5 && a.cards.size <= partnerBound) s -= 0.3
             }
             s -= 0.01 * a.cards.size
             s += 0.001 * a.combination.key
-            if (bomb) {
-                bombs.consider(AiAction.Play(a), s)
-                if (best.leader() == null) bombs.leader()?.let(context::offer)
-            } else {
-                best.consider(AiAction.Play(a), s)
-            }
+            best.consider(AiAction.Play(a), s)
         }
-        return best.pickOrNull() ?: bombs.pick()
+        // Reached only for choices no generator produces (bombs alone): the deterministic fallback.
+        return best.pickOrNull() ?: Fallback.choose(input)
     }
 
     private fun follow(input: PolicyInput, deal: MemberView, context: DecisionContext): AiAction {

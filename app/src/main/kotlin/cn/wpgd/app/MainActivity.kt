@@ -69,7 +69,7 @@ class MainActivity : ComponentActivity() {
                 savedTables = graph::savedTables,
                 host = { settings, medium -> graph.roomOwner(medium).hostRoom(nickname(), settings) },
                 join = { advert, seat, replace -> graph.roomOwner(advert.endpoint.medium).joinRoom(advert, if (seat == null) Role.OBSERVER else Role.PLAYER, seat, nickname(), replace) },
-                restore = { id, medium -> graph.roomOwner(medium).restoreRoom(id, nickname()) },
+                restore = { id, medium -> graph.restoreSaved(id, medium, nickname()) },
                 savedMedium = graph::savedMedium,
                 bluetooth = if (graph.bluetoothEnabled) bluetoothAccess() else null,
                 addressJoin = graph::addressJoin,

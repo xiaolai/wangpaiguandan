@@ -151,7 +151,12 @@ class BleRoomNetwork(
                     links.add(link)
                 }
             }
-            post { if (keep) onPeer(link) else link.close() }
+            post {
+                // Checked again when the loop runs this: the listener may have closed (and closed this
+                // link) after the accept was queued; a disposed link is never handed to the room.
+                val live = keep && synchronized(this@BleRoomNetwork) { !stopped } && !link.disposed
+                if (live) onPeer(link) else link.close()
+            }
         }
 
         init {
@@ -288,7 +293,11 @@ class BleRoomBrowser(
             scheduleSweep()
             Snapshot(++taken, emptyList())
         }.let(::deliver)
+        if (synchronized(this) { stopped }) return
         scanner.start { address -> seen(address) }
+        // A stop() during the first callback or racing this start ran its scanner.stop() before the
+        // scanner started: stop it again now, after the start (scanner calls are ordered and idempotent).
+        if (synchronized(this) { stopped }) scanner.stop()
     }
 
     override fun stop() {

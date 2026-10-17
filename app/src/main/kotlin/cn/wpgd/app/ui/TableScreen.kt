@@ -1,5 +1,6 @@
 package cn.wpgd.app.ui
 
+import androidx.annotation.StringRes
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
@@ -60,6 +61,7 @@ import cn.wpgd.app.core.match.MatchPhase
 import cn.wpgd.app.core.state.ViewCard
 import cn.wpgd.app.owner.TableKind
 import cn.wpgd.app.session.wire.Occupant
+import cn.wpgd.app.table.AbsentSeatUi
 import cn.wpgd.app.table.GroupKind
 import cn.wpgd.app.table.HandArrangement
 import cn.wpgd.app.table.HandSort
@@ -95,12 +97,16 @@ fun TableScreen(ui: TableUiState, rules: RulesSummary, fx: TableEffectsState, ac
     val text = rememberTableText(ui.seat)
     Surface(color = c.bg, contentColor = c.ink, modifier = Modifier.fillMaxSize()) {
         Box(Modifier.fillMaxSize().testTag("table")) {
-            when (ui.screen) {
-                TableScreen.NO_TABLE -> Notice(stringResource(R.string.table_none), actions.leave)
-                TableScreen.CLOSED -> Notice(stringResource(R.string.table_closed), actions.leave)
-                TableScreen.FAILED -> Notice(stringResource(R.string.table_failed), actions.leave)
-                TableScreen.STARTING -> Starting()
-                TableScreen.TABLE, TableScreen.DEAL_RESULT, TableScreen.MATCH_OVER -> TableBody(ui, text, fx, actions) { onMenu(true) }
+            // While the menu is open the table under it is out of reach for a screen reader too, as
+            // it is for touch behind the scrim (round 3 #30): the menu is modal.
+            Box(Modifier.fillMaxSize().then(if (menuOpen) Modifier.clearAndSetSemantics { } else Modifier)) {
+                when (ui.screen) {
+                    TableScreen.NO_TABLE -> Notice(stringResource(R.string.table_none), actions.leave)
+                    TableScreen.CLOSED -> Notice(stringResource(R.string.table_closed), actions.leave)
+                    TableScreen.FAILED -> Notice(stringResource(R.string.table_failed), actions.leave)
+                    TableScreen.STARTING -> Starting()
+                    TableScreen.TABLE, TableScreen.DEAL_RESULT, TableScreen.MATCH_OVER -> TableBody(ui, text, fx, actions) { onMenu(true) }
+                }
             }
             fx.flash?.let { f ->
                 BombFlash(f.cueId) { if (fx.flash == f) fx.flash = null }
@@ -238,10 +244,9 @@ private fun AbsentSeats(ui: TableUiState, text: TableText, actions: TableActions
         Column(Modifier.padding(Tokens.space(4)), verticalArrangement = Arrangement.spacedBy(Tokens.space(2))) {
             for (a in ui.absentSeats) {
                 val who = a.nickname ?: text.seat(a.seat)
-                val line = when {
-                    a.waitingForPlayer -> stringResource(R.string.seat_presence_awaiting)
-                    a.graceSeconds != null -> stringResource(R.string.host_absent_grace, who, a.graceSeconds)
-                    else -> stringResource(R.string.host_absent, who)
+                val line = when (val res = absentLine(a)) {
+                    R.string.host_absent_grace -> stringResource(res, who, checkNotNull(a.graceSeconds))
+                    else -> stringResource(res, who)
                 }
                 Text(line, style = bodyStyle, modifier = Modifier.testTag("host:absent:${a.seat.name}").semantics { liveRegion = LiveRegionMode.Polite })
                 if (ui.canStandIn && !a.waitingForPlayer) {
@@ -252,6 +257,14 @@ private fun AbsentSeats(ui: TableUiState, text: TableText, actions: TableActions
             }
         }
     }
+}
+
+/** The line for one away seat; every line names its seat, so several waiting seats can be told apart (audit #34). */
+@StringRes
+internal fun absentLine(a: AbsentSeatUi): Int = when {
+    a.waitingForPlayer -> R.string.host_awaiting_player
+    a.graceSeconds != null -> R.string.host_absent_grace
+    else -> R.string.host_absent
 }
 
 /** T9: a watcher asks to see this hand. Shown only when it is not this player's turn (G3). */
@@ -393,9 +406,11 @@ private fun TrickArea(ui: TableUiState, text: TableText, fx: TableEffectsState, 
     val motion = fx.motion
     LaunchedEffect(motion?.cueId) {
         if (motion != null) {
-            slide.snapTo(1f)
-            slide.animateTo(0f, tween(MOTION_MS))
-            // Done: a trick area composed later (the other layout after a resize) must not replay it.
+            if (fx.startMotion(motion)) {
+                slide.snapTo(1f)
+                slide.animateTo(0f, tween(MOTION_MS))
+            }
+            // Done, or started by a trick area this one replaced (a resize): never replayed.
             if (fx.motion == motion) fx.motion = null
         }
     }

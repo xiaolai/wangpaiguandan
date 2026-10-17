@@ -1,6 +1,7 @@
 package cn.wpgd.app.core.state
 
 import cn.wpgd.app.core.Suit
+import cn.wpgd.app.core.readOnlyCopy
 import cn.wpgd.app.core.rules.CombinationType
 import cn.wpgd.app.core.rules.LegalActionGenerator
 import cn.wpgd.app.core.rules.Ranks
@@ -113,8 +114,9 @@ class SeatProjector(private val profile: RuleProfile) {
         trick = s.trick.plays.map { p ->
             PublicPlay(p.seat, p.cardIds.map(::viewCard), p.declaration?.map(::viewAssignment), p.combination.type)
         },
-        passedSinceLastPlay = s.trick.passedSinceTop,
-        finishOrder = s.finishOrder,
+        // Snapshots (round 3 #45): handing out the state's own lists would let a Java caller change it.
+        passedSinceLastPlay = s.trick.passedSinceTop.readOnlyCopy(),
+        finishOrder = s.finishOrder.readOnlyCopy(),
     )
 
     private fun card(id: String) = checkNotNull(StandardDeck[id]) { "unknown card id $id" }

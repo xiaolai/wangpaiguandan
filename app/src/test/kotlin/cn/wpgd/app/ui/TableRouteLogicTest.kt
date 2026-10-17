@@ -31,6 +31,16 @@ class TableRouteLogicTest {
         assertEquals(EffectOutput.Motion("c2", Seat.EAST), fx.motion)
     }
 
+    /** Round 3 #31: a motion cue starts once; the trick area of the other layout (a resize mid-animation) does not replay it. */
+    @Test fun aMotionCueStartsOnceAcrossLayouts() {
+        val fx = TableEffectsState()
+        val m = EffectOutput.Motion("c1", Seat.EAST)
+        fx.show(m, systemReducedMotion = false)
+        assertTrue("the first trick area plays it", fx.startMotion(m))
+        assertFalse("a trick area composed after a resize does not", fx.startMotion(m))
+        assertTrue("the next cue plays", fx.startMotion(EffectOutput.Motion("c2", Seat.EAST)))
+    }
+
     /** Audit-fix #52: the open menu hides the table, so the wake policy releases the screen. */
     @Test fun theOpenMenuReleasesTheWakeLock() {
         val vm = TableViewModel(FakeSession(playingView(hand = listOf("0S3"))), PreferencesRepository(InMemoryKeyValueStore()), CoroutineScope(SupervisorJob() + Dispatchers.Unconfined))

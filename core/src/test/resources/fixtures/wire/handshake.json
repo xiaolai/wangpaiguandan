@@ -1,14 +1,14 @@
 {
     "schema": 1,
-    "protocolVersion": 2,
+    "protocolVersion": 3,
     "description": "Handshake, admission and liveness messages. hello/welcome/hello_rejected and the join-by-address room_query/room_listing travel in PLAIN frames; the rest only sealed.",
     "cases": [
         {
             "name": "hello-player",
             "wire": {
                 "type": "hello",
-                "protocolMin": 2,
-                "protocolMax": 2,
+                "protocolMin": 3,
+                "protocolMax": 3,
                 "role": "PLAYER",
                 "roomId": "room-a",
                 "baseProfileHash": "1111111111111111111111111111111111111111111111111111111111111111",
@@ -20,8 +20,8 @@
             "name": "hello-observer",
             "wire": {
                 "type": "hello",
-                "protocolMin": 2,
-                "protocolMax": 3,
+                "protocolMin": 3,
+                "protocolMax": 4,
                 "role": "OBSERVER",
                 "roomId": "room-a",
                 "baseProfileHash": "1111111111111111111111111111111111111111111111111111111111111111",
@@ -33,7 +33,7 @@
             "name": "welcome",
             "wire": {
                 "type": "welcome",
-                "protocolVersion": 2,
+                "protocolVersion": 3,
                 "roomId": "room-a",
                 "epoch": 3,
                 "publicKey": "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8",
@@ -51,25 +51,25 @@
             "wire": {
                 "type": "hello_rejected",
                 "reason": "VERSION_UNSUPPORTED",
-                "protocolMin": 2,
-                "protocolMax": 2,
-                "message": "host speaks 2..2"
+                "protocolMin": 3,
+                "protocolMax": 3,
+                "message": "host speaks 3..3"
             }
         },
         {
             "name": "room-query",
             "wire": {
                 "type": "room_query",
-                "protocolMin": 2,
-                "protocolMax": 2
+                "protocolMin": 3,
+                "protocolMax": 3
             }
         },
         {
             "name": "room-listing",
             "wire": {
                 "type": "room_listing",
-                "protocolMin": 2,
-                "protocolMax": 2,
+                "protocolMin": 3,
+                "protocolMax": 3,
                 "roomId": "room-a",
                 "tableName": "周末掼蛋",
                 "hostName": "阿梅",

@@ -1,5 +1,7 @@
 package cn.wpgd.app.core.match
 
+import cn.wpgd.app.core.readOnlyCopy
+
 import cn.wpgd.app.core.rules.RuleProfile
 import cn.wpgd.app.core.state.MemberView
 import cn.wpgd.app.core.state.SeatProjector
@@ -112,20 +114,21 @@ class MatchProjector(base: RuleProfile, private val match: RuleProfile) {
         leadReason = s.leadReason,
         cutCard = s.cutCard?.let(::viewCard),
         tribute = s.tribute?.let(::tributeView),
-        reports = s.reports,
-        answers = s.answers,
-        lastResult = s.previous,
+        // Snapshots (round 3 #39): a projection never hands out the host state's own lists.
+        reports = s.reports.readOnlyCopy(),
+        answers = s.answers.readOnlyCopy(),
+        lastResult = s.previous?.let { it.copy(finishOrder = it.finishOrder.readOnlyCopy(), placements = it.placements.readOnlyCopy(), teams = it.teams.readOnlyCopy()) },
         winner = s.winner,
     )
 
     private fun tributeView(t: TributeState) = TributeView(
         kind = t.obligation.kind,
-        givers = t.obligation.givers,
-        receivers = t.obligation.receivers,
+        givers = t.obligation.givers.readOnlyCopy(),
+        receivers = t.obligation.receivers.readOnlyCopy(),
         given = t.obligation.givers.mapNotNull { g -> t.given[g]?.let { TransferView(g, t.routes[g], viewCard(it)) } },
         returnsMade = t.obligation.receivers.filter { it in t.returns },
         returnsRevealed = if (t.revealed) t.obligation.receivers.map { r -> TransferView(r, t.giverTo(r), viewCard(t.returns.getValue(r))) } else emptyList(),
-        resistedBy = t.resistedBy,
+        resistedBy = t.resistedBy?.readOnlyCopy(),
         resistedJokers = t.resistedJokers.map(::viewCard),
     )
 

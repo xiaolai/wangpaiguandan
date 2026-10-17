@@ -106,6 +106,9 @@ data class StoredMember(
         require(B64.decode(capability)?.size == CREDENTIAL_BYTES && B64.decode(digestKey)?.size == CREDENTIAL_BYTES) {
             "stored credentials are not $CREDENTIAL_BYTES base64url-encoded bytes"
         }
+        // A player holds a seat and an observer none; an observer with a seat would be projected its private view.
+        require((role == Role.PLAYER) == (seat != null)) { "a stored $role ${if (seat == null) "without" else "with"} a seat" }
+        require(privateView == null || role == Role.OBSERVER) { "only an observer holds a private viewpoint" }
     }
 
     companion object {

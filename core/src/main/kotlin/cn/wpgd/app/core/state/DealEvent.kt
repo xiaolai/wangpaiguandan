@@ -1,5 +1,6 @@
 package cn.wpgd.app.core.state
 
+import cn.wpgd.app.core.readOnlyCopy
 import cn.wpgd.app.core.rules.Combination
 import cn.wpgd.app.core.rules.WildcardAssignment
 
@@ -166,6 +167,10 @@ sealed interface DealEvent {
  * Applies events to a state. Pure and total over well-formed logs; a malformed log (unknown schema,
  * revision going backwards, a card not in the hand, an event out of phase) throws, so a corrupt log
  * fails loudly instead of producing a plausible state.
+ *
+ * These checks are per event and profile-free: they do not know which readings the cards admit or
+ * which events one command emits together. An untrusted (stored) log is replayed through
+ * `MatchReducer.replay`, which re-runs each batch's command under the profiles.
  */
 object DealEvents {
     fun replay(initial: DealState, events: List<DealEvent>): DealState = events.fold(initial, ::apply)
@@ -208,6 +213,7 @@ object DealEvents {
             }
             is DealEvent.PlayBegan -> {
                 require(s.phase == Phase.DEALT) { "play began in phase ${s.phase}" }
+                require(s.hands.values.none { it.isEmpty() }) { "play began while a seat holds no card" }
                 s.copy(phase = Phase.PLAYING, leader = event.leader, turn = event.leader)
             }
             is DealEvent.Played -> {
@@ -222,7 +228,9 @@ object DealEvents {
                 require(event.combination.size == ids.size) { "a ${event.combination.size}-card reading stated for ${ids.size} cards" }
                 val top = s.trick.top
                 require(top == null || event.combination.beats(top.combination)) { "${event.combination} does not beat ${top?.combination}" }
-                val play = TrickPlay(event.seat, ids, event.declaration?.toList(), event.combination)
+                // The combination's nested lists too (round 3 #44): the event may be caller-owned.
+                val combination = event.combination.copy(sequence = event.combination.sequence.readOnlyCopy(), resolvedRanks = event.combination.resolvedRanks.readOnlyCopy())
+                val play = TrickPlay(event.seat, ids.readOnlyCopy(), event.declaration?.readOnlyCopy(), combination)
                 s.copy(
                     hands = s.hands + (event.seat to (hand - ids.toSet())),
                     played = s.played + ids,
@@ -231,6 +239,9 @@ object DealEvents {
             }
             is DealEvent.Passed -> {
                 requirePlaying(s, event.seat)
+                // R2.12: the leader must play; only a follower of a play on the table may pass.
+                require(s.trick.top != null) { "${event.seat} passed with no play on the table" }
+                require(!s.isFinished(event.seat)) { "${event.seat} has played out and cannot pass" }
                 s.copy(trick = s.trick.copy(passedSinceTop = s.trick.passedSinceTop + event.seat))
             }
             is DealEvent.SeatFinished -> {
@@ -252,6 +263,9 @@ object DealEvents {
             }
             is DealEvent.TurnMoved -> {
                 require(s.phase == Phase.PLAYING) { "turn moved in phase ${s.phase}" }
+                // D22: the turn passes from the seat that just acted to the next seat still holding cards.
+                val expected = nextActive(s, checkNotNull(s.turn) { "turn moved with no seat to act" })
+                require(event.seat == expected) { "turn moved to ${event.seat}, the next active seat is $expected" }
                 s.copy(turn = event.seat)
             }
             is DealEvent.DealEnded -> {
@@ -265,6 +279,16 @@ object DealEvents {
 
     /** R1.1: the 108 cards dealt round-robin to four seats. */
     private val HAND_SIZE = StandardDeck.cards.size / Seat.entries.size
+
+    /** D22: the next seat in play order after [from] that still holds cards. */
+    internal fun nextActive(state: DealState, from: Seat): Seat {
+        var s = from.next
+        while (state.isFinished(s)) {
+            check(s != from) { "no seat holds cards" }
+            s = s.next
+        }
+        return s
+    }
 
     private fun requirePlaying(s: DealState, seat: Seat) {
         require(s.phase == Phase.PLAYING && s.turn == seat) { "$seat acted out of turn (turn ${s.turn}, phase ${s.phase})" }

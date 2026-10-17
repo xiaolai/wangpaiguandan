@@ -111,4 +111,28 @@ class EventLogRebuildTest {
         assertEquals(1, recovered.table.report.checkpointsSkipped)
         assertFailsWith<IllegalArgumentException> { recovered.table.journal.writeCheckpoint(initial, MatchStateCodec.hash(initial)) }
     }
+
+    /**
+     * Finding 59: a torn segment that a later restore already rotated past does not make every later
+     * restore rotate again. Segment 1 ends in an unmarked record; segment 2 holds that revision and the
+     * rest, cleanly: the journal appends to segment 2, and the report still says a tail was discarded.
+     */
+    @Test fun anOldTornSegmentDoesNotRotateAPastACleanLatestSegment() {
+        val saved = SavedTable(603)
+        saved.playersAt(10)
+        saved.crash()
+        val files = TableFiles(TABLE)
+        val bytes = checkNotNull(saved.storage.read(files.segment(1)))
+        val frames = LogFormat.parse(bytes).frames
+        val cut = frames.first { it.kind == LogFormat.RECORD && it.revision == 6L }
+        // Segment 1: r1..r5 committed, then r6's record without its marker (the torn tail of an old run).
+        val first = bytes.copyOfRange(0, cut.offset + cut.size)
+        val second = bytes.copyOfRange(cut.offset, bytes.size)
+        saved.storage.put(files.segment(1), first)
+        saved.storage.put(files.segment(2), second)
+        val recovered = assertIs<RecoveryResult.Recovered>(TableRecovery.recover(saved.storage, TABLE, TestProfiles.base, TestProfiles.match))
+        assertEquals(10, recovered.table.state.revision)
+        assertTrue(recovered.table.report.tailDiscarded, "the report still counts the old torn tail")
+        assertEquals(2, recovered.table.journal.segment, "the clean latest segment is appended to, not rotated past")
+    }
 }

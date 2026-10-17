@@ -90,12 +90,12 @@ internal object WireSamples {
     private const val HASH_B = "2222222222222222222222222222222222222222222222222222222222222222"
 
     val handshake: List<Pair<String, WireMessage>> = listOf(
-        "hello-player" to Hello(2, 2, Role.PLAYER, "room-a", HASH_A, HASH_B, key),
-        "hello-observer" to Hello(2, 3, Role.OBSERVER, "room-a", HASH_A, HASH_B, key),
-        "welcome" to Welcome(2, "room-a", 3, key, cap, nonce, RoomPolicyView(RoomMode.FRIENDLY, hints = true, privateFollow = true)),
-        "hello-rejected-version" to HelloRejected(HelloRejectReason.VERSION_UNSUPPORTED, 2, 2, "host speaks 2..2"),
-        "room-query" to RoomQuery(2, 2),
-        "room-listing" to RoomListing(2, 2, "room-a", "周末掼蛋", "阿梅", HASH_A, HASH_B, B64.encode(ByteArray(32) { (128 + it).toByte() }), listOf(Seat.EAST, Seat.WEST), listOf(Seat.NORTH)),
+        "hello-player" to Hello(3, 3, Role.PLAYER, "room-a", HASH_A, HASH_B, key),
+        "hello-observer" to Hello(3, 4, Role.OBSERVER, "room-a", HASH_A, HASH_B, key),
+        "welcome" to Welcome(3, "room-a", 3, key, cap, nonce, RoomPolicyView(RoomMode.FRIENDLY, hints = true, privateFollow = true)),
+        "hello-rejected-version" to HelloRejected(HelloRejectReason.VERSION_UNSUPPORTED, 3, 3, "host speaks 3..3"),
+        "room-query" to RoomQuery(3, 3),
+        "room-listing" to RoomListing(3, 3, "room-a", "周末掼蛋", "阿梅", HASH_A, HASH_B, B64.encode(ByteArray(32) { (128 + it).toByte() }), listOf(Seat.EAST, Seat.WEST), listOf(Seat.NORTH)),
         "join-seat" to Join(3, "south", Seat.SOUTH, false, null),
         "join-rejoin" to Join(3, "south", Seat.SOUTH, false, proof),
         "join-observer" to Join(3, "watcher", null, false, null),
@@ -126,7 +126,7 @@ internal object WireSamples {
         "receipt" to Receipt(3, "c-1", 18, key),
         "snapshot" to Snapshot(3, 18, "{\"schemaVersion\":1}"),
         "follow-snapshot" to FollowSnapshot(3, 18, "g1", 2, Seat.NORTH, "{\"schemaVersion\":1}"),
-        "status" to Status(3, 4, listOf(GrantView("g1", "watcher", Seat.NORTH, GrantStatus.ACTIVE, 2)), room(lobby = false, yourSeat = Seat.NORTH)),
+        "status" to Status(3, 4, listOf(GrantView("g1", "watcher", Seat.NORTH, GrantStatus.ACTIVE, 2, "player", null)), room(lobby = false, yourSeat = Seat.NORTH)),
     )
 
     /** WI-09: the room roster and settings every member sees (inside `status`). */

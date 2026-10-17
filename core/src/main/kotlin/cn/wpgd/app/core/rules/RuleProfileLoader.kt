@@ -1,5 +1,7 @@
 package cn.wpgd.app.core.rules
 
+import cn.wpgd.app.core.readOnlyCopy
+
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
@@ -80,10 +82,11 @@ object RuleProfileLoader {
             version = version,
             displayName = root.string("displayName"),
             provisional = root.boolean("provisional"),
-            sourceRefs = root.stringList("sourceRefs"),
-            options = options.toMap(),
+            // Read-only snapshots (round 3 #40): a Java caller could otherwise change a value after the hash was taken.
+            sourceRefs = root.stringList("sourceRefs").readOnlyCopy(),
+            options = options.readOnlyCopy(),
             registry = registry,
-            warnings = warnings.toList(),
+            warnings = warnings.readOnlyCopy(),
         ).also(::rejectEmptyBombRange)
     }
 

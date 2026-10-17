@@ -16,11 +16,12 @@ import kotlinx.serialization.Serializable
  * without padding.
  */
 /**
+ * 3 (2026-10-17): a grant names its player and why it was revoked ([GrantView.playerName], [GrantView.end]).
  * 2 (2026-10-16): G2 host authentication (welcome carries the host's room key and a fresh nonce; a
  * rejoin sends a proof instead of the capability) and the match number in every match view. Version
  * 1 was never released; a version-1 peer is refused at hello (`VERSION_UNSUPPORTED`).
  */
-const val PROTOCOL_VERSION = 2
+const val PROTOCOL_VERSION = 3
 
 @Serializable
 enum class Role { PLAYER, OBSERVER }
@@ -357,6 +358,23 @@ data class FollowSnapshot(
 @Serializable
 enum class GrantStatus { PENDING, ACTIVE, DENIED, REVOKED }
 
+/** Why a grant was revoked; carried with it, so the watcher's notice never depends on who sits there later. */
+@Serializable
+enum class GrantEnd {
+    /** The followed player took the permission back, or the watcher withdrew. */
+    REVOKED,
+
+    /** The followed player left the seat (left the room, was replaced, or moved): consent never passes on (G6). */
+    PLAYER_LEFT,
+
+    /** The room ended it: private follow was switched off, or a save failed. */
+    ROOM,
+}
+
+/**
+ * One follow grant. [playerName] is the nickname of the seat's player when the watcher asked (the
+ * one who consents); [end] is set exactly when [status] is REVOKED.
+ */
 @Serializable
 data class GrantView(
     val grantId: String,
@@ -364,6 +382,8 @@ data class GrantView(
     val seat: Seat,
     val status: GrantStatus,
     val grantRevision: Long,
+    val playerName: String,
+    val end: GrantEnd?,
 )
 
 /** WI-09: what happens to an absent human's seat (mirrors the host's recovery policy). */

@@ -99,15 +99,17 @@ object ManualAddress {
         if (':' !in s) return false
         val halves = s.split("::")
         if (halves.size > 2) return false
-        fun groups(part: String): List<String>? = if (part.isEmpty()) emptyList() else part.split(':')
-        val head = groups(halves[0]) ?: return false
-        val tail = if (halves.size == 2) groups(halves[1]) ?: return false else emptyList()
+        fun groups(part: String): List<String> = if (part.isEmpty()) emptyList() else part.split(':')
+        val head = groups(halves[0])
+        val tail = if (halves.size == 2) groups(halves[1]) else emptyList()
         val all = head + tail
-        // An embedded IPv4 address may stand in for the last two groups.
+        // An embedded IPv4 address may stand in for the last two groups: the literal's final 32 bits,
+        // so nothing may follow it, not even "::" ("192.0.2.1::" is refused, as the JDK refuses it).
+        val ipv4Ends = halves.size == 1 || tail.isNotEmpty()
         var count = 0
         for ((i, g) in all.withIndex()) {
             count += when {
-                i == all.lastIndex && '.' in g -> if (ipv4(g)) 2 else return false
+                '.' in g -> if (i == all.lastIndex && ipv4Ends && ipv4(g)) 2 else return false
                 g.length in 1..4 && g.all(::hexDigit) -> 1
                 else -> return false
             }

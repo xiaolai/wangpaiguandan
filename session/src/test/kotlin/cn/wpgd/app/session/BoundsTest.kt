@@ -6,6 +6,8 @@ import cn.wpgd.app.session.framing.ChunkCodec
 import cn.wpgd.app.session.host.HostConfig
 import cn.wpgd.app.session.transport.InMemoryLink
 import cn.wpgd.app.session.transport.TransportListener
+import cn.wpgd.app.session.wire.Admitted
+import cn.wpgd.app.session.wire.B64
 import cn.wpgd.app.session.wire.CloseReason
 import cn.wpgd.app.session.wire.Hello
 import cn.wpgd.app.session.wire.Receipt
@@ -106,6 +108,18 @@ class BoundsTest {
         }
     }
 
+    /** Finding 56: rejoin credentials are 32 random bytes; anything else cannot be used and is refused. */
+    @Test fun admittedCredentialsMustBe32ByteBase64urlValues() {
+        val b32 = B64.encode(ByteArray(32) { it.toByte() })
+        val ok = Admitted(3, "m1", Role.PLAYER, Seat.SOUTH, b32, b32)
+        assertNull(WireValidation.problem(ok))
+        assertEquals("credentials", WireValidation.problem(ok.copy(capability = "a")), "a capability that does not decode")
+        assertEquals("credentials", WireValidation.problem(ok.copy(digestKey = "AA")), "a one-byte digest key")
+        assertEquals("credentials", WireValidation.problem(ok.copy(capability = B64.encode(ByteArray(31)))), "31 bytes")
+        assertEquals("credentials", WireValidation.problem(ok.copy(digestKey = B64.encode(ByteArray(33)))), "33 bytes")
+        assertEquals("ids", WireValidation.problem(ok.copy(memberId = "bad id")))
+    }
+
     @Test fun clientConfigRejectsTimingThatCannotHold() {
         val ok = Table(seed = 126).config(Role.PLAYER, "south", Seat.SOUTH)
         val bad = listOf(
@@ -136,6 +150,8 @@ class BoundsTest {
             "maxUnadmitted = 0" to { ok.copy(maxUnadmitted = 0) },
             "maxFramesPerSecond = 0" to { ok.copy(maxFramesPerSecond = 0) },
             "maxObservers = -1" to { ok.copy(maxObservers = -1) },
+            // Audit #59: more observers than a roster can carry would vanish from it.
+            "maxObservers above the wire roster limit" to { ok.copy(maxObservers = WireValidation.MAX_OBSERVERS + 1) },
             "aiDelayMs = -1" to { ok.copy(aiDelayMs = -1) },
             "protocol 2..1" to { ok.copy(protocolMin = 2, protocolMax = 1) },
         )

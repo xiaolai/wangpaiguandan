@@ -75,7 +75,8 @@ class RoomShell(
     val host: (RoomSettings, RoomMedium) -> Unit,
     /** Joins as a player at the seat, or as a watcher when the seat is null (C4); or asks to take a seat over. The advert's medium is used. */
     val join: (RoomAdvert, Seat?, Boolean) -> Unit,
-    val restore: (String, RoomMedium) -> Unit,
+    /** False when the table did not start (it is being deleted: round 3 #25). */
+    val restore: (String, RoomMedium) -> Boolean,
     /** WI-10: the medium a saved table is restored on. */
     val savedMedium: (String) -> RoomMedium = { RoomMedium.LAN },
     /** WI-10: null when the build's `bleTransport` flag is off: no Bluetooth entry is shown. */
@@ -162,8 +163,7 @@ fun AppRoot(shell: AppShell) {
                     pendingRestore = null
                     medium = chosen
                     if (restoring != null) {
-                        shell.rooms.restore(restoring, chosen)
-                        route = Route.TABLE
+                        route = if (shell.rooms.restore(restoring, chosen) || open != null) Route.TABLE else Route.SAVED
                     } else {
                         route = if (purpose == BlePurpose.HOST) Route.CREATE else Route.FIND
                     }
@@ -232,8 +232,7 @@ fun AppRoot(shell: AppShell) {
                     purpose = BlePurpose.HOST
                     route = Route.BLUETOOTH_GATE
                 } else {
-                    shell.rooms.restore(id, RoomMedium.LAN)
-                    route = Route.TABLE
+                    route = if (shell.rooms.restore(id, RoomMedium.LAN) || open != null) Route.TABLE else Route.SAVED
                 }
             }, onBack = { route = Route.MENU })
         }

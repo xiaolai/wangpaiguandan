@@ -181,6 +181,29 @@ class MembershipPersistenceTest {
         }
     }
 
+    /**
+     * Finding 53: a player without a seat, or an observer with one, is not a membership this host
+     * ever writes. An observer restored with a seat would be projected that seat's private view.
+     */
+    @Test fun membersWhoseRoleAndSeatDisagreeAreQuarantined() {
+        val breaks = listOf(
+            "observer with a seat" to { p: String -> p.replaceFirst("\"role\":\"PLAYER\"", "\"role\":\"OBSERVER\"") },
+            "player without a seat" to { p: String -> p.replaceFirst(Regex("\"seat\":\"[A-Z]+\""), "\"seat\":null") },
+        )
+        for ((what, change) in breaks) {
+            val saved = SavedTable(1113)
+            saved.seated()
+            saved.crash()
+            val name = TableFiles(TABLE).members
+            val payload = checkNotNull(LogFormat.unwrap(LogFormat.FileKind.MEMBERS, checkNotNull(saved.storage.read(name)))).decodeToString()
+            val broken = change(payload)
+            check(broken != payload) { "$what: nothing replaced in $payload" }
+            saved.storage.replace(name, LogFormat.wrap(LogFormat.FileKind.MEMBERS, broken.encodeToByteArray()))
+            val r = saved.restore()
+            assertEquals(QuarantineReason.MEMBERS_UNREADABLE, assertIs<SessionHost.RestoreResult.Quarantined>(r, "$what: $r").reason, what)
+        }
+    }
+
     @Test fun seatChangesThatCannotBeSavedAreRefusedAndUndone() {
         val saved = SavedTable(1107)
         assertTrue(saved.host.setAi(Seat.EAST, standIn))

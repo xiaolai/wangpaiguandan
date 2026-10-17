@@ -1,5 +1,6 @@
 package cn.wpgd.app.lan
 
+import cn.wpgd.app.room.HostingFailure
 import java.io.IOException
 import java.net.InetAddress
 import java.net.ServerSocket
@@ -20,10 +21,19 @@ class LanServer(
     private val limits: LanLimits = LanLimits(),
     private val maxConnections: Int = 16,
     bindAddress: InetAddress? = null,
+    /** The listening socket (tests pass one that fails); bound to an ephemeral port on [bindAddress]. */
+    private val server: ServerSocket = ServerSocket(0, BACKLOG, bindAddress),
 ) {
-    private val server = ServerSocket(0, BACKLOG, bindAddress)
     private val live = Collections.synchronizedSet(LinkedHashSet<SocketTransport>())
     private val stopped = AtomicBoolean(false)
+    private val failure = HostingFailure()
+
+    /**
+     * Registers [failed], called at most once, on the accept thread, if accepting stops working while
+     * the server was not stopped (newcomers can no longer connect); at once if that already happened.
+     * Connections already open stay open.
+     */
+    fun onFailure(failed: () -> Unit) = failure.register(failed)
 
     /** Connections refused because [maxConnections] were open. */
     @Volatile var refused: Long = 0
@@ -38,11 +48,23 @@ class LanServer(
     }
 
     private fun acceptLoop() {
+        var failures = 0
         while (!stopped.get()) {
             val s = try {
-                server.accept()
+                server.accept().also { failures = 0 }
             } catch (_: IOException) {
-                return
+                // stop() closing the socket ends the loop quietly. Anything else is retried a few
+                // times (out of file descriptors, an aborted handshake), then reported: a room still
+                // announced but no longer accepting must not look healthy.
+                if (stopped.get()) return
+                failures++
+                if (server.isClosed || failures >= MAX_ACCEPT_FAILURES) return acceptFailed()
+                try {
+                    Thread.sleep(ACCEPT_RETRY_MS * failures)
+                } catch (_: InterruptedException) {
+                    return acceptFailed()
+                }
+                continue
             }
             if (stopped.get() || live.size >= maxConnections) {
                 refused++
@@ -60,6 +82,11 @@ class LanServer(
         }
     }
 
+    private fun acceptFailed() {
+        try { server.close() } catch (_: IOException) { }
+        if (!stopped.get()) failure.fail()
+    }
+
     /** Stops listening and closes every connection. Idempotent. */
     fun stop() {
         if (!stopped.compareAndSet(false, true)) return
@@ -69,5 +96,9 @@ class LanServer(
 
     private companion object {
         const val BACKLOG = 8
+
+        /** Consecutive accept failures (not caused by [stop]) after which the server reports itself failed. */
+        const val MAX_ACCEPT_FAILURES = 5
+        const val ACCEPT_RETRY_MS = 50L
     }
 }

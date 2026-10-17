@@ -36,6 +36,14 @@ class NicknameTest {
         assertTrue(Nickname.parse("Zoe\u0301") is NicknameResult.Valid)
     }
 
+    @Test fun anUnpairedSurrogateIsRefusedButAPairedOneIsAccepted() {
+        // Audit #11: a lone surrogate is malformed UTF-16 and cannot survive UTF-8 encoding.
+        for (n in listOf("\uD800", "阿\uD800梅", "a\uDC00")) {
+            assertEquals(n, NicknameResult.Invalid(NicknameProblem.INVISIBLE_OR_CONTROL), Nickname.parse(n))
+        }
+        assertTrue(Nickname.parse("阿\uD83D\uDE00") is NicknameResult.Valid)
+    }
+
     @Test fun persistedAcrossRestarts() {
         val store = InMemoryKeyValueStore()
         assertNull(NicknameRepository(store).current())

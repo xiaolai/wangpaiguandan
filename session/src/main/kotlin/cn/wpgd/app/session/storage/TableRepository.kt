@@ -30,24 +30,19 @@ class TableRepository(private val storage: Storage) {
         return tableIds().map(::inspect)
     }
 
+    /** The table's condition by the same preliminary checks recovery makes ([TableRecovery.preliminary]). */
     fun inspect(tableId: String): Listing {
         val files = TableFiles(tableId)
-        val names = storage.list(files.dir)
-        val meta = when (val r = TableMetaCodec.read(storage.read(files.meta))) {
-            is TableMetaCodec.Read.Future -> return Listing(tableId, Condition.FUTURE_SCHEMA, null)
-            is TableMetaCodec.Read.Current -> r.meta
-            else -> return Listing(tableId, Condition.UNREADABLE, null)
-        }
-        if (files.quarantine in names) return Listing(tableId, Condition.QUARANTINED, meta)
-        val hwm = storage.read(files.hwm)?.let(LogFormat::readHwm) ?: return Listing(tableId, Condition.UNREADABLE, meta)
-        if (TableMetaCodec.readMembers(storage.read(files.members)) == null) return Listing(tableId, Condition.UNREADABLE, meta)
-        val scan = TableRecovery.scanLog(storage, files, names)
-        if (scan !is TableRecovery.LogScan.Ok || (scan.records.lastOrNull()?.revision ?: 0) < hwm) return Listing(tableId, Condition.UNREADABLE, meta)
-        // The same envelope check as recovery: a newer event schema is never swept, nor is a record recovery would quarantine.
-        return when (TableRecovery.decodeEnvelopes(scan.records)) {
-            is TableRecovery.Envelopes.Ok -> Listing(tableId, Condition.READABLE, meta)
-            is TableRecovery.Envelopes.Future -> Listing(tableId, Condition.FUTURE_SCHEMA, meta)
-            is TableRecovery.Envelopes.OldSchema, is TableRecovery.Envelopes.Undecodable -> Listing(tableId, Condition.UNREADABLE, meta)
+        return when (val p = TableRecovery.preliminary(storage, files, storage.list(files.dir))) {
+            is TableRecovery.Preliminary.Passed -> Listing(tableId, Condition.READABLE, p.meta)
+            is TableRecovery.Preliminary.Stop -> {
+                val condition = when {
+                    p.marked -> Condition.QUARANTINED
+                    p.verdict.result is RecoveryResult.FutureSchema -> Condition.FUTURE_SCHEMA
+                    else -> Condition.UNREADABLE
+                }
+                Listing(tableId, condition, p.meta)
+            }
         }
     }
 

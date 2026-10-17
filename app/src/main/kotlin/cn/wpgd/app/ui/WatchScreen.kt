@@ -1,5 +1,6 @@
 package cn.wpgd.app.ui
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -97,17 +98,31 @@ private fun noticeText(n: WatchNotice): String = when (n) {
     is WatchNotice.Denied -> stringResource(R.string.watch_denied, n.nickname ?: seatName(n.seat))
     is WatchNotice.Revoked -> stringResource(R.string.watch_revoked, n.nickname ?: seatName(n.seat))
     is WatchNotice.PlayerLeft -> stringResource(R.string.watch_player_left, n.nickname ?: seatName(n.seat))
+    is WatchNotice.Ended -> stringResource(R.string.watch_ended, n.nickname ?: seatName(n.seat))
     is WatchNotice.Refused -> stringResource(R.string.watch_refused)
+}
+
+/** How a watcher's seat summary names the seat's holder: a resource ([withName]: formatted with the nickname), or the nickname itself. */
+internal data class HolderText(@StringRes val res: Int?, val withName: Boolean)
+
+/** A player who is away is named as away, never as if present (audit #33). */
+internal fun holderText(occupant: Occupant?): HolderText = when (occupant) {
+    Occupant.AI -> HolderText(R.string.seat_presence_ai, withName = false)
+    Occupant.STAND_IN -> HolderText(R.string.seat_presence_stand_in, withName = false)
+    Occupant.AWAITING_PLAYER -> HolderText(R.string.seat_presence_awaiting, withName = false)
+    Occupant.ABSENT -> HolderText(R.string.watch_holder_away, withName = true)
+    Occupant.HUMAN, Occupant.EMPTY, null -> HolderText(null, withName = true)
 }
 
 @Composable
 private fun WatchSeat(s: WatchSeatUi, w: WatchUiState, text: TableText, session: RoomSession) {
     val c = Wpgd.colors
-    val holder = when (s.occupant) {
-        Occupant.AI -> stringResource(R.string.seat_presence_ai)
-        Occupant.STAND_IN -> stringResource(R.string.seat_presence_stand_in)
-        Occupant.AWAITING_PLAYER -> stringResource(R.string.seat_presence_awaiting)
-        else -> s.nickname.orEmpty()
+    val holder = holderText(s.occupant).let { h ->
+        when {
+            h.res == null -> s.nickname.orEmpty()
+            h.withName -> stringResource(h.res, s.nickname.orEmpty())
+            else -> stringResource(h.res)
+        }
     }
     val wild: (ViewCard) -> Boolean = { card -> w.dealLevel?.let { HandArrangement.isWildcard(card, it) } ?: false }
     val acting = if (s.acting) stringResource(R.string.seat_acting) else ""

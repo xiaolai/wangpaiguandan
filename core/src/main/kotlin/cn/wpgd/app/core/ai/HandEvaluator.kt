@@ -10,7 +10,8 @@ import cn.wpgd.app.core.rules.Ranks
  *
  * Decomposition, in order: four jokers; same-rank bombs (four or more); a triple plus a wildcard as
  * a bomb; straights of five lone ranks (a wildcard may fill one gap); runs of three pairs; runs of
- * two triples; then singles, pairs and triples, each triple carrying one pair.
+ * two triples; spare wildcards joining the lowest natural groups (a pair and two wildcards is a
+ * bomb); then singles, pairs and triples, each triple carrying one pair.
  *
  * score = plays + low-card penalty − [BOMB_VALUE] × bombs − [CONTROL_VALUE] × high cards
  *
@@ -63,13 +64,30 @@ internal object HandEvaluator {
             counts[r] = 0
             wild--
         }
-        // Same-rank bombs can absorb a spare wildcard; the four-joker bomb cannot.
-        val naturalBombs = bombs - (if (jokerBomb) 1 else 0)
         val (straights, gapsFilled) = takeRuns(counts, 5, 1, wildAvailable = wild)
         wild -= gapsFilled
         plays += straights
         plays += takeRuns(counts, 3, 2, wildAvailable = 0).first
         plays += takeRuns(counts, 2, 3, wildAvailable = 0).first
+        // Spare wildcards join natural groups, and the decomposition records what they make: a pair
+        // and two wildcards is a bomb; one wildcard makes a single a pair, a pair a triple. The lowest
+        // such rank first (it is the hardest to get rid of). Never a joker. (A triple and one wildcard
+        // is a bomb too, but no triple is left here while a wildcard is: the loop above made every
+        // triple a bomb, runs only remove ranks, and a pair becomes a triple only with the last wildcard.)
+        while (wild > 0) {
+            val lowest = { n: Int -> Ranks.NATURAL.filter { counts[it] == n }.minByOrNull { Ranks.power(it, level) } }
+            val pair = lowest(2)
+            when {
+                pair != null && wild >= 2 -> { bombs++; counts[pair] = 0; wild -= 2 }
+                else -> {
+                    val r = lowest(1) ?: pair ?: break
+                    counts[r]++
+                    wild--
+                }
+            }
+        }
+        // Same-rank bombs can absorb a spare wildcard; the four-joker bomb cannot.
+        val naturalBombs = bombs - (if (jokerBomb) 1 else 0)
 
         var singles = 0
         var pairs = 0
@@ -82,15 +100,14 @@ internal object HandEvaluator {
                 3 -> triples++
             }
         }
-        // A spare wildcard can join a natural single, pair, triple or same-rank bomb, never a joker.
-        val absorbs = singles + pairs + triples + naturalBombs > 0
         for (j in listOf(small, big)) when (j) {
             1 -> singles++
             2 -> pairs++
         }
         plays += singles + pairs + triples - minOf(triples, pairs) + bombs
-        // With nothing to join, the spare wildcards need one play of their own.
-        if (wild > 0 && !absorbs) plays++
+        // Wildcards still spare had no natural group to join: a same-rank bomb absorbs them (a bigger
+        // bomb, the same play); with no such bomb they need one play of their own.
+        if (wild > 0 && naturalBombs == 0) plays++
         return Shape(plays, bombs, control, lowPenalty)
     }
 

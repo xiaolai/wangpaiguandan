@@ -26,7 +26,8 @@ import java.nio.ByteBuffer
 class TableJournal internal constructor(
     private val storage: Storage,
     internal val files: TableFiles,
-    private var segment: Int,
+    /** The log segment this journal appends to (observability for recovery tests). */
+    internal val segment: Int,
     lastRevision: Long,
     highWaterMark: Long,
     meta: TableMeta,

@@ -26,8 +26,8 @@ interface RoomListener {
     /**
      * Registers [failed], called at most once, on any thread, if hosting stops working after [listen]
      * returned: nearby devices can no longer find or reach the room (Bluetooth: the GATT server,
-     * its service or advertising failed). Called at once if that already happened. Networks whose
-     * startup failures throw from [RoomNetwork.listen] (LAN, in-memory) never call it.
+     * its service or advertising failed; LAN: the listening socket stopped accepting). Called at once
+     * if that already happened. Startup failures throw from [RoomNetwork.listen] instead.
      */
     fun onFailure(failed: () -> Unit) = Unit
 }
@@ -114,6 +114,9 @@ class LanRoomNetwork(
         return object : RoomListener {
             override val endpoint = LanEndpoint(host, server.port)
             override fun close() = server.stop()
+
+            // The server stopped accepting newcomers (not by close): the owner shows hosting failed.
+            override fun onFailure(failed: () -> Unit) = server.onFailure(failed)
         }
     }
 

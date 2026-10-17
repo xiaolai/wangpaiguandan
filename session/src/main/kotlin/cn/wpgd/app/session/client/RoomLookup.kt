@@ -8,6 +8,7 @@ import cn.wpgd.app.session.transport.Cancellable
 import cn.wpgd.app.session.transport.Scheduler
 import cn.wpgd.app.session.transport.Transport
 import cn.wpgd.app.session.transport.TransportListener
+import cn.wpgd.app.session.wire.HelloRejectReason
 import cn.wpgd.app.session.wire.HelloRejected
 import cn.wpgd.app.session.wire.PROTOCOL_VERSION
 import cn.wpgd.app.session.wire.RoomListing
@@ -20,6 +21,9 @@ sealed interface LookupResult {
 
     /** This app's host answered, but lists no room (not hosting, or the table is closing). */
     data object NotListed : LookupResult
+
+    /** This app's host answered that it is full: a room may listen there, but takes no new connection now. */
+    data object Full : LookupResult
 
     /** Something answered that does not speak this protocol (a wrong port, another service). */
     data object NotARoom : LookupResult
@@ -50,7 +54,8 @@ class RoomLookup(
         require(timeoutMs > 0) { "timeout must be positive" }
     }
 
-    private val link = PeerLink(transport, limits, queueLimit = 4)
+    // A lookup never installs keys: a sealed frame cannot answer it, so it is malformed, not silently dropped.
+    private val link = PeerLink(transport, limits, queueLimit = 4, plainOnly = true)
     private var done = false
     private var timer: Cancellable? = null
 
@@ -79,11 +84,21 @@ class RoomLookup(
         when (val inbound = link.receive(chunk) ?: return) {
             is Inbound.Plain -> when (val m = inbound.message) {
                 is RoomListing -> finish(LookupResult.Found(m))
-                is HelloRejected -> finish(LookupResult.NotListed)
+                is HelloRejected -> finish(rejected(m.reason))
                 else -> finish(LookupResult.NotARoom)
             }
             is Inbound.Bad, is Inbound.Sealed -> finish(LookupResult.NotARoom)
         }
+    }
+
+    /**
+     * The host answers a query with ROOM_MISMATCH when it lists no room and with ROOM_FULL when it is
+     * at its connection bound. Any other reason is not an answer this host gives to a query.
+     */
+    private fun rejected(reason: HelloRejectReason): LookupResult = when (reason) {
+        HelloRejectReason.ROOM_MISMATCH -> LookupResult.NotListed
+        HelloRejectReason.ROOM_FULL -> LookupResult.Full
+        HelloRejectReason.VERSION_UNSUPPORTED, HelloRejectReason.PROFILE_MISMATCH, HelloRejectReason.MALFORMED -> LookupResult.NotARoom
     }
 
     private fun finish(result: LookupResult) {

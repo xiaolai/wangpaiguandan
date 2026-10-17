@@ -67,6 +67,15 @@ class BleGateTest {
         assertEquals(BleGateState.READY, state(env, BlePurpose.JOIN))
     }
 
+    @Test fun soloIsNotOfferedWhileNewTablesAreSwitchedOff() {
+        // Round 3 #20: the owner refuses a solo table then, so the gate must not navigate to one.
+        for (s in BleGateState.entries - BleGateState.READY) {
+            val actions = BleGate.actions(s, newTables = false)
+            assertTrue("$s still offers the same Wi-Fi", BleGateAction.USE_WIFI in actions)
+            assertTrue("$s offers no solo play", BleGateAction.PLAY_SOLO !in actions)
+        }
+    }
+
     @Test fun everyStateShortOfReadyIsActionableAndOffersWifiAndSolo() {
         for (s in BleGateState.entries - BleGateState.READY) {
             val actions = BleGate.actions(s)

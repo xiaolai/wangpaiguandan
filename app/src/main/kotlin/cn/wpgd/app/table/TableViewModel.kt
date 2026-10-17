@@ -80,8 +80,8 @@ class TableViewModel(
 
     /** The local state, reset when a new deal has started (card ids repeat across deals). */
     private fun synced(): LocalTableState {
-        val deal = session.state.value.table?.view?.match?.dealNumber ?: return local.value
-        local.update { if (it.dealNumber == deal) it else LocalTableState(tableVisible = it.tableVisible, dealNumber = deal) }
+        val match = session.state.value.table?.view?.match ?: return local.value
+        local.update { if (it.belongsTo(match)) it else LocalTableState(tableVisible = it.tableVisible, matchNumber = match.matchNumber, dealNumber = match.dealNumber) }
         return local.value
     }
 

@@ -92,4 +92,41 @@ class EventReplayTest {
         log.append(next.events)
         assertEquals(next.state, log.replay(r.newDeal(2)))
     }
+
+    /** Logged history is the log's own: neither the appender's lists nor a reader can change it. */
+    @Test fun logDoesNotAliasTheEventsLists() {
+        val r = p1Reducer()
+        val opened = r.started(1)
+        val dealt = opened.events.filterIsInstance<DealEvent.HandDealt>().first()
+        val ids = dealt.cardIds.toMutableList()
+        val log = EventLog()
+        log.append(opened.events.map { if (it === dealt) dealt.copy(cardIds = ids) else it })
+        ids.clear()
+        assertEquals(opened.state, log.replay(r.newDeal(2)))
+        val logged = log.events.filterIsInstance<DealEvent.HandDealt>().first().cardIds
+        // Not mutable even through a cast (the cast itself, or the mutation, fails).
+        kotlin.test.assertFails { (logged as MutableList<String>).clear() }
+        assertEquals(dealt.cardIds, logged)
+        assertEquals(opened.state, log.replay(r.newDeal(2)))
+    }
+
+    /** #47, round 2: a play's combination is logged history too; its lists are not the caller's. */
+    @Test fun logDoesNotAliasAPlaysCombination() {
+        val r = p1Reducer()
+        val opened = r.started(1)
+        val step = r.reduce(opened.state, SeededBot(1).choose(r, opened.state)).accepted()
+        val played = step.events.filterIsInstance<DealEvent.Played>().single()
+        val log = EventLog()
+        log.append(opened.events)
+        log.append(step.events)
+        val before = played.combination.resolvedRanks.toList()
+        // The appender keeps its event and changes the combination's lists through a cast.
+        val callerRanks = played.combination.resolvedRanks
+        if (callerRanks is MutableList<Int>) runCatching { callerRanks[0] = 99 }
+        val logged = log.events.filterIsInstance<DealEvent.Played>().single().combination
+        assertEquals(before, logged.resolvedRanks, "the appender changed logged history")
+        kotlin.test.assertFails { (logged.resolvedRanks as MutableList<Int>)[0] = 98 }
+        kotlin.test.assertFails { (logged.sequence as MutableList<Int>).add(98) }
+        assertEquals(before, log.events.filterIsInstance<DealEvent.Played>().single().combination.resolvedRanks, "a reader changed logged history")
+    }
 }

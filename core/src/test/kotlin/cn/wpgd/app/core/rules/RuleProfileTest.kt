@@ -124,6 +124,19 @@ class RuleProfileTest {
         assertRejects<RuleProfileError.WrongType>(minimal.replace("}", ""","options":{"bomb.minSize":null}}"""))
         assertRejects<RuleProfileError.WrongType>(minimal.replace("}", ""","options":{"sequence.wrapAroundA":"true"}}"""))
         assertRejects<RuleProfileError.WrongType>(minimal.replace("}", ""","options":{"sequence.wrapAroundA":0}}"""))
+        // JSON integers have no leading zero and no plus sign (RFC 8259); 010 is not 10.
+        assertRejects<RuleProfileError.WrongType>(minimal.replace("}", ""","options":{"bomb.maxSize":010}}"""))
+        assertRejects<RuleProfileError.WrongType>(minimal.replace("}", ""","options":{"bomb.maxSize":+10}}"""))
+        assertTrue(RuleProfileLoader.parse(minimal.replace("}", ""","options":{"bomb.maxSize":10}}""")).isSuccess)
+    }
+
+    /** A choice option keeps its own copy of the choices: the caller's set cannot widen what profiles may name. */
+    @Test fun choiceOptionDoesNotAliasTheCallersChoices() {
+        val choices = mutableSetOf("a", "b")
+        val option = ChoiceOption("test.choice", "a", choices, "test", null)
+        choices += "c"
+        assertEquals(setOf("a", "b"), option.choices)
+        assertIs<RuleOption.Decoded.OutOfRange>(option.decode(kotlinx.serialization.json.JsonPrimitive("c")))
     }
 
     @Test fun wrongTopLevelTypeRejects() {

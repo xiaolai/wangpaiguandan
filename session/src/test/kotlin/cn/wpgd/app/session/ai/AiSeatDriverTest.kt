@@ -200,7 +200,7 @@ class AiSeatDriverTest {
         d.onDecision = { records += it }
         val random = AiSettings(RandomLegalPolicy.id)
         t.driveUntil { records.count { it.seat == Seat.EAST && it.dealNumber == 1 } >= 3 }
-        d.request(Seat.EAST, random, t.host.state.dealNumber)
+        d.request(Seat.EAST, random, t.host.state.dealNumber, t.host.state.matchNumber)
         assertEquals(random, d.settings.pending(Seat.EAST, 1), "the change is visible while it waits")
         t.driveUntil { it.state.dealNumber >= 2 && it.state.phase == MatchPhase.DEAL_ENDED || it.state.phase == MatchPhase.OVER }
         val east = records.filter { it.seat == Seat.EAST }
@@ -222,7 +222,7 @@ class AiSeatDriverTest {
         kotlin.test.assertIs<cn.wpgd.app.session.host.SessionHost.StartResult.Started>(t.host.start())
         ScriptedHuman(t, south)
         t.driveUntil { it.state.dealNumber >= 1 && records.any { r -> r.seat == Seat.EAST } }
-        d.request(Seat.EAST, random, t.host.state.dealNumber)
+        d.request(Seat.EAST, random, t.host.state.dealNumber, t.host.state.matchNumber)
         t.driveUntil { it.state.phase == MatchPhase.OVER }
         val lastDeal = t.host.state.dealNumber
         assertTrue(lastDeal >= 2, "the match needs a second deal to apply the change")
@@ -235,6 +235,21 @@ class AiSeatDriverTest {
         val east = records.filter { it.seat == Seat.EAST && it.dealNumber == 1 }
         assertTrue(east.isNotEmpty() && east.all { it.policy == RandomLegalPolicy.id }, "deal 1 of the rematch reverted to ${east.map { it.policy }.distinct()}")
         assertEquals(random, d.settings.effective(Seat.EAST, lastDeal + 1), "the change stays in force for the whole new match")
+    }
+
+    /**
+     * Audit #54: the driver may resume in a new match at a deal number no lower than the last one it
+     * saw. The new match, not a falling deal number, rebases the settings history.
+     */
+    @Test fun aNewMatchRebasesSettingsEvenWithoutAFallingDealNumber() {
+        val d = AiSeatDriver(cn.wpgd.app.session.transport.VirtualScheduler())
+        val random = AiSettings(RandomLegalPolicy.id)
+        d.request(Seat.EAST, random, currentDealNumber = 3, currentMatchNumber = 1)
+        assertEquals(AiPolicies.BASELINE, d.settings.effective(Seat.EAST, 3).policy, "a change applies from the next deal")
+        // Match 2, deal 3: the driver's next sighting (a request for another seat).
+        d.request(Seat.NORTH, random, currentDealNumber = 3, currentMatchNumber = 2)
+        assertEquals(random, d.settings.effective(Seat.EAST, 1), "the last match's change must hold from the new match's first deal")
+        assertEquals(random, d.settings.effective(Seat.EAST, 3))
     }
 
     /** The play or pass [seat] made between two host states, as a wire body (from the deal's public trick). */

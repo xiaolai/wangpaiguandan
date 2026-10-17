@@ -37,6 +37,11 @@ object ColorPairs {
 
     val nonText: List<Pair> = listOf(
         Pair("sel", "bg", "selected-card outline against the table"),
+        // The outline is the selection's indicator: it must stand out from the fill it surrounds and
+        // from an unselected card it overlaps in the hand (CardView), and from a panel (reading chips).
+        Pair("sel", "selFill", "selected-card outline against its own fill"),
+        Pair("sel", "card", "selected-card outline against an overlapped unselected card"),
+        Pair("sel", "surface2", "selected reading-chip outline against its panel"),
         Pair("primary", "bg", "primary button fill"),
         Pair("accent", "bg", "bomb highlight outline"),
     )

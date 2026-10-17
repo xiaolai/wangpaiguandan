@@ -1,6 +1,6 @@
 {
     "schema": 1,
-    "protocolVersion": 2,
+    "protocolVersion": 3,
     "description": "Host deliveries: receipt (keyed digest of the issuer's own projection), snapshot, follow_snapshot, status.",
     "cases": [
         {
@@ -46,7 +46,9 @@
                         "observerName": "watcher",
                         "seat": "NORTH",
                         "status": "ACTIVE",
-                        "grantRevision": 2
+                        "grantRevision": 2,
+                        "playerName": "player",
+                        "end": null
                     }
                 ],
                 "room": {

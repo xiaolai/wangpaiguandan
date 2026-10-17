@@ -1,6 +1,6 @@
 {
     "schema": 1,
-    "protocolVersion": 2,
+    "protocolVersion": 3,
     "description": "WI-06: a paused or quarantined room refuses commands (not cached: a retry is judged again); a suspended room closes connections and keeps capabilities.",
     "cases": [
         {

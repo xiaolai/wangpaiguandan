@@ -39,6 +39,21 @@ class BombDecisionTest {
         }
     }
 
+    /**
+     * Rule 6 under any work budget: a lead stopped early never answers with a bomb that keeps cards
+     * back. Bombs are not scored or offered as the best answer so far, so they cost no budget either.
+     */
+    @Test fun leadingStoppedEarlyNeverLeadsAKeptBomb() {
+        val hand = fourSevens + listOf("0S8", "1S8", "0C8", "0D8")
+        val state = playing(2, mapOf(S to hand, E to listOf("0S3"), N to listOf("0S4"), W to listOf("0S6")), turn = S)
+        val full = decide(state, S)
+        assertEquals(DecisionSource.POLICY, full.source)
+        for (steps in 0..full.steps) {
+            val play = assertIs<AiAction.Play>(decide(state, S, limits = DecisionLimits(steps)).action, "budget $steps")
+            assertTrue(!play.action.combination.type.isBombClass, "budget $steps led ${play.action.combination}")
+        }
+    }
+
     /** With a long hand and no public threat, a bomb is not spent on an opponent's single ace. */
     @Test fun keepsTheBombWhenItDoesNotWin() {
         val hand = fourSevens + listOf("0S3", "0H4", "0C5", "0D8", "0S9", "0HJ", "0CQ", "1D3", "1H9", "1CJ", "0D10", "1S5")

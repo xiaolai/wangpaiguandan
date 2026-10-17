@@ -9,6 +9,7 @@ import cn.wpgd.app.session.wire.CommandBody
 import cn.wpgd.app.session.wire.PROTOCOL_VERSION
 import cn.wpgd.app.session.wire.RoomMode
 import cn.wpgd.app.session.wire.RoomPolicyView
+import cn.wpgd.app.session.wire.WireValidation
 
 /**
  * Room assistance policy. PROVISIONAL (gate G4 unsigned): the G4 proposed default is that
@@ -64,7 +65,8 @@ data class HostConfig(
         require(queueLimit >= 1) { "queueLimit must be positive" }
         // A zero interval or deadline would reschedule its timer immediately, forever.
         require(helloDeadlineMs > 0 && heartbeatIntervalMs > 0 && livenessTimeoutMs > 0) { "deadlines and intervals must be positive" }
-        require(maxObservers >= 0) { "maxObservers must not be negative" }
+        // The roster carries at most the wire's limit: more admitted observers could not all be shown.
+        require(maxObservers in 0..WireValidation.MAX_OBSERVERS) { "maxObservers must be in 0..${WireValidation.MAX_OBSERVERS}" }
         require(maxUnadmitted >= 1 && maxFramesPerSecond >= 1 && replyCacheSize >= 1) { "capacities must be positive" }
         require(resyncMinIntervalMs >= 0 && aiDelayMs >= 0) { "delays must not be negative" }
     }

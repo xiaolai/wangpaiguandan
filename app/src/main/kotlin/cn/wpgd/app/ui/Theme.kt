@@ -36,17 +36,16 @@ data class WpgdColors(
     val suitBlack: Color,
     val club4: Color,
     val diamond4: Color,
-    val dark: Boolean,
 ) {
     companion object {
-        fun of(tokens: Map<String, Color>, dark: Boolean): WpgdColors {
+        fun of(tokens: Map<String, Color>): WpgdColors {
             fun t(name: String) = tokens.getValue(name)
             return WpgdColors(
                 bg = t("bg"), surface = t("surface"), surface2 = t("surface2"), line = t("line"), ink = t("ink"),
                 ink2 = t("ink2"), primary = t("primary"), accent = t("accent"), teamUs = t("team.us"),
                 teamThem = t("team.them"), danger = t("danger"), wild = t("wild"), card = t("card"), sel = t("sel"),
                 selFill = t("selFill"), suitRed = t("suit.red"), suitBlack = t("suit.black"),
-                club4 = t("suit.club4"), diamond4 = t("suit.diamond4"), dark = dark,
+                club4 = t("suit.club4"), diamond4 = t("suit.diamond4"),
             )
         }
     }
@@ -65,7 +64,7 @@ object Tokens {
     val touch: Dp = 48.dp
 }
 
-private val LocalWpgdColors = staticCompositionLocalOf { WpgdColors.of(DesignTokens.light, dark = false) }
+private val LocalWpgdColors = staticCompositionLocalOf { WpgdColors.of(DesignTokens.light) }
 
 object Wpgd {
     val colors: WpgdColors
@@ -75,7 +74,7 @@ object Wpgd {
 /** Paper-white light theme, ink dark theme, vermillion accent; follows the system setting. */
 @Composable
 fun WpgdTheme(dark: Boolean = isSystemInDarkTheme(), content: @Composable () -> Unit) {
-    val c = WpgdColors.of(if (dark) DesignTokens.dark else DesignTokens.light, dark)
+    val c = WpgdColors.of(if (dark) DesignTokens.dark else DesignTokens.light)
     // The factory only picks the defaults of the colors not set here; the shared tokens apply to both.
     val scheme = (if (dark) darkColorScheme() else lightColorScheme()).copy(
         primary = c.primary, onPrimary = c.bg, background = c.bg, onBackground = c.ink, surface = c.surface,

@@ -32,6 +32,7 @@ import cn.wpgd.app.core.state.Seat
 import cn.wpgd.app.owner.PendingJoiner
 import cn.wpgd.app.owner.RoomSession
 import cn.wpgd.app.room.LeaveChoice
+import cn.wpgd.app.room.LobbySeatStatus
 import cn.wpgd.app.room.LobbySeatUi
 import cn.wpgd.app.room.LobbyUi
 import cn.wpgd.app.room.LobbyUiState
@@ -168,12 +169,15 @@ private fun SeatRow(s: LobbySeatUi, hosting: Boolean, onTap: () -> Unit) {
     val holder = when (s.occupant) {
         Occupant.EMPTY -> stringResource(R.string.lobby_seat_empty)
         Occupant.AI -> stringResource(R.string.lobby_seat_ai)
-        else -> s.nickname ?: stringResource(R.string.lobby_seat_empty)
+        Occupant.HUMAN, Occupant.ABSENT, Occupant.STAND_IN, Occupant.AWAITING_PLAYER -> s.nickname ?: stringResource(R.string.lobby_seat_empty)
     } + if (s.isYou) stringResource(R.string.lobby_you) else ""
-    val state = when {
-        s.graceSeconds != null -> stringResource(R.string.lobby_away, s.graceSeconds)
-        s.occupant == Occupant.HUMAN -> stringResource(if (s.ready) R.string.lobby_ready else R.string.lobby_not_ready)
-        else -> ""
+    val state = when (s.status) {
+        LobbySeatStatus.NONE -> ""
+        LobbySeatStatus.READY -> stringResource(R.string.lobby_ready)
+        LobbySeatStatus.NOT_READY -> stringResource(R.string.lobby_not_ready)
+        LobbySeatStatus.AWAY -> s.graceSeconds?.let { stringResource(R.string.lobby_away, it) } ?: stringResource(R.string.seat_presence_awaiting)
+        LobbySeatStatus.STAND_IN -> stringResource(R.string.seat_presence_stand_in)
+        LobbySeatStatus.AWAITING_PLAYER -> stringResource(R.string.seat_presence_awaiting)
     }
     val line = stringResource(R.string.lobby_seat, seatName(s.seat), teamName(s.team))
     val summary = listOf(line, holder, state).filter { it.isNotEmpty() }.joinToString(stringResource(R.string.clause_separator))
@@ -200,7 +204,7 @@ private fun SeatRow(s: LobbySeatUi, hosting: Boolean, onTap: () -> Unit) {
 @Composable
 private fun SeatSheet(s: LobbySeatUi, all: List<LobbySeatUi>, session: RoomSession, done: () -> Unit) {
     RoomPanel("seat:sheet:${s.seat.name}") {
-        if (s.occupant == Occupant.EMPTY) RoomSecondary(stringResource(R.string.seat_put_ai), "seat:ai:${s.seat.name}") { session.setAiSeat(s.seat); done() }
+        if (s.canPutAi) RoomSecondary(stringResource(R.string.seat_put_ai), "seat:ai:${s.seat.name}") { session.setAiSeat(s.seat); done() }
         if (s.occupant == Occupant.AI) RoomSecondary(stringResource(R.string.seat_remove_ai), "seat:clear:${s.seat.name}") { session.clearAiSeat(s.seat); done() }
         for (other in all.filter { it.seat != s.seat }) {
             RoomSecondary(stringResource(R.string.seat_swap, seatName(other.seat)), "seat:swap:${s.seat.name}:${other.seat.name}") { session.swapSeats(s.seat, other.seat); done() }

@@ -24,7 +24,7 @@ class WatcherRowsTest {
     private val vm = TableViewModel(session, PreferencesRepository(InMemoryKeyValueStore()), CoroutineScope(SupervisorJob() + Dispatchers.Unconfined))
     private val settings = RoomSettingsView(RoomPolicyView(RoomMode.FRIENDLY, hints = false, privateFollow = true), 60_000, AbsenceMode.SUBSTITUTE, AbsenceMode.SUBSTITUTE)
 
-    private fun grant(id: String, name: String) = GrantView(id, name, Seat.SOUTH, GrantStatus.ACTIVE, 1)
+    private fun grant(id: String, name: String) = GrantView(id, name, Seat.SOUTH, GrantStatus.ACTIVE, 1, "阿梅", null)
 
     private fun room(observers: List<String>) = RoomView(lobby = false, paused = false, settings = settings, settingsRevision = 1, seats = emptyList(), observers = observers, yourSeat = Seat.SOUTH)
 

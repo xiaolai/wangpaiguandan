@@ -20,6 +20,12 @@ if (bleTransport) layout.buildDirectory.set(layout.projectDirectory.dir("build-b
 // (git-ignored; never commit a key), every value must be present, and the distribution gate
 // (`verifyReleaseDistributable`) must pass first. Missing values fail the build at configuration.
 val releaseSigningRequested: Boolean = providers.gradleProperty("wpgd.releaseSigning").map { it.toBooleanStrict() }.getOrElse(false)
+// The distribution gate's profile-folder override (verifyReleaseDistributable, below) exists for
+// tools/ci.sh's negative controls. The APK packages rules/profiles, so a signed release never takes it.
+val gateProfilesOverride: String? = providers.gradleProperty("wpgd.gateProfilesDir").orNull
+if (releaseSigningRequested && gateProfilesOverride != null) {
+    throw GradleException("wpgd.gateProfilesDir is for gate tests only: a signed release must gate the packaged rules/profiles it ships")
+}
 val releaseSigningKeys = listOf("STORE_FILE", "STORE_PASSWORD", "KEY_ALIAS", "KEY_PASSWORD")
 val releaseSigningValues: Map<String, String> = if (!releaseSigningRequested) emptyMap() else {
     val file = rootProject.file("release-signing.properties")
@@ -209,32 +215,40 @@ val releaseRuntimeComponents = tasks.register("releaseRuntimeComponents") {
 
 // WI-12 distribution gate (plan section 3, G1a/G1b; GDN-107). A signed release must not carry a
 // provisional rule profile, nor a profile without a signed decision record naming it under
-// dev-docs/decisions/ ("**Status: SIGNED**" plus the profile id and version), and must not ship
-// before the project license is recorded. Runs before every signed release build; run it alone with
-// `./gradlew :app:verifyReleaseDistributable`. `-Pwpgd.gateProfilesDir=<dir>` points it at another
-// profile folder: tools/ci.sh uses that once, with an unsigned copy, to prove the gate still refuses.
-val gateProfilesDir: File = providers.gradleProperty("wpgd.gateProfilesDir").map { File(it) }.getOrElse(rootProject.file("rules/profiles"))
+// dev-docs/decisions/ ("**Status: SIGNED**" plus the profile id, version and canonical hash, the same
+// facts CapabilityCatalogTest requires), and must not ship before the project license is recorded. The
+// hash is computed by the app's own loader (`:core:ruleProfileDigests`), so an option changed under an
+// unchanged id and version no longer matches its signed decision. Runs before every signed release
+// build; run it alone with `./gradlew :app:verifyReleaseDistributable`. `-Pwpgd.gateProfilesDir=<dir>`
+// points it at another profile folder, for tools/ci.sh's negative controls only: the APK packages
+// rules/profiles, so a signed release build refuses the override rather than gate other files.
+// (The override is refused for a signed release where releaseSigningRequested is read, above.)
+val gateProfilesDir: File = gateProfilesOverride?.let { File(it) } ?: rootProject.file("rules/profiles")
 val verifyReleaseDistributable = tasks.register("verifyReleaseDistributable") {
-    val profiles = project.fileTree(gateProfilesDir) { include("*.json") }
     val decisions = rootProject.fileTree("dev-docs/decisions") { include("*.md") }
     val license = rootProject.file("release/PROJECT-LICENSE.md")
-    inputs.files(profiles).withPropertyName("profiles")
+    val digests = project(":core").layout.buildDirectory.file("gate/rule-profile-digests.tsv")
+    dependsOn(":core:ruleProfileDigests")
+    inputs.file(digests).withPropertyName("profileDigests")
     inputs.files(decisions).withPropertyName("decisions")
     inputs.file(license).withPropertyName("projectLicense")
     doLast {
         val problems = ArrayList<String>()
-        val files = profiles.files.sortedBy { it.name }
-        if (files.isEmpty()) problems += "no rule profile under ${gateProfilesDir.path}"
+        // One line per profile file: name, id, version, provisional, hash; or name, ERROR, message.
+        val rows = digests.get().asFile.readLines().filter { it.isNotBlank() }.map { it.split("\t") }
+        if (rows.isEmpty()) problems += "no rule profile under ${gateProfilesDir.path}"
         val signed = decisions.files.map { it.readText() }.filter { Regex("(?m)^\\*\\*Status: SIGNED\\*\\*$").containsMatchIn(it) }
-        for (f in files) {
-            @Suppress("UNCHECKED_CAST")
-            val json = groovy.json.JsonSlurper().parse(f) as Map<String, Any?>
-            val id = json["id"]
-            val version = json["version"]
-            if (json["provisional"] != false) {
+        for (row in rows) {
+            if (row.size == 3 && row[1] == "ERROR") {
+                problems += "rule profile file ${row[0]} does not load: ${row[2]}"
+                continue
+            }
+            check(row.size == 5) { "malformed profile digest line: $row" }
+            val (_, id, version, provisional, hash) = row
+            if (provisional != "false") {
                 problems += "rule profile $id $version is provisional (unsigned; gates G1a/G1b)"
-            } else if (signed.none { it.contains("`$id`") && it.contains("$version") }) {
-                problems += "rule profile $id $version has no signed decision under dev-docs/decisions/ (gates G1a/G1b)"
+            } else if (signed.none { it.contains("`$id`") && it.contains(version) && it.contains(hash) }) {
+                problems += "rule profile $id $version (hash $hash) has no signed decision naming its id, version and hash under dev-docs/decisions/ (gates G1a/G1b)"
             }
         }
         // Same rule as LicenseInventoryTest: recorded = an SPDX identifier line and no placeholder status line.
@@ -242,7 +256,7 @@ val verifyReleaseDistributable = tasks.register("verifyReleaseDistributable") {
         val recorded = Regex("(?m)^SPDX-License-Identifier: \\S+$").containsMatchIn(text) && !text.contains("**Status: OWNER DECISION REQUIRED**")
         if (!recorded) problems += "project license not recorded: ${license.path} says OWNER DECISION REQUIRED"
         if (problems.isNotEmpty()) throw GradleException("This build is not distributable:\n  - " + problems.joinToString("\n  - "))
-        logger.lifecycle("Distribution gate passed: ${files.size} signed profiles, each with a signed decision; project license recorded.")
+        logger.lifecycle("Distribution gate passed: ${rows.size} signed profiles, each with a signed decision; project license recorded.")
     }
 }
 if (releaseSigningRequested) {

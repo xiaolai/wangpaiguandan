@@ -22,12 +22,14 @@ class SavedTables(
     private val identity: IdentityRepository,
     private val clock: WallClock,
     private val profiles: RuleProfiles,
+    /** Which saves a session uses now; they are neither listed nor deleted (round 3 #24, #25). */
+    private val use: TableUse = TableUse.NONE,
 ) {
     enum class Kind {
         /** Readable, active (left by an accidental exit) or suspended: can be restored. */
         RESTORABLE,
 
-        /** Quarantined or unreadable (H6): kept, never played; only deletion is offered. */
+        /** Quarantined, unreadable (H6), or its room settings are missing: kept, never played; only deletion is offered. */
         DAMAGED,
 
         /** Saved by a newer app version (H7): kept untouched. */
@@ -43,23 +45,36 @@ class SavedTables(
         val savedAt: Long?,
         /** When a suspended table is deleted automatically; null for an active one (it never expires). */
         val expiresAt: Long?,
+        /**
+         * Wall-clock time of the sweep that preceded this listing. A save already expired then was kept
+         * by that sweep on purpose (damaged, newer, or not cleanly recoverable): listing again will not
+         * remove it, so it schedules no reload ([untilNextExpiry]).
+         */
+        val listedAt: Long,
     )
 
     /**
-     * Saved tables, newest first, except [running] (a table being hosted right now is not offered
-     * again) and ended tables (they cannot be resumed). Sweeps expired ones first.
+     * Saved tables, newest first, except [running] and every table [use] reports in use (a table
+     * being hosted, restored or closed right now is not offered again) and ended tables (they cannot
+     * be resumed). Sweeps expired ones first.
      */
     fun list(running: String? = null): List<Entry> {
-        val swept = repository.sweep(clock.nowMillis(), profiles.base, profiles.match)
+        val now = clock.nowMillis()
+        val swept = repository.sweep(now, profiles.base, profiles.match)
         swept.forEach { forgetLocal(it) }
-        return repository.list().filter { it.tableId != running }.mapNotNull { l ->
+        val busy = use.inUse() + listOfNotNull(running)
+        return repository.list().filter { it.tableId !in busy }.mapNotNull { l ->
             val kind = when (l.condition) {
                 TableRepository.Condition.READABLE -> Kind.RESTORABLE
                 TableRepository.Condition.QUARANTINED, TableRepository.Condition.UNREADABLE -> Kind.DAMAGED
                 TableRepository.Condition.FUTURE_SCHEMA -> Kind.NEWER_VERSION
             }
             if (kind == Kind.RESTORABLE && l.meta?.status == TableStatus.ENDED) return@mapNotNull null
-            Entry(l.tableId, rooms.load(l.tableId)?.tableName, kind, l.meta?.status, l.meta?.statusAt, l.meta?.expiresAt)
+            val settings = rooms.load(l.tableId)
+            // A table is restored under its stored settings; without them (a crash between the table's
+            // creation and their save) restoring would fail, so only deletion is offered (round 3 #16).
+            val shown = if (kind == Kind.RESTORABLE && settings == null) Kind.DAMAGED else kind
+            Entry(l.tableId, settings?.tableName, shown, l.meta?.status, l.meta?.statusAt, l.meta?.expiresAt, now)
         }.sortedByDescending { it.savedAt ?: 0 }
     }
 
@@ -69,10 +84,15 @@ class SavedTables(
     /** The same, from an [entry] already read off the main thread: no storage access. */
     fun prepareDelete(entry: Entry): DeletePrompt = DeletePrompt(entry.tableId, entry.tableName)
 
-    /** Removes the save, its settings and this device's rejoin ticket together. */
+    /**
+     * Removes the save, its settings and this device's rejoin ticket together. Throws, deleting
+     * nothing, while a session uses the table; while it runs, the table cannot be restored ([use]).
+     */
     fun delete(confirmation: DeleteConfirmation) {
-        repository.delete(confirmation.tableId, UserConfirmation.CONFIRMED_BY_USER)
-        forgetLocal(confirmation.tableId)
+        use.deleting(confirmation.tableId) {
+            repository.delete(confirmation.tableId, UserConfirmation.CONFIRMED_BY_USER)
+            forgetLocal(confirmation.tableId)
+        }
     }
 
     /**
@@ -82,13 +102,51 @@ class SavedTables(
     fun restorableNow(entry: Entry): Boolean =
         entry.kind == Kind.RESTORABLE && entry.expiresAt.let { it == null || it > clock.nowMillis() }
 
-    /** Milliseconds until the first of [entries] expires (0 when one already has); null when none expires. */
+    /**
+     * Milliseconds until the first of [entries] expires (0 when one has since it was listed); null when
+     * none will. An entry already expired when it was listed survived its sweep and counts as never:
+     * scheduling it would reload the list in a loop for nothing (audit #23).
+     */
     fun untilNextExpiry(entries: List<Entry>): Long? =
-        entries.mapNotNull { it.expiresAt }.minOrNull()?.let { maxOf(0L, it - clock.nowMillis()) }
+        entries.mapNotNull { e -> e.expiresAt?.takeIf { it > e.listedAt } }.minOrNull()?.let { maxOf(0L, it - clock.nowMillis()) }
 
     private fun forgetLocal(tableId: String) {
         rooms.forget(tableId)
         identity.forgetRejoin(tableId)
+    }
+}
+
+/**
+ * Keeps deleting a saved table and using it apart (round 3 #24, #25): a table a session hosts,
+ * restores or is still closing ([inUse]) is not deleted, and a table being deleted is not restored,
+ * whatever screen started either. One lock orders both, so neither can start while the other runs.
+ */
+class TableUse(private val inUseNow: () -> Set<String>) {
+    private val beingDeleted = HashSet<String>()
+
+    @Synchronized
+    fun inUse(): Set<String> = inUseNow()
+
+    /** Runs [delete] for [tableId]; throws [IllegalStateException] without running it while the table is in use. */
+    fun deleting(tableId: String, delete: () -> Unit) {
+        synchronized(this) {
+            check(tableId !in inUseNow()) { "table $tableId is in use" }
+            check(beingDeleted.add(tableId)) { "table $tableId is already being deleted" }
+        }
+        try {
+            delete()
+        } finally {
+            synchronized(this) { beingDeleted.remove(tableId) }
+        }
+    }
+
+    /** Runs [start] (which puts [tableId] in use) unless the table is being deleted; false then. */
+    @Synchronized
+    fun restoring(tableId: String, start: () -> Boolean): Boolean = tableId !in beingDeleted && start()
+
+    companion object {
+        /** Nothing is ever in use: tests and screens without a running session. */
+        val NONE = TableUse { emptySet() }
     }
 }
 

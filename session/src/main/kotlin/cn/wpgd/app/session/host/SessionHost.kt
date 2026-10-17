@@ -60,6 +60,7 @@ import cn.wpgd.app.session.wire.ConsentBody
 import cn.wpgd.app.session.wire.FollowRequestBody
 import cn.wpgd.app.session.wire.FollowSnapshot
 import cn.wpgd.app.session.wire.GiveTributeBody
+import cn.wpgd.app.session.wire.GrantEnd
 import cn.wpgd.app.session.wire.GrantStatus
 import cn.wpgd.app.session.wire.GrantView
 import cn.wpgd.app.session.wire.HandshakeMessage
@@ -211,8 +212,9 @@ class SessionHost internal constructor(
     /** A seat's control and the token that binds AI tasks and grace timers to exactly this control. */
     private class Slot(val control: SeatControl, val token: Long)
 
-    private class Grant(val id: String, val observerId: String, val observerName: String, val seat: Seat) {
+    private class Grant(val id: String, val observerId: String, val observerName: String, val seat: Seat, val playerName: String) {
         var status = GrantStatus.PENDING
+        var end: GrantEnd? = null
         var grantRevision = 0L
         val live: Boolean get() = status == GrantStatus.PENDING || status == GrantStatus.ACTIVE
     }
@@ -301,6 +303,8 @@ class SessionHost internal constructor(
         val j = checkNotNull(journal) { "only a saved table can be suspended" }
         require(expiresAt > now) { "expiry must be in the future" }
         check(quarantine == null) { "a quarantined table is not suspended" }
+        // ENDED is terminal: suspending would overwrite it on disk, and a restore would revive its capabilities.
+        check(ended != EndReason.HOST_ENDED) { "an ended table is not suspended" }
         if (!saveStatus(j, TableStatus.SUSPENDED, now, expiresAt)) return false
         suspendedUntil = expiresAt
         for (c in connections.values.toList()) close(c, CloseReason.SUSPENDED)
@@ -367,8 +371,16 @@ class SessionHost internal constructor(
     /** Queued outbound messages for [memberId]'s connection (observability; bounded by the queue limit). */
     fun queuedFor(memberId: String): Int = members[memberId]?.connId?.let { connections[it]?.link?.queued } ?: 0
 
-    /** Accepts a new peer connection. Returns its connection id. */
-    fun accept(transport: Transport): Long {
+    /**
+     * Accepts a new peer connection. Returns its connection id, or null when [HostConfig.maxUnadmitted]
+     * connections are already waiting for admission: nothing is registered for it, it is told
+     * [HelloRejectReason.ROOM_FULL] and closed, so peers that never say hello cannot exceed that bound.
+     */
+    fun accept(transport: Transport): Long? {
+        if (unadmittedCount() >= config.maxUnadmitted) {
+            refuseFull(transport)
+            return null
+        }
         val id = nextConnId++
         val ep = epoch
         val conn = Conn(id, ep, PeerLink(transport, config.limits, config.queueLimit))
@@ -385,6 +397,20 @@ class SessionHost internal constructor(
         return id
     }
 
+    /** Says [HelloRejectReason.ROOM_FULL] on [transport] (best effort, plaintext) and closes it; keeps nothing. */
+    private fun refuseFull(transport: Transport) {
+        metrics.refusedConnections++
+        val link = PeerLink(transport, config.limits, config.queueLimit)
+        transport.open(object : TransportListener {
+            override fun onReceive(chunk: ByteArray) = Unit
+            override fun onWritable() = Unit
+            override fun onClosed() = Unit
+        })
+        link.enqueue(OutKind.CONTROL, HelloRejected(HelloRejectReason.ROOM_FULL, config.protocolMin, config.protocolMax, "too many joiners"))
+        link.pump()
+        link.close()
+    }
+
     fun approve(connectionId: Long, confirmedCode: String): ApprovalResult {
         val conn = connections[connectionId]?.takeIf { it.phase == Phase.PENDING } ?: return ApprovalResult.NotPending
         val keys = checkNotNull(conn.keys)
@@ -392,7 +418,9 @@ class SessionHost internal constructor(
             metrics.codeMismatches++
             return ApprovalResult.CodeMismatch
         }
-        if (quarantine != null || PauseReason.STORAGE_FAILURE in pauseReasons || ended == EndReason.HOST_ENDED) return ApprovalResult.RoomNotActive(status)
+        if (quarantine != null || PauseReason.STORAGE_FAILURE in pauseReasons || ended == EndReason.HOST_ENDED || suspendedUntil != null) {
+            return ApprovalResult.RoomNotActive(status)
+        }
         val hello = checkNotNull(conn.hello)
         val join = checkNotNull(conn.join)
         val replaced = if (hello.role == Role.PLAYER) {
@@ -415,7 +443,7 @@ class SessionHost internal constructor(
         val seated: (Seat) -> SeatControl = { s ->
             if (s == member.seat) SeatRecovery.next(control(s), SeatEvent.Replaced(member.id), recovery) else control(s)
         }
-        if (!persistMembers(proposed, nextMemberId + 1, seated)) {
+        if (!persistMembers(proposed, nextMemberId + 1, controlOf = seated)) {
             close(conn, CloseReason.DENIED)
             return ApprovalResult.RoomNotActive(status)
         }
@@ -451,6 +479,7 @@ class SessionHost internal constructor(
         }
         aiPolicies[seat] = policy
         setControl(seat, SeatControl.Ai)
+        pumpAll()
         return true
     }
 
@@ -462,21 +491,21 @@ class SessionHost internal constructor(
      */
     fun swapSeats(a: Seat, b: Seat): Boolean {
         if (!inLobby || a == b) return false
-        for (g in grants.values.toList()) if (g.live && (g.seat == a || g.seat == b)) endGrant(g)
+        for (g in grants.values.toList()) if (g.live && (g.seat == a || g.seat == b)) endGrant(g, GrantEnd.PLAYER_LEFT)
         val ca = control(a)
         val cb = control(b)
         val ma = ca.owner?.let { members[it] }
         val mb = cb.owner?.let { members[it] }
-        // Saved before it is applied: a seating that cannot be saved never reaches a member's roster.
-        ma?.seat = b
-        mb?.seat = a
+        // Saved before it is applied: a seating that cannot be saved never reaches a member's roster
+        // (a failed save broadcasts the pause, so the live members must still hold their old seats).
         val swapped: (Seat) -> SeatControl = { when (it) { a -> cb; b -> ca; else -> control(it) } }
-        if (!persistMembers(members.values.toList(), nextMemberId, swapped)) {
-            ma?.seat = a
-            mb?.seat = b
+        val seatOf: (Member) -> Seat? = { when { it === ma -> b; it === mb -> a; else -> it.seat } }
+        if (!persistMembers(members.values.toList(), nextMemberId, seatOf = seatOf, controlOf = swapped)) {
             pumpAll()
             return false
         }
+        ma?.seat = b
+        mb?.seat = a
         val pa = aiPolicies.remove(a)
         val pb = aiPolicies.remove(b)
         pb?.let { aiPolicies[a] = it }
@@ -516,7 +545,7 @@ class SessionHost internal constructor(
         this.recovery = recovery
         settingsRevision++
         readyMembers.clear()
-        if (!policy.privateFollow) grants.values.filter { it.live }.forEach(::endGrant)
+        if (!policy.privateFollow) grants.values.filter { it.live }.forEach { endGrant(it, GrantEnd.ROOM) }
         broadcastStatus()
         pumpAll()
         return true
@@ -632,6 +661,8 @@ class SessionHost internal constructor(
         aiScheduledFor.clear()
         cancelAiInFlight()
         pauseReasons.clear()
+        // A quarantine judged the old epoch's revisions; the new epoch starts a new match from nothing.
+        quarantine = null
         ended = null
         heartbeatTimer?.cancel()
         heartbeatTimer = null
@@ -694,7 +725,6 @@ class SessionHost internal constructor(
             version < maxOf(m.protocolMin, config.protocolMin) -> HelloRejectReason.VERSION_UNSUPPORTED to "host speaks ${config.protocolMin}..${config.protocolMax}"
             m.roomId != config.roomId -> HelloRejectReason.ROOM_MISMATCH to "no such room here"
             m.baseProfileHash != baseHash || m.matchProfileHash != matchHash -> HelloRejectReason.PROFILE_MISMATCH to "rule profile hash differs"
-            unadmittedCount() > config.maxUnadmitted -> HelloRejectReason.ROOM_FULL to "too many joiners"
             else -> null
         }
         if (problem != null) return rejectHello(conn, problem.first, problem.second)
@@ -755,7 +785,7 @@ class SessionHost internal constructor(
         when (m) {
             is Join -> onJoin(conn, m)
             is CommandMessage -> admittedMember(conn)?.let { onCommand(conn, it, m) } ?: run { metrics.ignored++ }
-            is Resync -> admittedMember(conn)?.let { onResync(conn, it, m) } ?: run { metrics.ignored++ }
+            is Resync -> admittedMember(conn)?.let { onResync(it, m) } ?: run { metrics.ignored++ }
             is Heartbeat -> admittedMember(conn)?.let { memberPresents(it, m.revision) }
             else -> close(conn, CloseReason.PROTOCOL_VIOLATION)
         }
@@ -776,6 +806,8 @@ class SessionHost internal constructor(
     private fun firstJoin(conn: Conn, j: Join) {
         // The host ended the table (also after a restore): its capabilities ended with it, and nobody new joins.
         if (ended == EndReason.HOST_ENDED) return close(conn, CloseReason.EPOCH_ENDED)
+        // A suspended table plays and admits nobody until it is restored (a new host from the save).
+        if (suspendedUntil != null) return close(conn, CloseReason.SUSPENDED)
         if (j.epoch != epoch) run { deny(conn, AdmissionDenial.CAPABILITY_INVALID); return }
         val role = checkNotNull(conn.hello).role
         val proof = j.rejoinProof
@@ -838,7 +870,9 @@ class SessionHost internal constructor(
         send(conn, OutKind.CONTROL, admittedMessage(member))
         sendStatus(member)
         sendViews(member)
-        member.seat?.let { transition(it, SeatEvent.Connected(member.id)) }
+        // A send above may have overflowed the queue and closed this connection (the seat then went
+        // through Disconnected and its grace): only a member still bound to it is connected.
+        if (member.connId == conn.id) member.seat?.let { transition(it, SeatEvent.Connected(member.id)) }
     }
 
     private fun admittedMessage(m: Member) =
@@ -986,7 +1020,7 @@ class SessionHost internal constructor(
         if (persistMembers(members.values.toList(), nextMemberId)) return
         moved.forEach { (g, observer, previous) ->
             observer.privateView = previous
-            endGrant(g)
+            endGrant(g, GrantEnd.ROOM)
         }
     }
 
@@ -1039,7 +1073,7 @@ class SessionHost internal constructor(
         }
     }
 
-    private fun onResync(conn: Conn, member: Member, m: Resync) {
+    private fun onResync(member: Member, m: Resync) {
         val cap = B64.decode(m.capability)
         if (m.epoch != epoch || cap == null || !crypto.hmac.equal(cap, member.capability)) { metrics.ignored++; return }
         if (scheduler.now - member.lastResyncAt < config.resyncMinIntervalMs) { metrics.resyncsThrottled++; return }
@@ -1099,7 +1133,7 @@ class SessionHost internal constructor(
         }
         val player = control(seat).owner?.let { members[it] }
             ?: return RejectionCode.NO_CONSENTING_PLAYER to "no human at $seat"
-        val g = Grant("g${nextGrantId++}", observer.id, observer.nickname, seat)
+        val g = Grant("g${nextGrantId++}", observer.id, observer.nickname, seat, player.nickname)
         g.grantRevision = ++observer.grantCounter
         grants[g.id] = g
         trimGrants()
@@ -1139,7 +1173,7 @@ class SessionHost internal constructor(
         if (g == null || !g.live || (g.observerId != member.id && !(member.role == Role.PLAYER && member.seat == g.seat))) {
             return RejectionCode.GRANT_UNKNOWN to "no live grant"
         }
-        endGrant(g)
+        endGrant(g, GrantEnd.REVOKED)
         return null
     }
 
@@ -1148,10 +1182,11 @@ class SessionHost internal constructor(
      * queued ones. Frames already handed to the transport may still arrive; the client discards
      * them by grant revision.
      */
-    private fun endGrant(g: Grant) {
+    private fun endGrant(g: Grant, why: GrantEnd) {
         if (!g.live) return
         val observer = members[g.observerId]
         g.status = GrantStatus.REVOKED
+        g.end = why
         if (observer != null) {
             g.grantRevision = ++observer.grantCounter
             observer.connId?.let { connections[it] }?.let { metrics.followFramesDropped += it.link.dropFollow(g.id) }
@@ -1171,7 +1206,7 @@ class SessionHost internal constructor(
         val conn = member.connId?.let { connections[it] } ?: return
         val visible = grants.values.filter { if (member.role == Role.OBSERVER) it.observerId == member.id else it.seat == member.seat }
             .takeLast(WireValidation.MAX_GRANTS)
-            .map { GrantView(it.id, it.observerName, it.seat, it.status, it.grantRevision) }
+            .map { GrantView(it.id, it.observerName, it.seat, it.status, it.grantRevision, it.playerName, it.end) }
         send(conn, OutKind.CONTROL, Status(epoch, member.statusRevision, visible, roomView(member)))
     }
 
@@ -1230,7 +1265,8 @@ class SessionHost internal constructor(
     /** Forgets [member] and its capability; a departing player's seat grants and an observer's own grants end (GDN-072). */
     private fun removeMember(member: Member) {
         for (g in grants.values.toList()) {
-            if (g.observerId == member.id || (member.role == Role.PLAYER && g.seat == member.seat)) endGrant(g)
+            if (g.observerId == member.id) endGrant(g, GrantEnd.REVOKED)
+            else if (member.role == Role.PLAYER && g.seat == member.seat) endGrant(g, GrantEnd.PLAYER_LEFT)
         }
         members.remove(member.id)
     }
@@ -1273,14 +1309,19 @@ class SessionHost internal constructor(
      * but that are not empty (AI, stand-in or awaiting a player). [controlOf] lets a caller save a
      * seating before applying it. False, and the room paused, when the save fails.
      */
-    private fun persistMembers(list: List<Member>, nextId: Long, controlOf: (Seat) -> SeatControl = ::control): Boolean {
+    private fun persistMembers(
+        list: List<Member>,
+        nextId: Long,
+        seatOf: (Member) -> Seat? = { it.seat },
+        controlOf: (Seat) -> SeatControl = ::control,
+    ): Boolean {
         val j = journal ?: return true
         if (j.broken) return false.also { storageFailed() }
         val file = MembersFile(
             nextMemberId = nextId,
             members = list.map {
                 val view = it.privateView?.let { (deal, seat) -> StoredPrivateView(deal, seat) }
-                StoredMember(it.id, it.role, it.seat, it.nickname, B64.encode(it.capability), B64.encode(it.digestKey), view)
+                StoredMember(it.id, it.role, seatOf(it), it.nickname, B64.encode(it.capability), B64.encode(it.digestKey), view)
             },
             aiSeats = Seat.entries.filter { controlOf(it) == SeatControl.Ai },
             standInSeats = Seat.entries.filter { controlOf(it) == SeatControl.StandIn(null) },
@@ -1632,6 +1673,9 @@ class HostMetrics {
     var replacements = 0L
     var denied = 0L
     var helloRejected = 0L
+
+    /** Connections closed on accept because [HostConfig.maxUnadmitted] others were still unadmitted. */
+    var refusedConnections = 0L
 
     /** `room_query` answers sent (join by address); each closed its connection. */
     var roomQueries = 0L

@@ -290,6 +290,54 @@ class BleLinkTest {
         throw AssertionError("expected IllegalArgumentException")
     }
 
+    /**
+     * Audit #7: the last record and a disconnect arrive on two radio threads at once. The loop must see
+     * the record before the close (the session drops what arrives after its connection closed).
+     */
+    @Test fun aRecordCompletedBeforeADisconnectIsPostedBeforeTheClose() {
+        val port = object : BlePort {
+            override val address = "AA:BB:CC:DD:EE:FF"
+            override fun open(events: BlePortEvents) = Unit
+            override fun send(packet: ByteArray) = true
+            override fun close() = Unit
+        }
+        val packetThread = Thread.currentThread()
+        val inPost = java.util.concurrent.CountDownLatch(1)
+        val release = java.util.concurrent.CountDownLatch(1)
+        val posted = java.util.Collections.synchronizedList(ArrayList<() -> Unit>())
+        val post: (() -> Unit) -> Unit = { task ->
+            // The packet's thread is held where it hands the record to the loop.
+            if (Thread.currentThread() === packetThread && inPost.count > 0) {
+                inPost.countDown()
+                release.await(2, java.util.concurrent.TimeUnit.SECONDS)
+            }
+            posted += task
+        }
+        val link = BleLink(port, post, VirtualScheduler())
+        val order = java.util.Collections.synchronizedList(ArrayList<String>())
+        link.open(object : TransportListener {
+            override fun onReceive(chunk: ByteArray) { order += "receive" }
+            override fun onWritable() = Unit
+            override fun onClosed() { order += "closed" }
+        })
+        val packet = BlePacketCodec.split(0, byteArrayOf(1, 2, 3), 185).single()
+        val disconnect = Thread {
+            inPost.await(2, java.util.concurrent.TimeUnit.SECONDS)
+            link.portEventsForTest.onDisconnected()
+        }.apply { start() }
+        // Lets the disconnect run while the record is being handed over, then lets the packet finish.
+        val releaser = Thread {
+            inPost.await(2, java.util.concurrent.TimeUnit.SECONDS)
+            Thread.sleep(300)
+            release.countDown()
+        }.apply { start() }
+        link.portEventsForTest.onPacket(packet)
+        disconnect.join(5_000)
+        releaser.join(5_000)
+        synchronized(posted) { posted.toList() }.forEach { it() }
+        assertEquals(listOf("receive", "closed"), order)
+    }
+
     @Test fun theHostSideServerCountsConnections() {
         val p = Pair()
         p.until { p.hostLink != null }

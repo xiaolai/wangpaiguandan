@@ -1,6 +1,6 @@
 {
     "schema": 1,
-    "protocolVersion": 2,
+    "protocolVersion": 3,
     "description": "Client commands: capability, idempotent commandId, expectedRevision, typed body. The seat is never in the body.",
     "cases": [
         {

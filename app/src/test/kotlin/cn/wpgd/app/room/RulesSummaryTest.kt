@@ -30,6 +30,10 @@ class RulesSummaryTest {
         assertEquals(m.returnMaxRank, sheet.returnMaxRank)
         assertEquals(m.minGainToPassA, sheet.minGainToPassA)
         assertEquals(m.maxAFailures, sheet.maxAFailures)
+        // Audit #26: the sheet reads these from its summary, so the two can never disagree.
+        val other = sheet.copy(summary = sheet.summary.copy(maxAFailures = 9, resistanceClaimed = !sheet.summary.resistanceClaimed))
+        assertEquals(9, other.maxAFailures)
+        assertEquals(other.summary.resistanceClaimed, other.resistanceClaimed)
         assertEquals(m.reportingThreshold, sheet.reportingThreshold)
         assertEquals(RoomMode.FRIENDLY, sheet.mode)
         assertTrue(sheet.hints)

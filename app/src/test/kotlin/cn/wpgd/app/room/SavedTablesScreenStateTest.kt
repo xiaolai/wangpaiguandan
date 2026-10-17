@@ -33,6 +33,38 @@ class SavedTablesScreenStateTest {
         assertEquals(0L, tables.untilNextExpiry(loaded.entries))
     }
 
+    @Test fun aReadableSaveWithoutItsRoomSettingsIsDamagedNotRestorable() {
+        // Round 3 #16: a crash between the table's creation and its settings being stored leaves a
+        // readable save that restoring would fail on ("no settings saved"): only deletion is offered.
+        val rig = RoomRig(seed = 134)
+        val storage = InMemoryStorage()
+        val rooms = RoomStore(InMemoryKeyValueStore())
+        val host = rig.host("阿梅", storage = storage, rooms = rooms)
+        host.owner.leaveHosted(checkNotNull(host.owner.prepareLeave()).suspend())
+        rig.run(500)
+        val id = TableRepository(storage).list().single().tableId
+        rooms.forget(id)
+        val tables = SavedTables(TableRepository(storage), rooms, host.identity, rig.clock, TestProfiles.profiles)
+        val entry = tables.list().single()
+        assertEquals(SavedTables.Kind.DAMAGED, entry.kind)
+        assertFalse(tables.restorableNow(entry))
+    }
+
+    @Test fun aSaveKeptPastItsExpiryByTheSweepSchedulesNoReload() {
+        // Audit #23/#28: a damaged or newer-version save keeps its expiry after the sweep; scheduling it
+        // returned 0 forever and the screen reloaded storage every millisecond.
+        val rig = RoomRig(seed = 133)
+        val tables = SavedTables(TableRepository(InMemoryStorage()), RoomStore(InMemoryKeyValueStore()), rig.host("阿梅").identity, rig.clock, TestProfiles.profiles)
+        val listedAt = rig.clock.now
+        val damaged = SavedTables.Entry("t-d", null, SavedTables.Kind.DAMAGED, null, listedAt - 10_000, listedAt - 1_000, listedAt)
+        val newer = SavedTables.Entry("t-n", null, SavedTables.Kind.NEWER_VERSION, null, listedAt - 10_000, listedAt, listedAt)
+        assertEquals(null, tables.untilNextExpiry(listOf(damaged, newer)))
+        val later = SavedTables.Entry("t-r", null, SavedTables.Kind.RESTORABLE, null, listedAt - 10_000, listedAt + 5_000, listedAt)
+        assertEquals(5_000L, tables.untilNextExpiry(listOf(damaged, newer, later)))
+        rig.clock.now = listedAt + 6_000
+        assertEquals("expired since it was listed: reload once to sweep it", 0L, tables.untilNextExpiry(listOf(damaged, later)))
+    }
+
     @Test fun aStorageFailureIsAStateNotACrash() {
         val inner = InMemoryStorage()
         val broken = object : Storage by inner {

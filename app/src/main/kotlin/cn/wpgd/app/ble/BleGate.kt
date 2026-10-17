@@ -95,8 +95,11 @@ object BleGate {
         else -> BleGateState.READY
     }
 
-    /** The actions a state's screen offers, the fix first. Empty only for [BleGateState.READY]. */
-    fun actions(state: BleGateState): List<BleGateAction> {
+    /**
+     * The actions a state's screen offers, the fix first. Empty only for [BleGateState.READY]. Solo play
+     * is a new table: not offered while [newTables] is off (the tribute-profile kill switch, round 3 #20).
+     */
+    fun actions(state: BleGateState, newTables: Boolean = cn.wpgd.app.room.Features.TRIBUTE_PROFILE): List<BleGateAction> {
         val fix = when (state) {
             BleGateState.NEEDS_PERMISSION, BleGateState.DENIED -> BleGateAction.REQUEST_PERMISSION
             BleGateState.PERMANENTLY_DENIED -> BleGateAction.OPEN_APP_SETTINGS
@@ -104,6 +107,6 @@ object BleGate {
             BleGateState.READY -> return emptyList()
             BleGateState.UNSUPPORTED_ANDROID, BleGateState.NO_BLUETOOTH, BleGateState.CANNOT_HOST -> null
         }
-        return listOfNotNull(fix, BleGateAction.USE_WIFI, BleGateAction.PLAY_SOLO)
+        return listOfNotNull(fix, BleGateAction.USE_WIFI, BleGateAction.PLAY_SOLO.takeIf { newTables })
     }
 }

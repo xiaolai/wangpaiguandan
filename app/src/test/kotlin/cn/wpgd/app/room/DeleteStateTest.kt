@@ -46,7 +46,7 @@ class DeleteStateTest {
         }
         val rig = RoomRig(seed = 133)
         val tables = SavedTables(TableRepository(InMemoryStorage()), RoomStore(broken), rig.host("阿梅").identity, rig.clock, TestProfiles.profiles)
-        val entry = SavedTables.Entry("t-a", "甲", SavedTables.Kind.DAMAGED, null, null, null)
+        val entry = SavedTables.Entry("t-a", "甲", SavedTables.Kind.DAMAGED, null, null, null, 0L)
         assertEquals(a, tables.prepareDelete(entry))
     }
 }

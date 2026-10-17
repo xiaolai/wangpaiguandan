@@ -182,7 +182,8 @@ class TableViewModelTest {
         val match = Regex("""(?:data class|data object) (\w+)""").findAll(File(core, "match/MatchCommand.kt").readText().substringAfter("sealed interface MatchRejection {").substringBefore("sealed interface MatchReduceResult"))
             .map { it.groupValues[1] }.filter { it != "Deal" }.toSet()
         assertTrue(deal.size >= 10 && match.size >= 15)
-        assertEquals("rule rejections without a message key", emptySet<String>(), (deal + match - "Deal.SelfMove") - RejectionKeys.ruleNames)
+        // Setup-only rejections (card moves and BeginPlay are sent by the match layer, never by a player) have no message.
+        assertEquals("rule rejections without a message key", emptySet<String>(), (deal + match - "Deal.SelfMove" - "Deal.EmptyHand") - RejectionKeys.ruleNames)
         assertEquals(RejectionKey.DOES_NOT_BEAT, RejectionKeys.of(RejectionCode.RULE, "Deal.DoesNotBeatTrick"))
         assertEquals(RejectionKey.TABLE_MOVED_ON, RejectionKeys.of(RejectionCode.STALE_REVISION, "now 12"))
         assertEquals(RejectionKey.REFUSED_BY_HOST, RejectionKeys.of(RejectionCode.RULE, "SomethingNew"))

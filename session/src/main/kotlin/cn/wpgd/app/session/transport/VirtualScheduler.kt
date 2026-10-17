@@ -24,15 +24,14 @@ class VirtualScheduler(start: Long = 0) : Scheduler {
     val pending: Int get() = queue.count { !it.cancelled }
 
     override fun schedule(delayMs: Long, task: () -> Unit): Cancellable {
-        require(delayMs >= 0) { "negative delay $delayMs" }
-        val t = Task(now + delayMs, seq++, task)
+        val t = Task(deadline(delayMs), seq++, task)
         queue += t
         return Cancellable { t.cancelled = true }
     }
 
     /** Runs every task due within the next [ms] milliseconds, then sets the clock to the end of the window. */
     fun runFor(ms: Long, maxTasks: Long = DEFAULT_TASK_GUARD) {
-        val end = now + ms
+        val end = deadline(ms)
         runWhile(maxTasks) { it.at <= end }
         now = maxOf(now, end)
     }
@@ -43,7 +42,7 @@ class VirtualScheduler(start: Long = 0) : Scheduler {
      * instead of a hang: at most [maxTasks] tasks run, and a further due task fails before it runs.
      */
     fun runUntil(maxMs: Long, maxTasks: Long = DEFAULT_TASK_GUARD, done: () -> Boolean): Boolean {
-        val end = now + maxMs
+        val end = deadline(maxMs)
         if (done()) return true
         var ran = 0L
         while (true) {
@@ -56,6 +55,18 @@ class VirtualScheduler(start: Long = 0) : Scheduler {
         }
         now = maxOf(now, end)
         return done()
+    }
+
+    /**
+     * [now] + [ms]. A negative [ms] is refused (time only moves forward, and a sum below
+     * [Long.MIN_VALUE] would wrap to the far future). For `ms >= 0` the sum overflows exactly when it
+     * comes out below [now]; `Long.MAX_VALUE - now` is not used, since it itself overflows when [now] is negative.
+     */
+    private fun deadline(ms: Long): Long {
+        require(ms >= 0) { "negative duration $ms ms" }
+        val end = now + ms
+        require(end >= now) { "virtual time overflows: now $now + $ms ms" }
+        return end
     }
 
     private fun runWhile(maxTasks: Long, due: (Task) -> Boolean) {

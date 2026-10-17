@@ -36,6 +36,17 @@ class SetupCommandTest {
         r.setup(playing, SetupCommand.Deal(SplitMix64(1))).rejectedWith<Rejection.WrongPhase>()
     }
 
+    /** Play cannot open while a seat holds no card: that seat could neither lead nor pass, and the deal would stall. */
+    @Test fun playDoesNotOpenWhileASeatHoldsNoCard() {
+        var d = dealt().state
+        for (card in d.hands.getValue(Seat.SOUTH).toList()) d = r.setup(d, SetupCommand.MoveCard(Seat.SOUTH, Seat.EAST, card)).accepted().state
+        assertEquals(emptySet(), d.hands.getValue(Seat.SOUTH))
+        assertEquals(Seat.SOUTH, r.setup(d, SetupCommand.BeginPlay(Seat.SOUTH)).rejectedWith<Rejection.EmptyHand>().seat)
+        assertEquals(Seat.SOUTH, r.setup(d, SetupCommand.BeginPlay(Seat.WEST)).rejectedWith<Rejection.EmptyHand>().seat)
+        // Replay refuses the same opening.
+        kotlin.test.assertFailsWith<IllegalArgumentException> { DealEvents.apply(d, DealEvent.PlayBegan(d.revision + 1, Seat.WEST)) }
+    }
+
     @Test fun aDealtDealRefusesPlayUntilItIsOpened() {
         val d = dealt().state
         r.reduce(d, Command.Pass(Seat.SOUTH)).rejectedWith<Rejection.WrongPhase>()

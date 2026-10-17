@@ -51,10 +51,11 @@ class EffectTracker {
         }
         val previous = last
         if (revision <= highWater) return emptyList()
+        val consecutive = revision == highWater + 1
         highWater = revision
         last = view
         if (previous == null) return emptyList()
-        return derive(epoch, revision, previous, view).filter(::remember)
+        return derive(epoch, revision, previous, view, consecutive).filter(::remember)
     }
 
     /** A rejection of command [commandId]: one cue per command, ever. */
@@ -67,13 +68,15 @@ class EffectTracker {
         return true
     }
 
-    private fun derive(epoch: Long, rev: Long, prev: MatchMemberView, next: MatchMemberView): List<TableCue> {
+    /** [consecutive]: [next] is the revision right after [prev], so nothing committed between them went unseen. */
+    private fun derive(epoch: Long, rev: Long, prev: MatchMemberView, next: MatchMemberView, consecutive: Boolean): List<TableCue> {
         val out = ArrayList<TableCue>()
         fun cue(kind: CueKind, seat: Seat? = null, count: Int? = null, extra: String = "") =
             out.add(TableCue("e$epoch:r$rev:${kind.name}:${seat?.name ?: "-"}$extra", kind, seat, rev, count))
 
-        val sameDeal = prev.match.dealNumber == next.match.dealNumber
-        if (!sameDeal) cue(CueKind.DEAL_STARTED)
+        // Deal numbers restart in every match; a rematch's lobby is deal 0, which starts nothing (round 3 #17).
+        val sameDeal = prev.match.matchNumber == next.match.matchNumber && prev.match.dealNumber == next.match.dealNumber
+        if (!sameDeal && next.match.dealNumber > 0) cue(CueKind.DEAL_STARTED)
         if (next.match.phase == MatchPhase.TRIBUTE && (prev.match.phase != MatchPhase.TRIBUTE || !sameDeal)) cue(CueKind.TRIBUTE_STARTED)
 
         val prevTable = prev.deal?.table.takeIf { sameDeal }
@@ -84,8 +87,10 @@ class EffectTracker {
             val continues = before.size <= after.size && after.subList(0, before.size) == before
             val newPlays = if (continues) after.drop(before.size) else after
             // The pass that closes a trick commits together with the trick's end (D19), so the next
-            // projection no longer lists it: cue every pass the closed trick still lacked.
-            if (prevTable != null && before.isNotEmpty() && !continues) closingPasses(prevTable).forEach { cue(CueKind.PASS, it, extra = ":close") }
+            // projection no longer lists it: cue every pass the closed trick still lacked. Only across
+            // consecutive revisions: after a skipped one (a resync, a coalesced update) a later play may
+            // have beaten [prevTable]'s top, so who passed is unknown and nothing is guessed (audit #24).
+            if (consecutive && prevTable != null && before.isNotEmpty() && !continues) closingPasses(prevTable).forEach { cue(CueKind.PASS, it, extra = ":close") }
             newPlays.forEachIndexed { i, p -> cue(if (p.isBomb) CueKind.BOMB else CueKind.PLAY, p.seat, extra = ":${after.size - newPlays.size + i}") }
             val passesBefore = if (continues && newPlays.isEmpty()) prevTable?.passedSinceLastPlay.orEmpty() else emptyList()
             nextTable.passedSinceLastPlay.drop(passesBefore.size).forEach { cue(CueKind.PASS, it) }

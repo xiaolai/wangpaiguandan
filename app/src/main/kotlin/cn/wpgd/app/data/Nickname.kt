@@ -6,7 +6,7 @@ import cn.wpgd.app.core.state.Seat
  * A display name (GDN-002, audit A35). It is only a label: seats come from the host's admission,
  * never from a name, and a name that reads like a seat or a role is refused so it cannot claim
  * one visually either. Bounded to [MAX_CODE_POINTS] code points, no control, format or other
- * default-ignorable (invisible) characters, at least one visible character, surrounding whitespace
+ * default-ignorable (invisible) characters, no unpaired surrogates, at least one visible character, surrounding whitespace
  * trimmed.
  */
 @JvmInline
@@ -30,7 +30,9 @@ value class Nickname private constructor(val value: String) {
             val bad = name.codePoints().anyMatch { cp ->
                 val t = Character.getType(cp)
                 t == Character.CONTROL.toInt() || t == Character.FORMAT.toInt() || t == Character.UNASSIGNED.toInt() ||
-                    t == Character.LINE_SEPARATOR.toInt() || t == Character.PARAGRAPH_SEPARATOR.toInt() || t == Character.PRIVATE_USE.toInt()
+                    t == Character.LINE_SEPARATOR.toInt() || t == Character.PARAGRAPH_SEPARATOR.toInt() || t == Character.PRIVATE_USE.toInt() ||
+                    // An unpaired surrogate is malformed UTF-16: UTF-8 cannot carry it, so it would not survive storage or the wire.
+                    t == Character.SURROGATE.toInt()
             }
             if (bad || hasInvisible(name)) return NicknameResult.Invalid(NicknameProblem.INVISIBLE_OR_CONTROL)
             if (name.lowercase() in RESERVED) return NicknameResult.Invalid(NicknameProblem.RESERVED)

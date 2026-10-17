@@ -486,7 +486,8 @@ fun SavedTablesScreen(tables: SavedTables, onRestore: (String) -> Unit, onBack: 
                         }
                         Text(status, style = roomLabel, color = if (e.kind == SavedTables.Kind.RESTORABLE) c.ink2 else c.danger)
                         if (e.kind == SavedTables.Kind.RESTORABLE) {
-                            RoomPrimary(stringResource(R.string.saved_restore), "saved:restore:${e.tableId}") {
+                            // Not while a deletion runs: the table may be the one being deleted (round 3 #25).
+                            RoomPrimary(stringResource(R.string.saved_restore), "saved:restore:${e.tableId}", enabled = !deletion.busy) {
                                 expired = !tables.restorableNow(e)
                                 if (expired) version++ else onRestore(e.tableId)
                             }

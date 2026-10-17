@@ -103,7 +103,11 @@ class PrivateViewClearTest {
         val handBefore = handIds(zhou.phone)
 
         zhou.phone.owner.leaveRoom()
-        rig.until { chen.table?.follow == null && WatchUi.of(chen.state, 0, maxA)?.notice is WatchNotice.PlayerLeft }
+        // The grant says the player left as soon as it ends; the roster shows the stand-in a status later.
+        rig.until {
+            val now = WatchUi.of(chen.state, 0, maxA)
+            chen.table?.follow == null && now?.notice is WatchNotice.PlayerLeft && now.seats.single { it.seat == Seat.EAST }.occupant != cn.wpgd.app.session.wire.Occupant.HUMAN
+        }
         val w = checkNotNull(WatchUi.of(chen.state, 0, maxA))
         assertEquals(Seat.EAST, (w.notice as WatchNotice.PlayerLeft).seat)
         // The stand-in now plays these cards; the watcher keeps no copy of them.
@@ -112,6 +116,14 @@ class PrivateViewClearTest {
         val stillHidden = handBefore.filter { id -> !played.contains("id=$id,") }
         assertTrue("the hand vanished from the watcher's device", stillHidden.isNotEmpty())
         assertFalse("the stand-in is not watchable", w.seats.single { it.seat == Seat.EAST }.canAsk)
+
+        // Round 3 #18: another human taking the seat later changes neither why the follow ended nor whose it was.
+        assertEquals(WatchNotice.PlayerLeft(Seat.EAST, "老周"), w.notice)
+        val t = checkNotNull(chen.table)
+        val room = checkNotNull(t.roomView)
+        val taken = room.copy(seats = room.seats.map { if (it.seat == Seat.EAST) it.copy(occupant = cn.wpgd.app.session.wire.Occupant.HUMAN, nickname = "小王") else it })
+        val later = chen.state.copy(table = t.copy(roomView = taken))
+        assertEquals(WatchNotice.PlayerLeft(Seat.EAST, "老周"), WatchUi.of(later, 0, maxA)!!.notice)
     }
 
     @Test fun aDeniedRequestShowsNothing() {

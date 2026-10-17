@@ -7,6 +7,7 @@ import cn.wpgd.app.session.transport.Cancellable
 import cn.wpgd.app.session.transport.Scheduler
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import java.util.concurrent.RejectedExecutionException
 import java.util.concurrent.ThreadFactory
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
@@ -15,8 +16,10 @@ import java.util.concurrent.atomic.AtomicBoolean
  * The background thread AI decisions run on (GDN-102: no input-blocking AI work). Never the main
  * thread and never the session loop: the loop must keep answering heartbeats while a seat thinks.
  */
-class AiWorker(threadName: String = "wpgd-ai") {
-    val executor: ExecutorService = Executors.newSingleThreadExecutor(ThreadFactory { r -> Thread(r, threadName).also { it.isDaemon = true } })
+class AiWorker(
+    threadName: String = "wpgd-ai",
+    val executor: ExecutorService = Executors.newSingleThreadExecutor(ThreadFactory { r -> Thread(r, threadName).also { it.isDaemon = true } }),
+) {
 
     /** Stops the worker and waits briefly for it. An interrupted caller stops waiting, keeps its interrupt, and never throws. */
     fun shutdown() {
@@ -45,15 +48,21 @@ class WorkerDecisionExecutor(
     override fun execute(work: () -> DecisionOutcome, done: (DecisionOutcome) -> Unit): Cancellable {
         val cancelled = AtomicBoolean(false)
         if (worker.executor.isShutdown) return Cancellable { cancelled.set(true) }
-        val future = worker.executor.submit {
-            if (cancelled.get()) return@submit
-            val outcome = try {
-                work()
-            } catch (t: Throwable) {
-                onError(t)
-                return@submit
+        val future = try {
+            worker.executor.submit {
+                if (cancelled.get()) return@submit
+                val outcome = try {
+                    work()
+                } catch (t: Throwable) {
+                    onError(t)
+                    return@submit
+                }
+                loop.schedule(0) { if (!cancelled.get()) done(outcome) }
             }
-            loop.schedule(0) { if (!cancelled.get()) done(outcome) }
+        } catch (e: RejectedExecutionException) {
+            // The worker shut down after the check above: the decision never runs, like one refused by it.
+            if (worker.executor.isShutdown) return Cancellable { cancelled.set(true) }
+            throw e
         }
         return Cancellable {
             cancelled.set(true)

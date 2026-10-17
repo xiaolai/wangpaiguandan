@@ -16,6 +16,9 @@ object WireValidation {
     const val MAX_OBSERVERS = 16
     const val DIGEST_BYTES = 32
     const val NONCE_BYTES = 32
+
+    /** A capability or digest key ([Admitted]): 32 random bytes, base64url without padding. */
+    const val CREDENTIAL_BYTES = 32
     private val ID = Regex("[A-Za-z0-9_-]{1,$MAX_ID}")
     private val HASH = Regex("[0-9a-f]{64}")
 
@@ -58,7 +61,12 @@ object WireValidation {
             m.rejoinProof != null && (m.rejoinProof.length > MAX_KEY_B64 || B64.decode(m.rejoinProof)?.size != DIGEST_BYTES) -> "rejoinProof"
             else -> null
         }
-        is Admitted -> if (!ID.matches(m.memberId) || !ID.matches(m.capability) || !ID.matches(m.digestKey)) "ids" else null
+        is Admitted -> when {
+            !ID.matches(m.memberId) -> "ids"
+            // Rejoin credentials are 32 random bytes; anything else could never be used to rejoin.
+            !credential(m.capability) || !credential(m.digestKey) -> "credentials"
+            else -> null
+        }
         is CommandMessage -> when {
             !ID.matches(m.capability) || !ID.matches(m.commandId) -> "ids"
             m.expectedRevision < 0 -> "expectedRevision"
@@ -74,6 +82,7 @@ object WireValidation {
         is FollowSnapshot -> if (!ID.matches(m.grantId)) "grantId" else null
         is Status -> when {
             m.grants.size > MAX_GRANTS || m.grants.any { !ID.matches(it.grantId) } -> "grants"
+            m.grants.any { !nickname(it.observerName) || !nickname(it.playerName) || (it.end != null) != (it.status == GrantStatus.REVOKED) } -> "grants"
             else -> room(m.room)
         }
         is Resync -> if (!ID.matches(m.capability)) "capability" else null
@@ -92,6 +101,8 @@ object WireValidation {
     /** Not blank, bounded, and no control or invisible formatting character (a listing reaches the screen). */
     private fun listedName(n: String, max: Int): Boolean =
         n.isNotBlank() && n.length <= max && n.none { it.isISOControl() || Character.getType(it) == Character.FORMAT.toInt() }
+
+    private fun credential(c: String): Boolean = c.length <= MAX_ID && B64.decode(c)?.size == CREDENTIAL_BYTES
 
     private fun nickname(n: String): Boolean = n.isNotBlank() && n.length <= MAX_NICKNAME && n.none { it.isISOControl() }
 

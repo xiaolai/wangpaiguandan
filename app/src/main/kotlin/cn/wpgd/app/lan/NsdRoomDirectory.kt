@@ -80,7 +80,8 @@ class NsdRoomDirectory(context: Context) : RoomDirectory {
         private val discovery = object : NsdManager.DiscoveryListener {
             override fun onDiscoveryStarted(serviceType: String) = Unit
             override fun onDiscoveryStopped(serviceType: String) = Unit
-            override fun onStartDiscoveryFailed(serviceType: String, errorCode: Int) = Unit
+            // The platform drops the listener on this failure, so the same listener may start again.
+            override fun onStartDiscoveryFailed(serviceType: String, errorCode: Int) = discoveryFailed(errorCode)
             override fun onStopDiscoveryFailed(serviceType: String, errorCode: Int) = Unit
 
             override fun onServiceFound(info: NsdServiceInfo) {
@@ -104,13 +105,54 @@ class NsdRoomDirectory(context: Context) : RoomDirectory {
         override fun start(onRooms: (List<RoomAdvert>) -> Unit) {
             this.onRooms = onRooms
             onRooms(emptyList())
-            nsd.discoverServices(AdvertCodec.SERVICE_TYPE, NsdManager.PROTOCOL_DNS_SD, discovery)
+            // The timer exists before discovery starts: a failed start is retried on it.
             val timer = Executors.newSingleThreadScheduledExecutor { r -> Thread(r, "wpgd-nsd-refresh").also { it.isDaemon = true } }
             synchronized(this) {
                 if (stopped) return timer.shutdown()
                 refresher = timer
             }
+            startDiscovery()
             timer.scheduleWithFixedDelay(::refresh, REFRESH_MS, REFRESH_MS, TimeUnit.MILLISECONDS)
+        }
+
+        private val starts = DiscoveryStarts()
+
+        /** Registering and stopping discovery, serialized: a start that loses the race to [stop] registers nothing. */
+        private val registration = DiscoveryRegistration(
+            register = { nsd.discoverServices(AdvertCodec.SERVICE_TYPE, NsdManager.PROTOCOL_DNS_SD, discovery) },
+            unregister = { nsd.stopServiceDiscovery(discovery) },
+        )
+
+        private fun startDiscovery() {
+            synchronized(this) {
+                if (stopped) return
+                starts.started()
+            }
+            try {
+                registration.start()
+            } catch (_: IllegalArgumentException) {
+                // The platform still holds this listener (a stop not yet processed): retry like a failed start.
+                discoveryFailed(-1)
+            }
+        }
+
+        /** A failed start is retried a few times, later each time; then it is logged and the finder stays empty. */
+        private fun discoveryFailed(errorCode: Int) {
+            val retry = synchronized(this) {
+                if (stopped) return
+                val delay = starts.failed()
+                val timer = refresher
+                if (delay == null || timer == null) null else timer to delay
+            }
+            if (retry == null) {
+                Log.w(TAG, "room discovery could not start (error $errorCode) after ${starts.attempts} attempts")
+                return
+            }
+            try {
+                retry.first.schedule(::startDiscovery, retry.second, TimeUnit.MILLISECONDS)
+            } catch (_: java.util.concurrent.RejectedExecutionException) {
+                // Stopped meanwhile.
+            }
         }
 
         override fun stop() {
@@ -121,7 +163,7 @@ class NsdRoomDirectory(context: Context) : RoomDirectory {
                 refresher.also { refresher = null }
             }
             timer?.shutdownNow()
-            runCatching { nsd.stopServiceDiscovery(discovery) }
+            registration.stop()
         }
 
         /** Resolves every service found so far again, so a re-announced advert is seen. */
@@ -201,6 +243,52 @@ internal fun serviceNameMatchesRoom(serviceName: String, roomId: String): Boolea
 }
 
 private val RENAMED_SUFFIX = Regex(" \\([1-9][0-9]{0,3}\\)")
+
+/**
+ * Starting and stopping one discovery listener, serialized (round 3 #9). [start] registers unless
+ * [stop] ran; [stop] runs once and unregisters, so a registration that won the race is undone and one
+ * that lost it never happens. [unregister] failing (nothing registered: a start that failed) is ignored.
+ * The platform calls are asynchronous (results arrive on another thread), so holding the lock across
+ * them cannot deadlock with the listener's callbacks.
+ */
+internal class DiscoveryRegistration(private val register: () -> Unit, private val unregister: () -> Unit) {
+    private var stopped = false
+
+    /** False when already stopped. What [register] throws propagates. */
+    @Synchronized
+    fun start(): Boolean {
+        if (stopped) return false
+        register()
+        return true
+    }
+
+    @Synchronized
+    fun stop() {
+        if (stopped) return
+        stopped = true
+        runCatching(unregister)
+    }
+}
+
+/**
+ * Attempts to start discovery (not thread-safe: the browser's lock serializes calls). A failed start
+ * is retried at most [maxAttempts] times in all, waiting [baseDelayMs], then twice as long each time.
+ */
+internal class DiscoveryStarts(private val maxAttempts: Int = 4, private val baseDelayMs: Long = 1_000) {
+    init {
+        require(maxAttempts >= 1 && baseDelayMs > 0)
+    }
+
+    var attempts: Int = 0
+        private set
+
+    fun started() {
+        attempts++
+    }
+
+    /** The latest start failed: the delay before the next attempt, or null to give up. */
+    fun failed(): Long? = if (attempts >= maxAttempts) null else baseDelayMs shl (attempts - 1).coerceIn(0, 16)
+}
 
 /**
  * Room registrations and their withdrawal (not thread-safe: the directory's lock serializes calls).

@@ -57,6 +57,12 @@ class WireFixtureTest {
         return f.readText()
     }
 
+    /** Fixture hex is digits only: a sign that String.toInt(16) would take ("-1" as 0xff) is malformed. */
+    @Test fun hexDecodingRejectsSignsAndNonDigits() {
+        assertContentEquals(byteArrayOf(0x00, 0x7f, -1, 0x0a), Hex.decode("007fFF0a"))
+        for (bad in listOf("-1", "+f", "0g", " 1", "1-")) assertFailsWith<IllegalArgumentException>(bad) { Hex.decode(bad) }
+    }
+
     @Test fun checkedInFixturesEqualWhatTheCodeProduces() {
         val out = File("build/wire-fixtures").apply { mkdirs() }
         val stale = ArrayList<String>()
@@ -91,6 +97,24 @@ class WireFixtureTest {
         val at = (0..bytes.size - 3).first { bytes[it] == 0xEF.toByte() && bytes[it + 1] == 0xBF.toByte() && bytes[it + 2] == 0xBD.toByte() }
         val malformed = bytes.copyOfRange(0, at) + byteArrayOf(0xC3.toByte(), 0x28) + bytes.copyOfRange(at + 3, bytes.size)
         assertNull(WireCodec.decode(malformed))
+    }
+
+    /**
+     * Finding 58: JSON (RFC 8259) forbids unescaped U+0000..U+001F inside strings; the strict decoder
+     * refuses them, while the same characters escaped are ordinary text.
+     */
+    @Test fun unescapedControlCharactersInStringsAreRefused() {
+        val rejected = cn.wpgd.app.session.wire.HelloRejected(cn.wpgd.app.session.wire.HelloRejectReason.ROOM_FULL, 2, 2, "a\tb")
+        val escaped = WireCodec.encodeToString(rejected)
+        assertTrue(escaped.contains("a\\tb"), "the encoder escapes a tab: $escaped")
+        assertEquals(rejected, WireCodec.decode(escaped))
+        for (c in listOf('\u0000', '\t', '\n', '\r', '\u001F')) {
+            val literal = escaped.replace("a\\tb", "a${c}b")
+            assertNull(WireCodec.decode(literal), "an unescaped U+%04X inside a string was accepted".format(c.code))
+            assertNull(WireCodec.decode(literal.encodeToByteArray()))
+        }
+        // Whitespace between tokens is still allowed: only string contents are restricted.
+        assertEquals(rejected, WireCodec.decode(escaped.replace(",\"protocolMin\"", ",\n\t\"protocolMin\"")))
     }
 
     @Test fun unknownOrMissingFieldsRejectAtEveryLevel() {

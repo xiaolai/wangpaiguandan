@@ -10,6 +10,8 @@ import cn.wpgd.app.session.host.RoomListingInfo
 import cn.wpgd.app.session.transport.TransportListener
 import cn.wpgd.app.session.wire.CloseReason
 import cn.wpgd.app.session.wire.Hello
+import cn.wpgd.app.session.wire.HelloRejectReason
+import cn.wpgd.app.session.wire.HelloRejected
 import cn.wpgd.app.session.wire.PROTOCOL_VERSION
 import cn.wpgd.app.session.wire.Role
 import cn.wpgd.app.session.wire.RoomListing
@@ -164,6 +166,56 @@ class RoomLookupTest {
         assertNotNull(WireValidation.problem(ok.copy(protocolMin = 3, protocolMax = 2)))
         assertNotNull(WireValidation.problem(RoomQuery(0, 2)))
         assertNull(WireValidation.problem(RoomQuery(2, 2)))
+    }
+
+    /** A peer that answers with [answer] (one frame) to whatever it is sent. */
+    private fun Table.peerAnswering(answer: ByteArray): RoomLookupTestPeer {
+        val link = network.link()
+        link.hostEnd.open(object : TransportListener {
+            override fun onReceive(chunk: ByteArray) {
+                ChunkCodec.split(1, answer, 150).forEach { link.hostEnd.trySend(it) }
+            }
+            override fun onWritable() = Unit
+            override fun onClosed() = Unit
+        })
+        return RoomLookupTestPeer(link.clientEnd)
+    }
+
+    class RoomLookupTestPeer(val clientEnd: cn.wpgd.app.session.transport.Transport)
+
+    /** A full host still hosts a room: "room full" is not "no room here" (finding 46). */
+    @Test fun aFullHostIsReportedAsFullNotAsNoRoom() {
+        val t = Table(seed = 409)
+        val rejected = HelloRejected(HelloRejectReason.ROOM_FULL, PROTOCOL_VERSION, PROTOCOL_VERSION, "too many joiners")
+        val peer = t.peerAnswering(plainFrame(WireCodec.encode(rejected)))
+        var result: LookupResult? = null
+        RoomLookup(peer.clientEnd, t.scheduler, timeoutMs = 3_000) { result = it }.start()
+        t.run(500)
+        assertEquals(LookupResult.Full, result)
+    }
+
+    /** The real host refusing new connections at its unadmitted bound says ROOM_FULL; the lookup reports Full. */
+    @Test fun aHostAtItsConnectionBoundIsReportedAsFull() {
+        val t = Table(seed = 410)
+        t.host.listing = listing
+        val held = (1..t.hostConfig.maxUnadmitted).map { t.network.link().also { l -> t.host.accept(l.hostEnd) } }
+        val link = t.network.link()
+        kotlin.test.assertNull(t.host.accept(link.hostEnd), "the host is at its bound of unadmitted connections")
+        var result: LookupResult? = null
+        RoomLookup(link.clientEnd, t.scheduler, timeoutMs = 3_000) { result = it }.start()
+        t.run(500)
+        assertEquals(LookupResult.Full, result)
+        assertEquals(t.hostConfig.maxUnadmitted, held.size)
+    }
+
+    /** A lookup never has keys, so a sealed frame cannot be an answer to it: report NotARoom at once (finding 47). */
+    @Test fun aSealedAnswerIsNotARoomNotATimeout() {
+        val t = Table(seed = 411)
+        val peer = t.peerAnswering(byteArrayOf(cn.wpgd.app.session.channel.FrameKind.SEALED) + ByteArray(48) { it.toByte() })
+        var result: LookupResult? = null
+        RoomLookup(peer.clientEnd, t.scheduler, timeoutMs = 3_000) { result = it }.start()
+        t.run(500)
+        assertEquals(LookupResult.NotARoom, result)
     }
 
     @Test fun lookupLimitsAreValidated() {

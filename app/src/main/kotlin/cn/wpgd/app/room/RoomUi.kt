@@ -60,7 +60,23 @@ data class LobbySeatUi(
     val isYou: Boolean,
     /** Whole seconds of grace left while the seat's player is away (T6, H4). */
     val graceSeconds: Int?,
-)
+    /**
+     * Host (B10): an AI may be put here. The seat is empty, or its player left it (a stand-in or a
+     * wait with no owner: the roster names a seat's owner, so no nickname means none; round 3 #26).
+     */
+    val canPutAi: Boolean = false,
+) {
+    /** What the seat's line says besides who holds it; every occupant has its own (round 3 #27). */
+    val status: LobbySeatStatus get() = when (occupant) {
+        Occupant.HUMAN -> if (ready) LobbySeatStatus.READY else LobbySeatStatus.NOT_READY
+        Occupant.ABSENT -> LobbySeatStatus.AWAY
+        Occupant.STAND_IN -> LobbySeatStatus.STAND_IN
+        Occupant.AWAITING_PLAYER -> LobbySeatStatus.AWAITING_PLAYER
+        Occupant.EMPTY, Occupant.AI -> LobbySeatStatus.NONE
+    }
+}
+
+enum class LobbySeatStatus { NONE, READY, NOT_READY, AWAY, STAND_IN, AWAITING_PLAYER }
 
 /**
  * The lobby (B7, B9, D2): every seat with who holds it and whether they are ready, the watchers, the
@@ -118,7 +134,11 @@ object LobbyUi {
             info = info,
             hosting = hosting,
             seats = room.seats.map { s ->
-                LobbySeatUi(s.seat, s.seat.team, s.occupant, s.nickname, s.ready, s.seat == me, s.graceRemainingMs?.let { ((it + 999) / 1_000).toInt() })
+                val vacated = (s.occupant == Occupant.STAND_IN || s.occupant == Occupant.AWAITING_PLAYER) && s.nickname == null
+                LobbySeatUi(
+                    s.seat, s.seat.team, s.occupant, s.nickname, s.ready, s.seat == me, s.graceRemainingMs?.let { ((it + 999) / 1_000).toInt() },
+                    canPutAi = hosting && (s.occupant == Occupant.EMPTY || vacated),
+                )
             },
             observers = room.observers,
             settings = room.settings,

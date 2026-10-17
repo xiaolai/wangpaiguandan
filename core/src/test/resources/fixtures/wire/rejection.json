@@ -1,6 +1,6 @@
 {
     "schema": 1,
-    "protocolVersion": 2,
+    "protocolVersion": 3,
     "description": "Typed rejection receipts (audit A20).",
     "cases": [
         {

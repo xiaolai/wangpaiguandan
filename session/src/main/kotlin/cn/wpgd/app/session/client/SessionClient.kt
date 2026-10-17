@@ -145,6 +145,13 @@ class SessionClient(
         private set
 
     /**
+     * The configured rejoin ticket ([ClientConfig.rejoinCapability]), for the first epoch only. It is
+     * dropped whenever the capability it stands for ends (a new epoch, replacement, epoch ended), so
+     * a later join asks for fresh admission instead of presenting an obsolete proof.
+     */
+    private var configuredTicket: String? = config.rejoinCapability
+
+    /**
      * The host key fingerprint this client is pinned to (base64url): the configured pin, else the
      * first welcome's. Every later welcome on any connection of this client must carry the same key.
      * Store it with the capability as the rejoin ticket.
@@ -209,6 +216,9 @@ class SessionClient(
     /** Test seam: sees every message this client queues for the host, plain or sealed. */
     internal var sentTap: ((WireMessage) -> Unit)? = null
 
+    /** Test seam: a decoded message for which this returns true is lost (after [tap]), as if never delivered. */
+    internal var loseInbound: ((WireMessage) -> Boolean)? = null
+
     /** Test seam: replaces the join this client sends (a replayed or forged proof). */
     internal var rewriteJoin: ((Join) -> Join)? = null
 
@@ -217,6 +227,9 @@ class SessionClient(
     private var keyPair: cn.wpgd.app.session.crypto.EphemeralKeyPair? = null
     private val digests = LinkedHashMap<Long, ByteArray>()
     private val unverified = HashMap<Long, Pair<String, ByteArray>>()
+
+    /** Test seam: receipts waiting for their revision's snapshot to be verified. */
+    internal val deferredReceiptDigests: Int get() = unverified.size
     private var lastInboundAt = 0L
     private var lastResyncAt = Long.MIN_VALUE / 2
     private var previousHeartbeat: Heartbeat? = null
@@ -337,7 +350,8 @@ class SessionClient(
 
     private fun onPlain(m: HandshakeMessage) {
         tap?.invoke(m)
-        lastInboundAt = scheduler.now
+        // Once keys are installed only authenticated frames prove the host alive: plaintext can come from anyone.
+        if (link?.sealed != true) lastInboundAt = scheduler.now
         when (m) {
             is HelloRejected -> if (phase == ClientPhase.HELLO_SENT) {
                 helloRejection = m
@@ -358,8 +372,10 @@ class SessionClient(
         val nonce = B64.decode(m.nonce)?.takeIf { it.size == SessionKeys.NONCE_BYTES } ?: return connectionClosed(CloseReason.PROTOCOL_VIOLATION)
         // G2: a pinned member talks only to the room key it pinned; nothing is sent to any other.
         val fingerprint = HostKey.fingerprintOf(crypto.hmac, roomKey)
-        val pinned = hostKeyFingerprint?.let { B64.decode(it) }
-        if (pinned != null && !crypto.hmac.equal(pinned, fingerprint)) {
+        val pin = hostKeyFingerprint
+        // A pin that does not decode to a fingerprint matches no key: refuse (fail closed), never skip the check.
+        val pinned = pin?.let { B64.decode(it)?.takeIf { b -> b.size == HostKey.FINGERPRINT_BYTES } }
+        if (pin != null && (pinned == null || !crypto.hmac.equal(pinned, fingerprint))) {
             metrics.hostKeyMismatches++
             return connectionClosed(CloseReason.HOST_KEY_MISMATCH)
         }
@@ -378,10 +394,13 @@ class SessionClient(
             // A new epoch: the old capability and state belong to a room that no longer exists.
             capability = null; memberId = null; digestKey = null
             // A revision held in an older epoch says nothing about this one; the configured one is for the first epoch.
-            if (epoch != null) heldRevision = -1
+            if (epoch != null) { heldRevision = -1; configuredTicket = null }
             revision = -1; viewJson = null; memberView = null; spectatorView = null; follow = null
             grants = emptyList(); room = null; statusRevision = 0; digests.clear(); unverified.clear()
         }
+        // Status revisions count per host process: a host restored from its save (same epoch) numbers
+        // this member's statuses from 1 again, and its first status follows admission on this connection.
+        statusRevision = 0
         epoch = m.epoch
         policy = m.policy
         confirmationCode = keys.confirmationCode
@@ -389,7 +408,7 @@ class SessionClient(
         l.installKeys(Sealer(crypto.aead, keys.clientToHost, Direction.CLIENT_TO_HOST), Opener(crypto.aead, keys.hostToClient, Direction.HOST_TO_CLIENT))
         phase = ClientPhase.JOINING
         // The capability never leaves this device: a returning member proves it over this connection's transcript.
-        val proof = (capability ?: config.rejoinCapability)?.let { B64.decode(it) }?.let { cap ->
+        val proof = (capability ?: configuredTicket)?.let { B64.decode(it) }?.let { cap ->
             val transcript = RejoinProof.transcript(config.roomId, m.epoch, nonce, fingerprint, kp.publicKey, hostPublic)
             B64.encode(RejoinProof.of(crypto.hmac, cap, transcript))
         }
@@ -401,6 +420,7 @@ class SessionClient(
     /** Handles one decoded sealed message. Internal so tests can inject crafted frames. */
     internal fun onMessage(m: WireMessage) {
         tap?.invoke(m)
+        if (loseInbound?.invoke(m) == true) return
         when (m) {
             is AdmissionPending -> if (phase == ClientPhase.JOINING) phase = ClientPhase.PENDING
             is Admitted -> onAdmitted(m)
@@ -424,7 +444,7 @@ class SessionClient(
             is Heartbeat -> onHeartbeat(m)
             is Closing -> {
                 closeReason = m.reason
-                if (m.reason == CloseReason.REPLACED || m.reason == CloseReason.EPOCH_ENDED) capability = null
+                if (m.reason == CloseReason.REPLACED || m.reason == CloseReason.EPOCH_ENDED) { capability = null; configuredTicket = null }
                 connectionClosed(m.reason)
             }
             else -> metrics.ignored++
@@ -435,8 +455,11 @@ class SessionClient(
         if (m.epoch != epoch) { metrics.staleEpochFrames++; return }
         if (phase == ClientPhase.ADMITTED) return
         val key = B64.decode(m.digestKey) ?: return connectionClosed(CloseReason.PROTOCOL_VIOLATION)
+        val moved = seat != null && seat != m.seat
         memberId = m.memberId
         seat = m.seat
+        // Readmitted to another seat (the host moved it while offline): the old seat's view is not this member's.
+        if (moved) dropSeatView()
         capability = m.capability
         digestKey = key
         phase = ClientPhase.ADMITTED
@@ -537,12 +560,23 @@ class SessionClient(
         val old = seat
         if (config.role != Role.PLAYER || newSeat == null || old == null || newSeat == old) return
         seat = newSeat
+        dropSeatView()
+        requestResync(force = true)
+    }
+
+    /**
+     * The seat changed: its view and digests no longer describe this member. The applied revision
+     * goes back to "none" ([heldRevision] keeps the evidence), so until the new seat's snapshot
+     * arrives every heartbeat sees this client behind and asks again, even if that snapshot and the
+     * first resync are both lost.
+     */
+    private fun dropSeatView() {
         memberView = null
         viewJson = null
+        revision = -1
         digests.clear()
         unverified.clear()
         metrics.seatMoves++
-        requestResync(force = true)
     }
 
     private fun onReply(commandId: String, m: WireMessage, then: () -> Unit) {
@@ -565,7 +599,14 @@ class SessionClient(
         when {
             mine != null -> compareDigest(expected, mine)
             // The snapshot is usually still in flight (its chunks race the receipt's): verify on arrival.
-            r.revision > revision -> unverified[r.revision] = r.commandId to expected
+            r.revision > revision -> {
+                unverified[r.revision] = r.commandId to expected
+                // Bounded: while snapshots stay undelivered, the oldest waiting receipt is given up.
+                while (unverified.size > DIGEST_HISTORY) {
+                    unverified.remove(unverified.keys.min())
+                    metrics.unverifiedReceipts++
+                }
+            }
             else -> metrics.unverifiedReceipts++
         }
     }
@@ -665,11 +706,18 @@ class SessionClient(
         val old = link
         link = null
         previousHeartbeat = null
+        // Grants and the private follow view hold only while the host can revoke them on this
+        // connection (GDN-067): one revoked while away must not stay visible through a reconnect.
+        // The next connection's first status brings the current grants, and the follow view after it.
+        if (follow != null) metrics.followCleared++
+        follow = null
+        grants = emptyList()
         generation++
         old?.close()
     }
 
-    private companion object {
+    internal companion object {
+        /** Own snapshot digests kept, and receipts kept waiting for their snapshot (each bounded by it). */
         const val DIGEST_HISTORY = 64
         const val REPLY_HISTORY = 512
     }

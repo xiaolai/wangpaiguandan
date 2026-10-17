@@ -82,6 +82,9 @@ sealed interface Rejection {
 
     /** A [SetupCommand.MoveCard] from a seat to itself. */
     data class SelfMove(val seat: Seat) : Rejection
+
+    /** A [SetupCommand.BeginPlay] while [seat] holds no card: play cannot open (setup-only, like [SelfMove]). */
+    data class EmptyHand(val seat: Seat) : Rejection
 }
 
 sealed interface ReduceResult {

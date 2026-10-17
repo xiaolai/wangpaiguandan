@@ -5,6 +5,7 @@ import cn.wpgd.app.core.rules.LegalAction
 import cn.wpgd.app.core.rules.Ranks
 import cn.wpgd.app.core.rules.RuleProfile
 import cn.wpgd.app.core.state.Command
+import cn.wpgd.app.core.state.DealEvent
 import cn.wpgd.app.core.state.DealReducer
 import cn.wpgd.app.core.state.ReduceResult
 import cn.wpgd.app.core.state.Seat
@@ -42,6 +43,93 @@ class MatchReducer(private val base: RuleProfile, private val match: RuleProfile
             MatchCommand.Settle -> settle(state)
             MatchCommand.Rematch -> error("handled above")
         }
+    }
+
+    /**
+     * Replays logged [events] from [state] (recovery) under the same rules as command handling.
+     * [MatchEvents.apply] alone checks only what the state decides; the profiles decide the rest
+     * (which tribute and return cards are legal, which reading the cards form, when a count may be
+     * asked, how a deal settles). So each batch (the events of one revision, one command) must be
+     * exactly what [reduce] emits for the command the batch records, re-run here; a forged card,
+     * reading, skipped turn or settlement is refused. Only a deal batch cannot be re-run (its shuffle
+     * is not logged): its shape and lead are checked against the profile ([replayDeal]) and its hands
+     * by [MatchEvents.apply]. Throws [IllegalArgumentException] on any batch that does not replay.
+     */
+    fun replay(state: MatchState, events: List<MatchEvent>): MatchState {
+        require(state.baseProfileHash == base.hash && state.matchProfileHash == match.hash) { "state belongs to other profiles" }
+        var s = state
+        var start = 0
+        while (start < events.size) {
+            val rev = events[start].revision
+            var end = start + 1
+            while (end < events.size && events[end].revision == rev) end++
+            s = replayBatch(s, events.subList(start, end))
+            start = end
+        }
+        return s
+    }
+
+    private fun replayBatch(state: MatchState, batch: List<MatchEvent>): MatchState {
+        val rev = state.revision + 1
+        require(batch.first().revision == rev) { "batch revision ${batch.first().revision} does not follow state revision ${state.revision}" }
+        val first = batch.first()
+        if (first is MatchEvent.DealStarted) return replayDeal(state, batch)
+        val command = requireNotNull(commandOf(first)) { "no command opens a batch with $first" }
+        val result = reduce(state, command)
+        require(result is MatchReduceResult.Accepted) { "logged $command is refused by the rules: ${(result as MatchReduceResult.Rejected).rejection}" }
+        require(result.events == batch) { "the events of revision $rev are not the ones the rules give for $command" }
+        return result.state
+    }
+
+    /** The command whose batch opens with [e]; null when no command's batch opens with it. */
+    private fun commandOf(e: MatchEvent): MatchCommand? = when (e) {
+        is MatchEvent.InDeal -> when (val d = e.event) {
+            is DealEvent.Played -> MatchCommand.InDeal(Command.Play(d.seat, d.cardIds, d.declaration, d.combination.type))
+            is DealEvent.Passed -> MatchCommand.InDeal(Command.Pass(d.seat))
+            is DealEvent.PlayBegan -> MatchCommand.OpenPlay
+            else -> null
+        }
+        is MatchEvent.TributeStarted -> MatchCommand.StartTribute
+        is MatchEvent.TributeGiven -> MatchCommand.GiveTribute(e.seat, e.cardId)
+        is MatchEvent.Resisted -> e.claimedBy?.let(MatchCommand::Resist) // automatic resistance is part of StartTribute's batch
+        is MatchEvent.ReturnChosen -> MatchCommand.ReturnTribute(e.seat, e.cardId)
+        is MatchEvent.CardCountAnswered -> MatchCommand.AskCardCount(e.asker, e.seat)
+        is MatchEvent.DealSettled -> MatchCommand.Settle
+        is MatchEvent.MatchRestarted -> MatchCommand.Rematch
+        is MatchEvent.DealStarted, is MatchEvent.CutCardDrawn, is MatchEvent.TributeRouted, is MatchEvent.ReturnMade,
+        is MatchEvent.ReturnsRevealed, is MatchEvent.LeaderResolved, is MatchEvent.CardCountReported, is MatchEvent.MatchEnded,
+        -> null
+    }
+
+    /**
+     * A [MatchCommand.DealNext] batch, as [dealNext] emits it: the deal start, the deal's own [DealEvent.Dealt],
+     * one sorted hand per seat in seat order, and on the first deal the lead this match profile gives
+     * (a cut card that is neither a joker nor the heart 2, or East).
+     */
+    private fun replayDeal(state: MatchState, batch: List<MatchEvent>): MatchState {
+        val rev = state.revision + 1
+        val dealNumber = state.dealNumber + 1
+        val started = MatchEvent.DealStarted(rev, dealNumber, state.dealLevel)
+        require(batch.first() == started) { "deal $dealNumber starts as ${batch.first()}, expected $started" }
+        // Deal events carry the deal's own revision: the first command of the fresh deal.
+        val dealRev = checkNotNull(MatchEvents.apply(state, started).deal).revision + 1
+        val hands = Seat.entries.mapIndexed { i, seat ->
+            val e = (batch.getOrNull(2 + i) as? MatchEvent.InDeal)?.event as? DealEvent.HandDealt
+            require(e != null && e.seat == seat && e.cardIds == e.cardIds.sorted()) { "deal $dealNumber: hand ${i + 1} is not $seat's sorted hand" }
+            MatchEvent.InDeal(rev, DealEvent.HandDealt(dealRev, seat, e.cardIds))
+        }
+        val lead = if (dealNumber != 1) emptyList() else when (settings.firstDealLead) {
+            FirstDealLead.CUT_CARD -> {
+                val cut = batch.getOrNull(2 + hands.size) as? MatchEvent.CutCardDrawn
+                val card = cut?.let { StandardDeck[it.cardId] }
+                require(cut != null && card != null && !Ranks.isJoker(card.rank) && !(card.suit == Suit.HEART && card.rank == 2)) { "deal 1: no cut card this profile can draw" }
+                listOf(MatchEvent.CutCardDrawn(rev, cut.cardId, cut.seat), MatchEvent.LeaderResolved(rev, cut.seat, LeadReason.CUT_CARD))
+            }
+            FirstDealLead.EAST -> listOf(MatchEvent.LeaderResolved(rev, Seat.EAST, LeadReason.FIXED_EAST))
+        }
+        val expected = listOf(started, MatchEvent.InDeal(rev, DealEvent.Dealt(dealRev, state.dealLevel, base.hash))) + hands + lead
+        require(batch == expected) { "deal $dealNumber is not dealt as this match profile deals" }
+        return MatchEvents.replay(state, batch)
     }
 
     /** GDN-017: a finished match restarts at level 2 under the same profiles, at the next revision. */

@@ -182,9 +182,15 @@ data class LocalTableState(
     val manualGroups: List<List<String>> = emptyList(),
     val chosenOption: String? = null,
     val tableVisible: Boolean = true,
-    /** Deal number the selection and groups belong to; both reset when a new deal starts. */
+    /**
+     * The deal the selection and groups belong to; both reset when a new deal starts. Deal numbers
+     * restart in every match, so a deal is (matchNumber, dealNumber) (round 3 #19).
+     */
+    val matchNumber: Int = -1,
     val dealNumber: Int = -1,
-)
+) {
+    fun belongsTo(match: MatchPublicView): Boolean = matchNumber == match.matchNumber && dealNumber == match.dealNumber
+}
 
 /** What the tribute step asks of the viewer now, and which hand cards it allows. */
 private class TributeDuty(
@@ -255,7 +261,7 @@ class TableUiMapper(private val rules: TableRules) {
         val match = view.match
         val deal = view.deal
         val level = deal?.table?.level ?: match.dealLevel
-        val sameDeal = local.dealNumber == match.dealNumber
+        val sameDeal = local.belongsTo(match)
         val hand = deal?.hand.orEmpty()
         val handIds = hand.map { it.id }.toSet()
         val selected = if (sameDeal) local.selection.prunedTo(handIds).ids else emptySet()
@@ -338,7 +344,7 @@ class TableUiMapper(private val rules: TableRules) {
     private fun seats(t: TableSnapshot, view: MatchMemberView, turn: TurnClarity, trick: TrickDisplay): List<SeatUi> {
         val me = view.seat
         val finish = view.deal?.table?.finishOrder.orEmpty()
-        val counts = publicCounts(view)
+        val counts = publicCounts(view.match)
         val roster = t.roomView?.seats?.associateBy { it.seat }.orEmpty()
         return listOf(me, me.next, me.partner, me.partner.next).map { s ->
             val r = roster[s]
@@ -391,15 +397,17 @@ class TableUiMapper(private val rules: TableRules) {
         }
     }
 
-    /**
-     * Card counts the profile made public this deal: per seat, the newest threshold report or answer.
-     * Counts only fall during a deal's play, so the newest is the smallest; reports and answers are
-     * kept in separate lists, so their order between the two is not known.
-     */
-    private fun publicCounts(view: MatchMemberView): Map<Seat, Int> {
-        val out = HashMap<Seat, Int>()
-        view.match.reports.forEach { out.merge(it.seat, it.count, ::minOf) }
-        view.match.answers.forEach { out.merge(it.seat, it.count, ::minOf) }
-        return out
-    }
+}
+
+/**
+ * Card counts the profile made public this deal: per seat, the newest threshold report or answer.
+ * Counts only fall during a deal's play, so the newest is the smallest; reports and answers are
+ * kept in separate lists, so their order between the two is not known. Shared by the player's and
+ * the watcher's screens, so both show the same count.
+ */
+fun publicCounts(match: MatchPublicView): Map<Seat, Int> {
+    val out = HashMap<Seat, Int>()
+    match.reports.forEach { out.merge(it.seat, it.count, ::minOf) }
+    match.answers.forEach { out.merge(it.seat, it.count, ::minOf) }
+    return out
 }

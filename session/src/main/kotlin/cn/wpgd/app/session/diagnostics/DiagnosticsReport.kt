@@ -137,7 +137,8 @@ class AppVersion private constructor(val major: Int, val minor: Int, val patch: 
     override fun hashCode(): Int = (major * 31 + minor) * 31 + patch
 
     companion object {
-        private val PATTERN = Regex("(0|[1-9][0-9]{0,8})\\.(0|[1-9][0-9]{0,8})\\.(0|[1-9][0-9]{0,8})")
+        /** The export's shape for the field, so parsing and export validation cannot drift apart. */
+        private val PATTERN = Shape.APP_VERSION.pattern
 
         /** Throws [IllegalArgumentException] for anything but MAJOR.MINOR.PATCH (a suffix such as `-dev` included). */
         fun parse(name: String): AppVersion {

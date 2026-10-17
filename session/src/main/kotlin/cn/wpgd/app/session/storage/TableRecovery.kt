@@ -2,7 +2,6 @@ package cn.wpgd.app.session.storage
 
 import cn.wpgd.app.core.match.MATCH_EVENT_SCHEMA_VERSION
 import cn.wpgd.app.core.match.MatchEventCodec
-import cn.wpgd.app.core.match.MatchEvents
 import cn.wpgd.app.core.match.MatchReducer
 import cn.wpgd.app.core.match.MatchState
 import cn.wpgd.app.core.match.MatchStateCodec
@@ -103,19 +102,36 @@ object TableRecovery {
             val records: List<LogFormat.Frame>,
             val payloads: List<RecordPayload>,
             val dirtyTail: Boolean,
+            val lastSegmentDirty: Boolean,
             val segments: List<Int>,
             val checkpointRevision: Long?,
             val checkpointsSkipped: Int,
         ) : Examined
     }
 
+    /** What the profile-free [preliminary] checks found: a verdict that ends recovery, or what replay needs. */
+    internal sealed interface Preliminary {
+        /** [meta] when it was readable; [marked]: the table carries a quarantine marker from an earlier run. */
+        class Stop(val verdict: Examined.Verdict, val meta: TableMeta?, val marked: Boolean) : Preliminary
+
+        class Passed(
+            val meta: TableMeta,
+            val members: MembersFile,
+            val hostKey: StoredKeyPair,
+            val highWaterMark: Long,
+            val scan: LogScan.Ok,
+            val payloads: List<RecordPayload>,
+        ) : Preliminary
+    }
+
     /**
-     * Every check recovery makes, writing nothing: meta, profiles, high-water mark, members, log,
-     * envelopes, checkpoint, replay and the restored state's invariants. Retention uses it so a table
-     * recovery would quarantine is never deleted automatically.
+     * The checks recovery makes before it needs the rule profiles, in order: meta, quarantine marker,
+     * table id, high-water mark, members, room key, log, high-water mark against the log, record
+     * envelopes. The one definition both recovery ([examine]) and listing ([TableRepository.inspect])
+     * use, so a save recovery would quarantine is never listed as readable.
      */
-    internal fun examine(storage: Storage, files: TableFiles, names: List<String>, base: RuleProfile, match: RuleProfile): Examined {
-        if (names.isEmpty() || files.tombstone in names) return Examined.Verdict(RecoveryResult.Missing)
+    internal fun preliminary(storage: Storage, files: TableFiles, names: List<String>): Preliminary {
+        if (names.isEmpty() || files.tombstone in names) return Preliminary.Stop(Examined.Verdict(RecoveryResult.Missing), null, marked = false)
 
         var meta: TableMeta? = null
         var members: MembersFile? = null
@@ -123,11 +139,10 @@ object TableRecovery {
         var hwm: Long? = null
         var hostKey: StoredKeyPair? = null
         fun quarantine(reason: QuarantineReason, detail: String) =
-            Examined.Verdict(RecoveryResult.Quarantined(reason, detail, meta, members, committed, hwm, hostKey))
-        fun verdict(result: RecoveryResult) = Examined.Verdict(result)
+            Preliminary.Stop(Examined.Verdict(RecoveryResult.Quarantined(reason, detail, meta, members, committed, hwm, hostKey)), meta, marked = false)
+        fun verdict(result: RecoveryResult) = Preliminary.Stop(Examined.Verdict(result), meta, marked = false)
 
-        val metaRead = TableMetaCodec.read(storage.read(files.meta))
-        when (metaRead) {
+        when (val metaRead = TableMetaCodec.read(storage.read(files.meta))) {
             is TableMetaCodec.Read.Future -> return verdict(RecoveryResult.FutureSchema(metaRead.version, "meta"))
             is TableMetaCodec.Read.Unsupported -> return quarantine(QuarantineReason.UNSUPPORTED_OLD_SCHEMA, "storage schema ${metaRead.version}")
             TableMetaCodec.Read.Unreadable -> return quarantine(QuarantineReason.META_UNREADABLE, "meta missing or fails its checksum")
@@ -139,10 +154,10 @@ object TableRecovery {
 
         if (files.quarantine in names) {
             val q = StorageJson.decodeChecked(LogFormat.FileKind.QUARANTINE, storage.read(files.quarantine), QuarantinePayload.serializer())
-            return verdict(RecoveryResult.Quarantined(q?.reason ?: QuarantineReason.META_UNREADABLE, "previously quarantined: ${q?.detail ?: "unreadable marker"}", meta, members, null, null, hostKey))
+            val previous = RecoveryResult.Quarantined(q?.reason ?: QuarantineReason.META_UNREADABLE, "previously quarantined: ${q?.detail ?: "unreadable marker"}", meta, members, null, null, hostKey)
+            return Preliminary.Stop(Examined.Verdict(previous), meta, marked = true)
         }
         if (m.tableId != files.tableId) return quarantine(QuarantineReason.META_UNREADABLE, "meta names table ${m.tableId}")
-        if (m.baseProfileHash != base.hash || m.matchProfileHash != match.hash) return quarantine(QuarantineReason.PROFILE_MISMATCH, "table was created under other rule profiles")
 
         hwm = storage.read(files.hwm)?.let(LogFormat::readHwm) ?: return quarantine(QuarantineReason.HIGH_WATER_MARK_UNREADABLE, "high-water mark missing or fails its checksum")
         val foundMembers = members ?: return quarantine(QuarantineReason.MEMBERS_UNREADABLE, "members missing or fail their checksum")
@@ -152,8 +167,7 @@ object TableRecovery {
         val scan = scanLog(storage, files, names)
         if (scan is LogScan.Inconsistent) return quarantine(QuarantineReason.LOG_INCONSISTENT, scan.detail)
         scan as LogScan.Ok
-        val records = scan.records
-        val lastCommitted = records.lastOrNull()?.revision ?: 0
+        val lastCommitted = scan.records.lastOrNull()?.revision ?: 0
         committed = lastCommitted
         val acknowledged = checkNotNull(hwm)
         if (lastCommitted < acknowledged) {
@@ -161,12 +175,33 @@ object TableRecovery {
         }
 
         // ---- Decode record envelopes (cheap): schema, issuer, state hash ----------------------------
-        val payloads = when (val e = decodeEnvelopes(records)) {
+        val payloads = when (val e = decodeEnvelopes(scan.records)) {
             is Envelopes.Ok -> e.payloads
             is Envelopes.Future -> return verdict(RecoveryResult.FutureSchema(e.version, e.where))
             is Envelopes.OldSchema -> return quarantine(QuarantineReason.UNSUPPORTED_OLD_SCHEMA, e.detail)
             is Envelopes.Undecodable -> return quarantine(QuarantineReason.LOG_INCONSISTENT, e.detail)
         }
+        return Preliminary.Passed(m, foundMembers, foundKey, acknowledged, scan, payloads)
+    }
+
+    /**
+     * Every check recovery makes, writing nothing: the [preliminary] checks, then the rule profiles,
+     * checkpoint, replay and the restored state's invariants. Retention uses it so a table recovery
+     * would quarantine is never deleted automatically.
+     */
+    internal fun examine(storage: Storage, files: TableFiles, names: List<String>, base: RuleProfile, match: RuleProfile): Examined {
+        val p = when (val pre = preliminary(storage, files, names)) {
+            is Preliminary.Stop -> return pre.verdict
+            is Preliminary.Passed -> pre
+        }
+        val m = p.meta
+        val records = p.scan.records
+        val lastCommitted = records.lastOrNull()?.revision ?: 0
+        val payloads = p.payloads
+        fun quarantine(reason: QuarantineReason, detail: String) =
+            Examined.Verdict(RecoveryResult.Quarantined(reason, detail, m, p.members, lastCommitted, p.highWaterMark, p.hostKey))
+
+        if (m.baseProfileHash != base.hash || m.matchProfileHash != match.hash) return quarantine(QuarantineReason.PROFILE_MISMATCH, "table was created under other rule profiles")
 
         // ---- Start of replay: the newest checkpoint that verifies, else revision 0 -----------------
         val start = when (val s = replayStart(storage, files, names, base, match, lastCommitted, payloads)) {
@@ -175,22 +210,22 @@ object TableRecovery {
         }
 
         // ---- Replay the committed records after the start, checking every state hash ----------------
-        val state = when (val r = replay(start.state, records, payloads)) {
+        val state = when (val r = replay(MatchReducer(base, match), start.state, records, payloads)) {
             is Stage.Failed -> return quarantine(r.reason, r.detail)
             is Stage.Done -> r.value
         }
         val problems = RestoreValidator.problems(state, base.hash, match.hash, lastCommitted)
         if (problems.isNotEmpty()) return quarantine(problems.reason(), problems.joinToString { it.detail })
         return Examined.Ready(
-            m, foundMembers, foundKey, state, acknowledged, lastCommitted, records, payloads,
-            scan.dirtyTail, scan.segments, start.revision, start.skipped,
+            m, p.members, p.hostKey, state, p.highWaterMark, lastCommitted, records, payloads,
+            p.scan.dirtyTail, p.scan.lastSegmentDirty, p.scan.segments, start.revision, start.skipped,
         )
     }
 
     /** Ready: raise the high-water mark, append to a clean segment. */
     private fun open(storage: Storage, files: TableFiles, r: Examined.Ready): RecoveryResult.Recovered {
         val lastSegment = r.segments.lastOrNull() ?: 0
-        val journal = TableJournal(storage, files, if (r.dirtyTail || lastSegment == 0) lastSegment + 1 else lastSegment, r.lastCommitted, r.highWaterMark, r.meta)
+        val journal = TableJournal(storage, files, if (r.lastSegmentDirty || lastSegment == 0) lastSegment + 1 else lastSegment, r.lastCommitted, r.highWaterMark, r.meta)
         val promoted = r.lastCommitted > r.highWaterMark
         journal.promoteHighWaterMark()
         val commands = r.records.indices.mapNotNull { i -> r.payloads[i].command?.let { r.records[i].revision to it } }
@@ -289,13 +324,16 @@ object TableRecovery {
         return Stage.Done(ReplayStart(MatchReducer(base, match).newMatch(), null, skipped))
     }
 
-    /** Replays the committed records after [from]'s revision, checking every revision and state hash. */
-    private fun replay(from: MatchState, records: List<LogFormat.Frame>, payloads: List<RecordPayload>): Stage<MatchState> {
+    /**
+     * Replays the committed records after [from]'s revision through [reducer] (so each settlement is
+     * checked against the match profile), checking every revision and state hash.
+     */
+    private fun replay(reducer: MatchReducer, from: MatchState, records: List<LogFormat.Frame>, payloads: List<RecordPayload>): Stage<MatchState> {
         var state = from
         for (i in from.revision.toInt() until records.size) {
             val rev = records[i].revision
             state = try {
-                MatchEvents.replay(state, MatchEventCodec.decode(payloads[i].events))
+                reducer.replay(state, MatchEventCodec.decode(payloads[i].events))
             } catch (e: IllegalArgumentException) {
                 return Stage.Failed(QuarantineReason.REPLAY_FAILED, "record $rev: ${e.message}")
             } catch (e: IllegalStateException) {
@@ -308,7 +346,11 @@ object TableRecovery {
     }
 
     internal sealed interface LogScan {
-        class Ok(val records: List<LogFormat.Frame>, val dirtyTail: Boolean, val segments: List<Int>) : LogScan
+        /**
+         * [dirtyTail]: some segment ended in frames past its last committed record (the report's flag).
+         * [lastSegmentDirty]: the latest segment did, so appending must start a new one.
+         */
+        class Ok(val records: List<LogFormat.Frame>, val dirtyTail: Boolean, val lastSegmentDirty: Boolean, val segments: List<Int>) : LogScan
         class Inconsistent(val detail: String) : LogScan
     }
 
@@ -320,6 +362,7 @@ object TableRecovery {
         val segments = names.mapNotNull { files.segmentNumber(it) }.sorted()
         val records = ArrayList<LogFormat.Frame>()
         var dirtyTail = false
+        var lastSegmentDirty = false
         for (seg in segments) {
             val parsed = LogFormat.parse(storage.read(files.segment(seg)) ?: ByteArray(0))
             var candidate: LogFormat.Frame? = null
@@ -337,9 +380,10 @@ object TableRecovery {
                     candidate = null
                 }
             }
-            if (candidate != null || parsed.stop != null) dirtyTail = true
+            lastSegmentDirty = candidate != null || parsed.stop != null
+            if (lastSegmentDirty) dirtyTail = true
         }
-        return LogScan.Ok(records, dirtyTail, segments)
+        return LogScan.Ok(records, dirtyTail, lastSegmentDirty, segments)
     }
 
     internal fun writeQuarantine(storage: Storage, files: TableFiles, reason: QuarantineReason, detail: String) {

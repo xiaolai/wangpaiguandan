@@ -108,32 +108,35 @@ class AiSeatDriver(
     var onDecision: ((AiDecisionRecord) -> Unit)? = null
 
     /**
-     * Requests new settings for [seat] while the match is at deal [currentDealNumber]
-     * (`SessionHost.state.dealNumber`). Visible at once through [SeatAiSettings.pending]; applied from
-     * the next deal. An unknown policy is refused here.
+     * Requests new settings for [seat] while the room is at match [currentMatchNumber], deal
+     * [currentDealNumber] (`SessionHost.state.matchNumber` and `.dealNumber`). Visible at once through
+     * [SeatAiSettings.pending]; applied from the next deal. An unknown policy is refused here.
      */
-    fun request(seat: Seat, settings: AiSettings, currentDealNumber: Int) {
-        observeDeal(currentDealNumber)
+    fun request(seat: Seat, settings: AiSettings, currentDealNumber: Int, currentMatchNumber: Int) {
+        observeDeal(currentMatchNumber)
         this.settings = this.settings.request(seat, settings, currentDealNumber)
     }
 
-    /** Highest deal number seen in the current match; a lower one means a rematch restarted numbering. */
-    private var lastDeal = 0
+    /** The match the deal-indexed settings history belongs to; null before the driver saw any. */
+    private var currentMatch: Int? = null
 
     /**
-     * A rematch (GDN-017) reuses this driver but numbers deals from 1 again. The deal-indexed history
-     * of the finished match is rebased so each seat keeps its latest requested settings from the new
-     * match's first deal, instead of reverting and later reapplying them by the old deal numbers.
+     * A rematch (GDN-017) reuses this driver but numbers deals from 1 again. When the match number
+     * changes, the deal-indexed history of the earlier match is rebased so each seat keeps its latest
+     * requested settings from the new match's first deal, instead of applying them by the old deal
+     * numbers. The match number, not a falling deal number, says so: the driver may not have seen the
+     * later deals of the old match, nor the early deals of the new one.
      */
-    private fun observeDeal(dealNumber: Int) {
-        if (dealNumber < lastDeal) {
+    private fun observeDeal(matchNumber: Int) {
+        val previous = currentMatch
+        currentMatch = matchNumber
+        if (previous != null && previous != matchNumber) {
             val initial = settings.effective(Seat.entries.first(), 0)
             settings = Seat.entries.fold(SeatAiSettings.uniform(initial)) { acc, seat ->
                 val latest = settings.effective(seat, Int.MAX_VALUE)
                 if (latest == initial) acc else acc.request(seat, latest, 0)
             }
         }
-        lastDeal = dealNumber
     }
 
     /** The seat policy to install in the host. One instance serves every AI seat of the room. */
@@ -153,7 +156,7 @@ class AiSeatDriver(
     private fun prepare(observation: MatchMemberView, options: SeatOptions): Pair<PolicyInput, AiSettings> {
         val input = PolicyInput.of(observation, options.plays, options.mayPass, options.tributeCards, options.returnCards, options.resistanceOpen)
         check(input.hasChoice) { "the host asked ${observation.seat} to act with nothing to choose" }
-        observeDeal(observation.match.dealNumber)
+        observeDeal(observation.match.matchNumber)
         return input to settings.effective(observation.seat, observation.match.dealNumber)
     }
 

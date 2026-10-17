@@ -46,6 +46,8 @@ class PeerLink(
     private val transport: Transport,
     private val limits: FramingLimits,
     private val queueLimit: Int,
+    /** A link that never installs keys (a room lookup): a sealed frame is malformed, not dropped as a replay. */
+    private val plainOnly: Boolean = false,
 ) {
     private class Out(val kind: OutKind, val grantId: String?, val message: WireMessage, val plain: Boolean)
 
@@ -68,6 +70,7 @@ class PeerLink(
     val sealed: Boolean get() = sealer != null
 
     fun installKeys(sealer: Sealer, opener: Opener) {
+        check(!plainOnly) { "a plain-only link never installs keys" }
         this.sealer = sealer
         this.opener = opener
     }
@@ -145,6 +148,7 @@ class PeerLink(
         }
         FrameKind.SEALED -> {
             val o = opener
+            if (plainOnly) return Inbound.Bad(Violation.MALFORMED)
             // Before keys exist a sealed frame cannot be ours; after, a failed open is a replay or forgery: drop it.
             val plain = o?.open(frame)
             if (plain == null) null

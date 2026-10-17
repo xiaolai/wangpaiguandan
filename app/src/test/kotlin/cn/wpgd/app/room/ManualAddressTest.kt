@@ -53,6 +53,31 @@ class ManualAddressTest {
         }
     }
 
+    @Test fun anEmbeddedIpv4AddressMustEndTheLiteral() {
+        // Audit #17: flattening both halves let an IPv4 part stand before "::".
+        for (h in listOf("192.0.2.1::", "1:2:3:192.0.2.1::", "::192.0.2.1:1", "1::192.0.2.1:2", "192.0.2.1::1")) {
+            bad(h, "80", AddressProblem.HOST_INVALID)
+        }
+        ok("::192.0.2.1", "80", "::192.0.2.1", 80)
+        ok("1:2:3:4:5:6:192.0.2.1", "80", "1:2:3:4:5:6:192.0.2.1", 80)
+        ok("1::192.0.2.1", "80", "1::192.0.2.1", 80)
+    }
+
+    /** Every IPv6 literal (no zone, so no interface lookup) is accepted exactly when the JDK's literal parser accepts it. */
+    @Test fun ipv6LiteralsAgreeWithTheJdk() {
+        val literals = listOf(
+            "192.0.2.1::", "1:2:3:192.0.2.1::", "::192.0.2.1:1", "192.0.2.1::1", "1:2:3:4:5:6:7:192.0.2.1",
+            "::192.0.2.1", "1::192.0.2.1", "::ffff:192.168.1.5", "1:2:3:4:5:6:192.0.2.1", "fd00::1", "::", "::1", "1::",
+            "1:2:3:4:5:6:7:8", "1:2:3:4:5:6:7::", "::2:3:4:5:6:7:8", "1:2:3:4:5:6:7:8:9", "fd00::1::2", "12345::1", "::g",
+            ":1::2", "1::2:", "1:2:3:4:5:6:7", "::ffff:256.1.1.1", "::ffff:1.2.3",
+        )
+        for (l in literals) {
+            val jdk = runCatching { java.net.InetAddress.getByName("[$l]") }.isSuccess
+            val ours = ManualAddress.parse("[$l]", "80") is AddressInput.Valid
+            assertEquals(l, jdk, ours)
+        }
+    }
+
     @Test fun portsMustBeDecimalInRange() {
         bad("10.0.0.1", "0", AddressProblem.PORT_OUT_OF_RANGE)
         bad("10.0.0.1", "65536", AddressProblem.PORT_OUT_OF_RANGE)

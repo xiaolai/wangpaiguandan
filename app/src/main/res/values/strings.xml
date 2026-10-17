@@ -407,9 +407,11 @@
     <string name="watch_denied">%1$s没有同意</string>
     <string name="watch_revoked">%1$s收回了看牌许可，手牌已从你的手机上清除</string>
     <string name="watch_player_left">%1$s离开了座位，看牌结束</string>
+    <string name="watch_ended">这桌的设置变了，看%1$s的牌已结束</string>
     <string name="watch_refused">请求没有被接受（每副只能看一次，或这桌不允许）</string>
     <string name="watch_follow_disabled">比赛局：不能看任何人的手牌</string>
     <string name="watch_public_only">你只能看到公开的牌桌信息</string>
+    <string name="watch_holder_away">%1$s（暂时离开）</string>
 
     <!-- T6, T7, T9, T10, H1, H9 at the table -->
     <string name="seat_presence_away">暂时离开（%1$d 秒）</string>
@@ -425,6 +427,7 @@
     <string name="watcher_revoke">收回</string>
     <string name="host_absent">%1$s 暂时离开</string>
     <string name="host_absent_grace">%1$s 暂时离开，还剩 %2$d 秒</string>
+    <string name="host_awaiting_player">等 %1$s 回来</string>
     <string name="host_stand_in">现在让 AI 代打</string>
     <string name="button_rematch">再来一场</string>
     <string name="rematch_waiting">等房主决定是否再来一场</string>

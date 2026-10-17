@@ -9,6 +9,7 @@ import cn.wpgd.app.session.transport.LinkFaults
 import cn.wpgd.app.session.wire.ConsentBody
 import cn.wpgd.app.session.wire.FollowRequestBody
 import cn.wpgd.app.session.wire.FollowSnapshot
+import cn.wpgd.app.session.wire.GrantEnd
 import cn.wpgd.app.session.wire.GrantStatus
 import cn.wpgd.app.session.wire.LeaveBody
 import cn.wpgd.app.session.wire.Receipt
@@ -130,6 +131,7 @@ class ObserverGrantTest {
 
         assertNull(o.client.follow, "revocation clears the private view")
         assertEquals(GrantStatus.REVOKED, o.client.grants.single { it.grantId == grant.grantId }.status)
+        assertEquals(GrantEnd.REVOKED, o.client.grants.single { it.grantId == grant.grantId }.end, "the player took it back")
         // After the boundary the host emitted no follow frame for any later revision.
         assertTrue(o.received.filterIsInstance<FollowSnapshot>().none { it.revision > boundaryRevision }, "a follow frame was emitted after revocation")
 
@@ -157,9 +159,15 @@ class ObserverGrantTest {
         // Departure: the followed player leaves.
         t.follow(o, players.getValue(Seat.SOUTH), Seat.SOUTH)
         t.until(5_000) { o.client.follow != null }
+        val southName = assertNotNull(o.client.room?.seats?.single { it.seat == Seat.SOUTH }?.nickname)
+        assertEquals(southName, o.client.grants.single().playerName, "the grant names the player who consented")
         assertIs<Receipt>(t.command(players.getValue(Seat.SOUTH), LeaveBody))
         t.until(5_000) { o.client.grants.all { it.status == GrantStatus.REVOKED } }
         assertNull(o.client.follow)
+        // Round 3 #18: the grant itself says why it ended and whose it was; nothing is read off the roster.
+        val ended = o.client.grants.single()
+        assertEquals(GrantEnd.PLAYER_LEFT, ended.end)
+        assertEquals(southName, ended.playerName)
 
         // Replacement: a substitute takes SOUTH; the earlier consent does not carry over.
         val sub = t.joiner(t.config(Role.PLAYER, "sub", Seat.SOUTH))
@@ -184,6 +192,7 @@ class ObserverGrantTest {
         assertIs<SessionHost.ApprovalResult.Admitted>(t.host.approve(t.host.pendingAdmissions().single().connectionId, sub.client.confirmationCode!!))
         t.until(5_000) { o.client.grants.all { it.status == GrantStatus.REVOKED } }
         assertNull(o.client.follow)
+        assertEquals(GrantEnd.PLAYER_LEFT, o.client.grants.single().end, "a replaced player left the seat")
     }
 
     @Test fun observerDepartureEndsItsGrant() {

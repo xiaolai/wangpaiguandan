@@ -200,6 +200,110 @@ class LanSocketTransportTest {
             }
         }
     }
+    /**
+     * Audit #13, round 2: an idle connection's writer can dispose of the socket the moment close()
+     * queues its end, before close() has scheduled the linger. The linger must still be cancelled:
+     * no connection may leave a pending timer behind once its socket is gone.
+     */
+    @Test fun noLingerTimerOutlivesADisposedConnection() {
+        java.net.ServerSocket(0, 200, loopback).use { listener ->
+            repeat(20) { round ->
+                // Many closes at once, each on its own thread: a closer preempted between queueing the
+                // writer's end and scheduling the linger is what leaves a timer behind.
+                val remotes = (1..64).map { Socket(loopback, listener.localPort) }
+                try {
+                    val transports = remotes.map {
+                        SocketTransport.accepted(listener.accept(), post, LanLimits(lingerMs = 60_000)) { }.also { t -> t.open(Recorder()) }
+                    }
+                    waitFor { transports.all { it.writerStarted } }
+                    val go = CountDownLatch(1)
+                    val closers = transports.map { t -> Thread { go.await(); t.close() }.apply { start() } }
+                    go.countDown()
+                    closers.forEach { it.join() }
+                    waitFor { transports.all { it.isDisposed } }
+                    val pending = transports.count { it.lingerPending }
+                    assertEquals("round $round: linger timers left after disposal", 0, pending)
+                } finally {
+                    remotes.forEach { it.close() }
+                }
+            }
+        }
+    }
+
+    /**
+     * Audit #13: a gracefully closed connection still writing what it accepted (its peer is slow to
+     * read) keeps its socket and threads until the linger ends, so it keeps its server slot too.
+     */
+    @Test fun aLingeringConnectionKeepsItsSlotUntilItsSocketCloses() {
+        val accepted = Collections.synchronizedList(ArrayList<SocketTransport>())
+        val s = server(maxConnections = 1, limits = LanLimits(lingerMs = 30_000)) { accepted += it; it.open(Recorder()) }
+        Socket(loopback, s.port).use { slowPeer ->
+            waitFor { accepted.size == 1 }
+            val t = accepted.single()
+            // Fill the window until the writer is blocked: the peer reads nothing.
+            var refusedSince = -1L
+            val end = System.currentTimeMillis() + 30_000
+            while (true) {
+                val now = System.currentTimeMillis()
+                check(now < end) { "the window never stayed full" }
+                if (t.trySend(ByteArray(160))) refusedSince = -1
+                else if (refusedSince < 0) refusedSince = now
+                else if (now - refusedSince >= 500) break
+                else Thread.sleep(1)
+            }
+            t.close()
+            Thread.sleep(300)
+            assertEquals("the lingering socket still holds its slot", 1, s.openConnections)
+            Socket(loopback, s.port).use { waitFor { s.refused == 1L } }
+            // The slow peer goes away: the writer fails, the socket closes, the slot is free.
+            slowPeer.close()
+            waitFor(10_000) { s.openConnections == 0 }
+        }
+    }
+
+    /** A server socket whose accept fails [failures] times (as with no file descriptors left) before working. */
+    private class FlakyServerSocket(private var failures: Int) : java.net.ServerSocket(0, 8, InetAddress.getLoopbackAddress()) {
+        override fun accept(): Socket {
+            if (failures != 0) {
+                if (failures > 0) failures--
+                Thread.sleep(5)
+                throw java.io.IOException("Too many open files")
+            }
+            return super.accept()
+        }
+    }
+
+    /** Audit #14: a failed accept is retried; the room keeps accepting newcomers. */
+    @Test fun aPassingAcceptFailureDoesNotEndAccepting() {
+        val accepted = Collections.synchronizedList(ArrayList<SocketTransport>())
+        val s = LanServer(post, { accepted += it; it.open(Recorder()) }, LanLimits(), 16, loopback, FlakyServerSocket(failures = 2)).also { servers += it }
+        var failed = false
+        s.onFailure { failed = true }
+        Socket(loopback, s.port).use { waitFor { accepted.size == 1 } }
+        assertFalse(failed)
+    }
+
+    /** Audit #14: accepting that keeps failing is reported (the owner shows hosting failed), not silent. */
+    @Test fun anAcceptThatKeepsFailingIsReported() {
+        val s = LanServer(post, { it.close() }, LanLimits(), 16, loopback, FlakyServerSocket(failures = -1)).also { servers += it }
+        val failed = CountDownLatch(1)
+        s.onFailure { failed.countDown() }
+        assertTrue(failed.await(10, TimeUnit.SECONDS))
+        val late = CountDownLatch(1)
+        s.onFailure { late.countDown() }
+        assertEquals("a late registration still hears it", 0L, late.count)
+    }
+
+    /** Stopping the server is not a failure. */
+    @Test fun stoppingIsNotReportedAsAFailure() {
+        val s = server { it.close() }
+        var failed = false
+        s.onFailure { failed = true }
+        s.stop()
+        Thread.sleep(200)
+        assertFalse(failed)
+    }
+
     /** Round 3 #7: a peer sending faster than the session loop works is held back, not queued without bound. */
     @Test fun receivedChunksWaitingForTheLoopAreBounded() {
         val held = java.util.concurrent.ConcurrentLinkedQueue<() -> Unit>()
@@ -230,6 +334,42 @@ class LanSocketTransportTest {
                 writer.join(5_000)
             }
             client.close()
+        }
+    }
+
+    /**
+     * Round 3 #8: the linger can end while the connection is still being opened. A socket that arrives
+     * after that is closed at once: its writer must never run without a deadline, here blocked on a
+     * peer that never reads.
+     */
+    @Test fun aSocketThatArrivesAfterTheLingerEndedClosesAtOnce() {
+        java.net.ServerSocket(0, 1, loopback).use { listener ->
+            val release = CountDownLatch(1)
+            val closedSocket = CountDownLatch(1)
+            val opener = {
+                release.await()
+                object : Socket(loopback, listener.localPort) {
+                    private val stuck = object : java.io.OutputStream() {
+                        override fun write(b: Int) {
+                            closedSocket.await() // a peer that never reads: only closing the socket ends this
+                            throw java.io.IOException("closed")
+                        }
+                    }
+                    override fun getOutputStream(): java.io.OutputStream = stuck
+                    override fun close() {
+                        closedSocket.countDown()
+                        super.close()
+                    }
+                }
+            }
+            val t = SocketTransport.connecting(opener, post, LanLimits(lingerMs = 20))
+            t.open(Recorder())
+            assertTrue(t.trySend(ByteArray(8) { 1 }))
+            t.close()
+            Thread.sleep(200) // the linger has ended while the socket was still opening
+            release.countDown()
+            waitFor(3_000) { t.isDisposed }
+            assertTrue(closedSocket.await(1, TimeUnit.SECONDS))
         }
     }
 }

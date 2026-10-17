@@ -60,6 +60,25 @@ class ForgedDealEventTest {
         assertFailsWith<IllegalArgumentException> { DealEvents.apply(emptied, DealEvent.SeatFinished(afterLead.revision, Seat.EAST, 1)) }
     }
 
+    /** R2.12: the opening leader of an empty trick may not pass, in replay as in the reducer. */
+    @Test fun replayRejectsAPassWithNoPlayOnTheTable() {
+        val state = opened()
+        r.reduce(state, Command.Pass(Seat.SOUTH)).rejectedWith<Rejection.PassAsLeader>()
+        assertFailsWith<IllegalArgumentException> { DealEvents.apply(state, DealEvent.Passed(state.revision + 1, Seat.SOUTH)) }
+    }
+
+    /** D22: the turn moves to the next seat still holding cards; replay may not skip seats or land on another. */
+    @Test fun replayRejectsATurnMoveToAnyButTheNextActiveSeat() {
+        val lead = pairLead(opened())
+        val moved = lead.events.filterIsInstance<DealEvent.TurnMoved>().single()
+        assertEquals(Seat.EAST, moved.seat)
+        val beforeMove = DealEvents.replay(opened(), lead.events.filter { it !is DealEvent.TurnMoved })
+        for (seat in Seat.entries - Seat.EAST) {
+            assertFailsWith<IllegalArgumentException>(seat.name) { DealEvents.apply(beforeMove, moved.copy(seat = seat)) }
+        }
+        assertEquals(lead.state, DealEvents.apply(beforeMove, moved))
+    }
+
     @Test fun trickEndsOnlyAfterEveryPassAndWithTheDerivedLeader() {
         val lead = pairLead(opened())
         // Straight after the lead, before anyone passed.

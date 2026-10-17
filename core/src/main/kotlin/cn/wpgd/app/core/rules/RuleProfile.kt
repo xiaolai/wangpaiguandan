@@ -11,6 +11,7 @@ import kotlinx.serialization.json.JsonPrimitive
  * been decoded and range-checked by its own [RuleOption].
  *
  * [options] holds only what the profile sets explicitly; [get] falls back to the registry default.
+ * The loader stores read-only snapshots, so no caller (Java included) can change a value after the hash is taken.
  * A provisional profile is a development profile; a signed (release) profile must not be provisional.
  */
 @ConsistentCopyVisibility

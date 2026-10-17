@@ -56,9 +56,16 @@ class DealReducer(private val profile: RuleProfile) {
                 command.cardId !in state.hands.getValue(command.from) -> reject(Rejection.UnownedCard(listOf(command.cardId)))
                 else -> accept(state, listOf(DealEvent.CardMoved(rev, command.from, command.to, command.cardId)))
             }
-            is SetupCommand.BeginPlay ->
-                if (state.phase != Phase.DEALT) reject(Rejection.WrongPhase(state.phase))
-                else accept(state, listOf(DealEvent.PlayBegan(rev, command.leader)))
+            is SetupCommand.BeginPlay -> {
+                // No seat has played out before play opens, so every seat must hold a card: a seat
+                // with none could neither lead (no play) nor pass as leader, and the deal would stall.
+                val empty = Seat.entries.firstOrNull { state.hands.getValue(it).isEmpty() }
+                when {
+                    state.phase != Phase.DEALT -> reject(Rejection.WrongPhase(state.phase))
+                    empty != null -> reject(Rejection.EmptyHand(empty))
+                    else -> accept(state, listOf(DealEvent.PlayBegan(rev, command.leader)))
+                }
+            }
         }
     }
 
@@ -166,14 +173,7 @@ class DealReducer(private val profile: RuleProfile) {
     }
 
     /** D22: the next seat in play order that still holds cards. */
-    private fun nextActive(state: DealState, from: Seat): Seat {
-        var s = from.next
-        while (state.isFinished(s)) {
-            check(s != from) { "no seat holds cards" }
-            s = s.next
-        }
-        return s
-    }
+    private fun nextActive(state: DealState, from: Seat): Seat = DealEvents.nextActive(state, from)
 
     private fun accept(state: DealState, events: List<DealEvent>) =
         ReduceResult.Accepted(DealEvents.replay(state, events), events)

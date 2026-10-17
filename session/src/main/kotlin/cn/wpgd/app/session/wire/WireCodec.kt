@@ -6,8 +6,9 @@ import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
 
 /**
- * Strict JSON for the wire. Decoding rejects unknown fields, missing fields, wrong types and input
- * nested deeper than [MAX_DEPTH] (checked before the recursive parser runs). Encoding writes every
+ * Strict JSON for the wire. Decoding rejects unknown fields, missing fields, wrong types, unescaped
+ * control characters inside strings (RFC 8259) and input nested deeper than [MAX_DEPTH] (both
+ * checked before the recursive parser runs). Encoding writes every
  * field, nulls included, in declaration order, so equal messages give equal bytes.
  */
 object WireCodec {
@@ -51,7 +52,10 @@ object WireCodec {
         }
     }
 
-    /** Maximum bracket depth outside string literals; [Int.MAX_VALUE] when a closing bracket has no opener. */
+    /**
+     * Maximum bracket depth outside string literals; [Int.MAX_VALUE] when the text is lexically
+     * malformed: a closing bracket without an opener, or an unescaped U+0000..U+001F inside a string.
+     */
     internal fun depth(text: String): Int {
         var depth = 0
         var max = 0
@@ -60,7 +64,7 @@ object WireCodec {
         while (i < text.length) {
             val c = text[i]
             if (inString) {
-                if (c == '\\') i++ else if (c == '"') inString = false
+                if (c == '\\') i++ else if (c == '"') inString = false else if (c < ' ') return Int.MAX_VALUE
             } else when (c) {
                 '"' -> inString = true
                 '{', '[' -> { depth++; if (depth > max) max = depth }
@@ -92,6 +96,8 @@ object Hex {
 
     fun decode(text: String): ByteArray {
         require(text.length % 2 == 0) { "odd hex length" }
+        // Digits only: String.toInt(16) would also accept a sign ("-1" -> 0xff).
+        require(text.all { it in '0'..'9' || it in 'a'..'f' || it in 'A'..'F' }) { "not hexadecimal" }
         return ByteArray(text.length / 2) { text.substring(2 * it, 2 * it + 2).toInt(16).toByte() }
     }
 }

@@ -1,6 +1,6 @@
 {
     "schema": 1,
-    "protocolVersion": 2,
+    "protocolVersion": 3,
     "description": "WI-09: ready (lobby only, for the settings revision the player saw), the room roster and settings inside status, and the lobby rejections.",
     "cases": [
         {

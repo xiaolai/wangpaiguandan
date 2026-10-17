@@ -73,4 +73,54 @@ class NsdRegistrationsTest {
         assertFalse(r.registrationFailed("room-1", "L1"))
         assertTrue(r.registrationFailed("room-1", "L2"))
     }
+
+    /** Audit #15: a discovery that failed to start is retried, later each time, then given up (and logged). */
+    @Test fun aFailedDiscoveryStartIsRetriedABoundedNumberOfTimes() {
+        val s = DiscoveryStarts(maxAttempts = 4, baseDelayMs = 1_000)
+        val delays = ArrayList<Long?>()
+        repeat(4) {
+            s.started()
+            delays += s.failed()
+        }
+        assertEquals(listOf(1_000L, 2_000L, 4_000L, null), delays)
+        assertEquals(4, s.attempts)
+    }
+
+    /**
+     * Round 3 #9: a start that races a stop either registers before the stop (which then undoes it) or
+     * not at all; it never registers after the stop finished, leaving discovery running.
+     */
+    @Test fun aStartRacingAStopNeverLeavesDiscoveryRunning() {
+        val calls = java.util.Collections.synchronizedList(ArrayList<String>())
+        val inRegister = java.util.concurrent.CountDownLatch(1)
+        val release = java.util.concurrent.CountDownLatch(1)
+        val d = DiscoveryRegistration(
+            register = {
+                inRegister.countDown()
+                release.await()
+                calls += "register"
+            },
+            unregister = { calls += "unregister" },
+        )
+        val starter = Thread { d.start() }.apply { start() }
+        assertTrue(inRegister.await(2, java.util.concurrent.TimeUnit.SECONDS))
+        val stopper = Thread { d.stop() }.apply { start() }
+        stopper.join(200)
+        assertTrue("the stop waits for the registration in progress", stopper.isAlive)
+        release.countDown()
+        starter.join(2_000)
+        stopper.join(2_000)
+        assertEquals(listOf("register", "unregister"), calls.toList())
+        assertFalse("nothing registers after the stop", d.start())
+        assertEquals(listOf("register", "unregister"), calls.toList())
+    }
+
+    @Test fun aStopBeforeTheStartRegistersNothing() {
+        val calls = ArrayList<String>()
+        val d = DiscoveryRegistration(register = { calls += "register" }, unregister = { calls += "unregister" })
+        d.stop()
+        assertFalse(d.start())
+        d.stop()
+        assertEquals(listOf("unregister"), calls)
+    }
 }
