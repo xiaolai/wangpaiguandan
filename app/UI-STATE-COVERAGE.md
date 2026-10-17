@@ -30,6 +30,7 @@ the watcher's screens (T6, T7, T9, T10 and the room screens listed below).
 
 Also built from `design/screen-inventory.json`: A1 main menu, A3 dealing, A4 settings (menu and in-table),
 D6 resistance notice (trick area), R1–R3 results with the next-deal prompt, H8 paused table.
+Menu settings (A4) also show win counts (战绩) from the local history: `HistoryStatsTest` (counts), layout manual.
 
 WI-09 room screens (`ui/RoomScreens.kt`, `ui/LobbyScreen.kt`, `ui/WatchScreen.kt`, `ui/RoomRoute.kt`):
 

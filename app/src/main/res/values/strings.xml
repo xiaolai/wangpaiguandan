@@ -462,4 +462,10 @@
     <string name="diagnostics_note">只在本机生成和显示，应用不会发送。内容只有计数、版本号和规则版本，不含手牌、身份或房间信息。可长按选择复制。</string>
     <string name="diagnostics_show">生成诊断信息</string>
     <string name="diagnostics_failed">诊断信息没能生成，可以再试一次。</string>
+    <!-- Win counts in settings, from the local history only (头游所在队赢下一副). -->
+    <string name="history_stats_title">战绩</string>
+    <string name="history_stats_none">还没有对局记录。</string>
+    <string name="history_stats_matches">共 %1$d 场：我方胜 %2$d 场，对方胜 %3$d 场，未分胜负 %4$d 场</string>
+    <string name="history_stats_deals">赢下的副数（头游所在队）：我方 %1$d 副，对方 %2$d 副</string>
+    <string name="history_stats_note">只统计本机记录里你上场打的牌局，观战不计；没打完或中途离开的一场算未分胜负。</string>
 </resources>

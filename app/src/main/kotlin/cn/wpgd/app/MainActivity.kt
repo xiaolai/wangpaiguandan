@@ -16,6 +16,7 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import cn.wpgd.app.ble.AndroidBleEnvironment
 import cn.wpgd.app.ble.BleEnvironment
 import cn.wpgd.app.ble.BlePermissions
+import cn.wpgd.app.data.HistoryStats
 import cn.wpgd.app.data.Nickname
 import cn.wpgd.app.data.NicknameResult
 import cn.wpgd.app.lan.HostAddresses
@@ -63,6 +64,7 @@ class MainActivity : ComponentActivity() {
             effects = effects,
             wake = WindowWakeLockSink(window),
             diagnostics = { (application as WpgdApplication).diagnostics.export(graph.runningOwner()) },
+            historyStats = { HistoryStats.from(graph.history.entries()) },
             rooms = RoomShell(
                 finder = graph::finder,
                 localVersion = { graph.localVersion },

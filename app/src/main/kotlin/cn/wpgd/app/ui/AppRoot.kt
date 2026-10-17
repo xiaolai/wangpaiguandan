@@ -23,6 +23,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -42,6 +43,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlin.coroutines.cancellation.CancellationException
 import kotlinx.coroutines.withContext
 import cn.wpgd.app.R
+import cn.wpgd.app.data.HistoryStats
 import cn.wpgd.app.ble.BleGate
 import cn.wpgd.app.ble.BleGateState
 import cn.wpgd.app.ble.BlePurpose
@@ -102,6 +104,8 @@ class AppShell(
     val rooms: RoomShell,
     /** WI-12: the local diagnostics text (built on request; shown, never sent). */
     val diagnostics: () -> String = { "" },
+    /** Win counts from the local history (blocking: read off the main thread). */
+    val historyStats: () -> HistoryStats = { HistoryStats.EMPTY },
 )
 
 @Composable
@@ -184,7 +188,7 @@ fun AppRoot(shell: AppShell) {
         }
         Route.SETTINGS -> {
             BackHandler { route = Route.MENU }
-            SettingsScreen(shell.preferences, shell.diagnostics) { route = Route.MENU }
+            SettingsScreen(shell.preferences, shell.diagnostics, shell.historyStats) { route = Route.MENU }
         }
         // A Bluetooth create or find screen restored after the process died (for example because a
         // permission was revoked in the system settings) goes through the gate again before any radio use.
@@ -342,7 +346,7 @@ fun MainMenu(
 
 /** Settings from the menu (A4): the same content as the in-table menu. */
 @Composable
-fun SettingsScreen(preferences: PreferencesRepository, diagnostics: () -> String, onBack: () -> Unit) {
+fun SettingsScreen(preferences: PreferencesRepository, diagnostics: () -> String, historyStats: () -> HistoryStats, onBack: () -> Unit) {
     val c = Wpgd.colors
     val prefs by preferences.preferences.collectAsState()
     Surface(color = c.bg, contentColor = c.ink, modifier = Modifier.fillMaxSize()) {
@@ -358,9 +362,41 @@ fun SettingsScreen(preferences: PreferencesRepository, diagnostics: () -> String
                 )
             }
             SettingsContent(prefs, preferences::update)
+            HistoryStatsSection(historyStats)
             DiagnosticsSection(diagnostics)
         }
     }
+}
+
+/** Win counts (胜场统计) from the local history, read once per visit off the main thread. */
+@Composable
+private fun HistoryStatsSection(historyStats: () -> HistoryStats) {
+    val c = Wpgd.colors
+    val stats by produceState<HistoryStats?>(null) { value = withContext(Dispatchers.Default) { historyStats() } }
+    Text(
+        stringResource(R.string.history_stats_title),
+        style = TextStyle(fontSize = Tokens.type("title"), fontWeight = FontWeight.Bold),
+        modifier = Modifier.semantics { heading() },
+    )
+    val shown = stats ?: return
+    val label = TextStyle(fontSize = Tokens.type("label"))
+    if (shown.isEmpty) {
+        Text(stringResource(R.string.history_stats_none), style = label, color = c.ink, modifier = Modifier.testTag("settings:stats_none"))
+        return
+    }
+    Text(
+        stringResource(R.string.history_stats_matches, shown.matchesPlayed, shown.matchesWonByOwn, shown.matchesWonByOpponents, shown.matchesUndecided),
+        style = label,
+        color = c.ink,
+        modifier = Modifier.testTag("settings:stats_matches"),
+    )
+    Text(
+        stringResource(R.string.history_stats_deals, shown.dealsWonByOwn, shown.dealsWonByOpponents),
+        style = label,
+        color = c.ink,
+        modifier = Modifier.testTag("settings:stats_deals"),
+    )
+    Text(stringResource(R.string.history_stats_note), style = label, color = c.ink)
 }
 
 /**
