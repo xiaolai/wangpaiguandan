@@ -36,6 +36,24 @@ PKG = "cn.wpgd.app"
 RUNNER = "cn.wpgd.app.test/androidx.test.runner.AndroidJUnitRunner"
 AGENT = "cn.wpgd.app.e2e.E2eAgentTest#agent"
 REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+
+def _find_dev_docs(start):
+    """Locate the sibling dev-docs repository: one level above the primary checkout, two above a
+    linked worktree in worktrees/<name>/, so a fixed parent is wrong there. Probe upward and fail
+    loudly rather than writing evidence into a directory that does not exist."""
+    d = start
+    while True:
+        candidate = os.path.join(d, "dev-docs")
+        if os.path.isfile(os.path.join(candidate, "implementation-plan.md")):
+            return candidate
+        parent = os.path.dirname(d)
+        if parent == d:
+            raise SystemExit("dev-docs/ repository not found at or above " + start)
+        d = parent
+
+
+DEV_DOCS = _find_dev_docs(REPO)
 SDK = os.environ.get("ANDROID_SDK_ROOT", "/opt/homebrew/share/android-commandlinetools")
 ADB = os.path.join(SDK, "platform-tools", "adb")
 
@@ -295,7 +313,7 @@ def parse_args(argv=None):
     ap.add_argument("--restart-avd", help="emulator restart: the AVD name of that player (local emulators only)")
     ap.add_argument("--restart-after-deal", type=int, default=1, help="restart once this deal has ended and the next is being played")
     ap.add_argument("--timeout-min", type=int, default=90)
-    ap.add_argument("--out", default=os.path.join(REPO, "dev-docs/evidence"))
+    ap.add_argument("--out", default=os.path.join(DEV_DOCS, "evidence"))
     ap.add_argument("--note", action="append", default=[], help="a line for the report (for example why fewer watchers ran)")
     ap.add_argument("--skip-install", action="store_true")
     return ap.parse_args(argv)

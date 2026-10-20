@@ -224,8 +224,19 @@ val releaseRuntimeComponents = tasks.register("releaseRuntimeComponents") {
 // rules/profiles, so a signed release build refuses the override rather than gate other files.
 // (The override is refused for a signed release where releaseSigningRequested is read, above.)
 val gateProfilesDir: File = gateProfilesOverride?.let { File(it) } ?: rootProject.file("rules/profiles")
+
+// `dev-docs/` is a sibling repository, not a directory of this one. It sits beside the primary
+// checkout: one level above the project in `main/`, two above a linked worktree in
+// `worktrees/<name>/`, so `../dev-docs` is wrong there. Probe upward for the directory that holds
+// `implementation-plan.md`; a missing one is a gate failure, never an empty tree that quietly passes.
+val devDocsDir: File = generateSequence(rootProject.rootDir) { it.parentFile }
+    .map { File(it, "dev-docs") }
+    .firstOrNull { File(it, "implementation-plan.md").isFile }
+    ?: File(rootProject.rootDir, "dev-docs")
+val devDocsFound: Boolean = File(devDocsDir, "implementation-plan.md").isFile
+
 val verifyReleaseDistributable = tasks.register("verifyReleaseDistributable") {
-    val decisions = rootProject.fileTree("dev-docs/decisions") { include("*.md") }
+    val decisions = rootProject.fileTree(devDocsDir.resolve("decisions")) { include("*.md") }
     val license = rootProject.file("release/PROJECT-LICENSE.md")
     val digests = project(":core").layout.buildDirectory.file("gate/rule-profile-digests.tsv")
     dependsOn(":core:ruleProfileDigests")
@@ -234,6 +245,9 @@ val verifyReleaseDistributable = tasks.register("verifyReleaseDistributable") {
     inputs.file(license).withPropertyName("projectLicense")
     doLast {
         val problems = ArrayList<String>()
+        // An absent documentation repository would otherwise reach `signed` as an empty list and be
+        // reported as unsigned profiles; name the real cause instead.
+        if (!devDocsFound) problems += "dev-docs/ repository not found at or above ${rootProject.rootDir.path} (expected beside the primary checkout)"
         // One line per profile file: name, id, version, provisional, hash; or name, ERROR, message.
         val rows = digests.get().asFile.readLines().filter { it.isNotBlank() }.map { it.split("\t") }
         if (rows.isEmpty()) problems += "no rule profile under ${gateProfilesDir.path}"
@@ -268,7 +282,7 @@ tasks.withType<Test>().configureEach {
     inputs.dir(rootProject.file("rules/profiles")).withPropertyName("ruleProfiles").withPathSensitivity(PathSensitivity.RELATIVE)
     // WI-12: the catalog, inventory and evidence files the release tests check.
     inputs.dir(rootProject.file("release")).withPropertyName("releaseRecords").withPathSensitivity(PathSensitivity.RELATIVE)
-    inputs.files(rootProject.fileTree("dev-docs") { include("evidence/**", "decisions/**") }).withPropertyName("evidenceRecords").withPathSensitivity(PathSensitivity.RELATIVE)
+    inputs.files(rootProject.fileTree(devDocsDir) { include("evidence/**", "decisions/**") }).withPropertyName("evidenceRecords").withPathSensitivity(PathSensitivity.RELATIVE)
     val components = layout.buildDirectory.file("licenses/release-runtime-components.txt")
     dependsOn(releaseRuntimeComponents)
     inputs.file(components).withPropertyName("releaseRuntimeComponents").withPathSensitivity(PathSensitivity.NONE)

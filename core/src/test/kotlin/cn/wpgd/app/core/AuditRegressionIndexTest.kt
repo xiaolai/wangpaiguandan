@@ -13,7 +13,13 @@ import kotlin.test.assertTrue
  */
 class AuditRegressionIndexTest {
     private val root = File("..").canonicalFile
-    private val plan = File(root, "dev-docs/implementation-plan.md").also { check(it.isFile) { "plan not found at ${it.path}" } }.readText()
+    // `dev-docs/` is a sibling repository: one level above the primary checkout, two above a linked
+    // worktree in `worktrees/<name>/`. Probe upward rather than assume a depth.
+    private val plan = generateSequence(root) { it.parentFile }
+        .map { File(it, "dev-docs/implementation-plan.md") }
+        .firstOrNull { it.isFile }
+        ?.readText()
+        ?: error("dev-docs/implementation-plan.md not found at or above $root")
 
     private val testSources: List<File> by lazy {
         val dirs = listOf("core", "session", "app").flatMap { m -> listOf("test", "androidTest", "sharedTest").map { File(root, "$m/src/$it") } }

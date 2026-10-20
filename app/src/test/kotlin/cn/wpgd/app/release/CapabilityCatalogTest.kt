@@ -32,6 +32,17 @@ import java.io.File
  */
 class CapabilityCatalogTest {
     private val root = File("..").canonicalFile
+
+    // `dev-docs/` is a sibling repository: one level above the primary checkout, two above a linked
+    // worktree in `worktrees/<name>/`, so a fixed `..` is wrong there. Probe upward for the directory
+    // that holds the plan and fail loudly when there is none.
+    private val workspace: File = generateSequence(root) { it.parentFile }
+        .firstOrNull { File(it, "dev-docs/implementation-plan.md").isFile }
+        ?: error("dev-docs/ repository not found at or above $root")
+
+    /** A catalogue path names a file in this repository, or one in the sibling `dev-docs/` repository. */
+    private fun repoFile(path: String): File = File(if (path.startsWith("dev-docs/")) workspace else root, path)
+
     private val catalog: JsonObject = Json.parseToJsonElement(File(root, "release/capability-catalog.json").readText()).jsonObject
 
     private fun JsonObject.str(key: String): String = getValue(key).jsonPrimitive.content
@@ -43,7 +54,7 @@ class CapabilityCatalogTest {
         for (e in evidence) {
             val kind = e.str("kind")
             val path = e.str("path")
-            val f = File(root, path)
+            val f = repoFile(path)
             assertTrue("$owner: evidence $path does not exist", f.isFile)
             when (kind) {
                 "jvm-test" -> {
@@ -103,7 +114,7 @@ class CapabilityCatalogTest {
         if (status == "release") {
             if (p.provisional) problems += "${p.id} is release but provisional"
             val decision = (entry.getValue("signedDecision") as? JsonPrimitive)?.takeIf { it.isString }?.content
-            val file = decision?.takeIf { it.startsWith("dev-docs/decisions/") }?.let { File(root, it) }
+            val file = decision?.takeIf { it.startsWith("dev-docs/decisions/") }?.let { repoFile(it) }
             if (file == null || !file.isFile) {
                 problems += "${p.id}: a release profile cites its signed decision under dev-docs/decisions/"
             } else {
@@ -159,7 +170,7 @@ class CapabilityCatalogTest {
         for (entry in catalog.list("profiles")) {
             val id = entry.str("id")
             val p = packaged.getValue(id)
-            for (path in entry.strings("provenance") + entry.strings("fixtures")) assertTrue("$id: $path does not exist", File(root, path).isFile)
+            for (path in entry.strings("provenance") + entry.strings("fixtures")) assertTrue("$id: $path does not exist", repoFile(path).isFile)
             assertTrue("$id has no provenance", entry.strings("provenance").isNotEmpty())
             assertTrue("$id has no fixtures", entry.strings("fixtures").isNotEmpty())
             checkEvidence(id, entry.list("evidence"))
@@ -189,7 +200,7 @@ class CapabilityCatalogTest {
         val ios = catalog.list("platforms").filter { it.str("id") == "iphone" }
         for (e in bt + ios) assertTrue("${e.str("id")} is a device claim: it needs a device-record", hasDeviceRecord(e.list("evidence")))
         // No device record exists in this repository yet, so neither may be listed at all.
-        val records = File(root, "dev-docs/evidence").walkTopDown().filter { it.isFile && Regex("(?m)^Outcome: PASS\\b").containsMatchIn(it.readText()) }.toList()
+        val records = File(workspace, "dev-docs/evidence").walkTopDown().filter { it.isFile && Regex("(?m)^Outcome: PASS\\b").containsMatchIn(it.readText()) }.toList()
         if (records.isEmpty()) {
             assertTrue("Bluetooth is listed without any device record", bt.isEmpty())
             assertTrue("iPhone is listed without any device record", ios.isEmpty())
