@@ -16,6 +16,16 @@ This is an initial project foundation, not a completed game. It contains:
 
 Not implemented yet: the iPhone client (WI-11) and replay. Bluetooth rooms (WI-10) are built and tested on the JVM against a fake radio and between two emulators, but not on phones: roles, MTU, simultaneous connections, throughput and the 4 + 2 load (HP-3) are unmeasured, and no capacity is claimed (`dev-docs/ble-device-spike.md`). Rooms were verified with several owners in one process over loopback sockets, and (2026-10-16) between separate emulators with join by address: one host, three players and watchers playing a match, with a player killed and rejoining (`tools/e2e/`, results in `dev-docs/evidence/HP-2-emulator-run-*`). That is emulator evidence only: play between phones over a real Wi-Fi radio and NSD discovery across devices (HP-2) has not been run. The rule profiles `P1-base-v1` and `M1-match-v1` are signed (gates G1a, G1b, by the project owner alone on the abridged 2022 trial text; no rules reviewer). Host authentication follows the owner-delegated G2 default (since wire protocol 2, now 3: rejoin by proof, pinned host key), with no external cryptography review. G4 and G5 and the human procedures HP-1..8 are deferred by the project owner (devices later). See `dev-docs/decisions/` and `dev-docs/implementation-plan.md`. The HTML's playable prototype is a design reference, not production game logic. No source from lanticy/guandan has been copied.
 
+## Screenshots
+
+From the debug build, captured by walking the user routes; provenance and the full set are in [`screenshots/`](screenshots/).
+
+| Phone | Dark | Tablet |
+| --- | --- | --- |
+| ![Table](screenshots/02-table.png) | ![Dark](screenshots/04-dark.png) | ![Tablet](screenshots/11-tablet-table.png) |
+
+Phone shots: 1080 × 2400 @ 420 dpi. Tablet shots: 1920 × 1200 @ 240 dpi (1280 × 800 dp).
+
 ## Build and check
 
 Requirements: JDK 17 or 21 (the build was verified with 21; Gradle 8.14.6 does not run on JDK 27), Android SDK platform 36 and Build Tools 35.0.0, Python 3 for design checks. Set Android Studio's SDK location or an ignored `local.properties` containing `sdk.dir=...`.
