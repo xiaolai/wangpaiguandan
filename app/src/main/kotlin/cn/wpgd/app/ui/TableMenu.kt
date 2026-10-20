@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
@@ -73,7 +74,9 @@ fun TableMenu(ui: TableUiState, rules: RulesSummary, actions: TableActions, onCl
             color = c.surface,
             contentColor = c.ink,
             shape = RoundedCornerShape(topStart = Tokens.radius("panel"), topEnd = Tokens.radius("panel")),
-            modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth().fillMaxHeight(SHEET_HEIGHT).testTag("menu"),
+            // widthIn before fillMaxWidth, so the sheet is a reading column on a tablet instead of a
+            // 1920 px strip with the label and its switch at opposite edges.
+            modifier = Modifier.align(Alignment.BottomCenter).widthIn(max = 640.dp).fillMaxWidth().fillMaxHeight(SHEET_HEIGHT).testTag("menu"),
         ) {
             Column(
                 Modifier.safeDrawingPadding().verticalScroll(rememberScrollState()).padding(Tokens.space(5)),

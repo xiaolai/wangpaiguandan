@@ -293,7 +293,9 @@ fun MainMenu(
                 modifier = Modifier.semantics { heading() },
             )
             Text(stringResource(R.string.menu_subtitle), style = TextStyle(fontSize = Tokens.type("body")), color = c.ink2)
-            val wide = Modifier.fillMaxWidth().widthIn(max = 420.dp).heightIn(min = Tokens.touch + Tokens.space(2))
+            // widthIn before fillMaxWidth: the other order lets fillMaxWidth win and the button
+            // stretches across a tablet (1230 dp measured on a 1280 dp screen).
+            val wide = Modifier.widthIn(max = 420.dp).fillMaxWidth().heightIn(min = Tokens.touch + Tokens.space(2))
             if (tableOpen || newTables) {
                 Button(
                     onClick = onSolo,
