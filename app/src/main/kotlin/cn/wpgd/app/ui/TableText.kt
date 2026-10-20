@@ -20,6 +20,7 @@ import cn.wpgd.app.session.wire.PlayBody
 import cn.wpgd.app.table.CardUi
 import cn.wpgd.app.table.EffectOutput
 import cn.wpgd.app.table.HandSort
+import cn.wpgd.app.table.PlayOrder
 import cn.wpgd.app.table.ResultExplanation
 import cn.wpgd.app.table.ResultHeadline
 import cn.wpgd.app.table.ResultLine
@@ -131,7 +132,8 @@ class TableText(private val res: Resources, private val me: Seat?) {
     fun play(type: CombinationType, cards: List<ViewCard>, declaration: List<ViewAssignment>?, isWild: (ViewCard) -> Boolean): String {
         val decl = declaration.orEmpty()
         val wild = cards.filter(isWild).take(decl.size)
-        val parts = cards.filter { it !in wild }.map { if (isWild(it)) cardLabel(it.suit, it.rank) else rank(it.rank) } +
+        // Rank order, not payload order: a straight the AI assembled as 4 3 7 5 6 reads as 3 4 5 6 7.
+        val parts = PlayOrder.byRank(cards.filter { it !in wild }).map { if (isWild(it)) cardLabel(it.suit, it.rank) else rank(it.rank) } +
             wild.zip(decl).map { (c, a) -> s(R.string.preview_wild_as, cardLabel(c.suit, c.rank), assigned(a.rank, a.suit)) }
         return s(R.string.play_text, combo(type), parts.joinToString(" "))
     }
