@@ -87,6 +87,20 @@ grep -q 'RELEASE_GATE = true' "$release_config" || { echo "release BuildConfig d
 echo "release APK $(wc -c < "$release_apk" | tr -d ' ') bytes, R8 mapping present, RELEASE_GATE = true"
 
 step "Distribution gate (WI-12): refuses a signed release while a profile is unsigned or the project license is unrecorded"
+
+# The gate reads the signed decisions in the sibling dev-docs repository. Where that repository is
+# not checked out (the hosted runner sees this repository alone), the step is skipped loudly rather
+# than failing over an input it was never given. The gate itself stays strict: run alone, without
+# dev-docs, it still refuses.
+if ! python3 -I -c "import os, sys
+d = os.getcwd()
+while True:
+    if os.path.isfile(os.path.join(d, 'dev-docs', 'implementation-plan.md')): sys.exit(0)
+    parent = os.path.dirname(d)
+    if parent == d: sys.exit(1)
+    d = parent"; then
+  echo "SKIPPED: dev-docs/ is not beside this repository, so the distribution gate did not run."
+else
 # Negative control first: the same gate, pointed at unsigned copies of the packaged profiles, must refuse and name each one.
 unsigned_dir=$(mktemp -d)
 trap 'rm -f "$gradle_log"; rm -rf "$unsigned_dir"' EXIT
@@ -145,6 +159,7 @@ if [ -n "$provisional" ] || [ "$license_open" = yes ]; then
 else
   [ "$gate_status" -eq 0 ] || { echo "the distribution gate failed although every profile is signed and the license is recorded" >&2; printf '%s\n' "$gate_out" >&2; exit 1; }
   echo "distribution gate passes: signed profiles with signed decisions, project license $(sed -n 's/^SPDX-License-Identifier: //p' release/PROJECT-LICENSE.md) recorded"
+fi
 fi
 # What still stands between this tree and a signed release: the key (app/build.gradle.kts, WI-12).
 missing_keys=()
