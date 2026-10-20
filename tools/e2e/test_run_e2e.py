@@ -241,7 +241,9 @@ class InstrumentationResultTest(unittest.TestCase):
 class OperationalErrorTest(unittest.TestCase):
     def test_an_adb_timeout_is_reported_with_its_reason(self):
         # Round 3 #63: TimeoutExpired escaped main(); the report said FAIL with reason null.
-        args = run_e2e.parse_args(ArgumentTest.BASE + ["--skip-install", "--restart-seat", ""])
+        # --out is passed explicitly: this test replaces REPO with a temporary directory, and the
+        # default evidence directory is resolved from REPO only when a report is written.
+        args = run_e2e.parse_args(ArgumentTest.BASE + ["--skip-install", "--restart-seat", "", "--out", "unused"])
         written = {}
         with tempfile.TemporaryDirectory() as repo, \
                 mock.patch.object(run_e2e, "REPO", repo), \

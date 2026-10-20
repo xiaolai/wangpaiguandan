@@ -53,7 +53,15 @@ def _find_dev_docs(start):
         d = parent
 
 
-DEV_DOCS = _find_dev_docs(REPO)
+def dev_docs_evidence():
+    """Where an evidence report is written.
+
+    Resolved when a report is written, not at import: writing evidence needs the sibling dev-docs
+    repository, but importing this module does not, so the unit tests run without it.
+    """
+    return os.path.join(_find_dev_docs(REPO), "evidence")
+
+
 SDK = os.environ.get("ANDROID_SDK_ROOT", "/opt/homebrew/share/android-commandlinetools")
 ADB = os.path.join(SDK, "platform-tools", "adb")
 
@@ -313,7 +321,7 @@ def parse_args(argv=None):
     ap.add_argument("--restart-avd", help="emulator restart: the AVD name of that player (local emulators only)")
     ap.add_argument("--restart-after-deal", type=int, default=1, help="restart once this deal has ended and the next is being played")
     ap.add_argument("--timeout-min", type=int, default=90)
-    ap.add_argument("--out", default=os.path.join(DEV_DOCS, "evidence"))
+    ap.add_argument("--out", help="evidence directory (default: dev-docs/evidence beside the primary checkout)")
     ap.add_argument("--note", action="append", default=[], help="a line for the report (for example why fewer watchers ran)")
     ap.add_argument("--skip-install", action="store_true")
     return ap.parse_args(argv)
@@ -541,7 +549,7 @@ def main():
             record["reason"] = reason
             record["devices"] = {d.name: {"serial": d.serial, "remoteAdb": d.remote, "dial": d.dial, **d.info} for d in devices}
             record["logs"] = os.path.relpath(logdir, REPO)
-            write_outputs(a.out, stamp, record, lan_placeholders(a.host_address, a.relay_allow))
+            write_outputs(a.out or dev_docs_evidence(), stamp, record, lan_placeholders(a.host_address, a.relay_allow))
     return 0 if outcome == "PASS" else 1
 
 
