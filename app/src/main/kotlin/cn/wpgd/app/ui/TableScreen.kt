@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
@@ -148,14 +149,16 @@ private fun Starting() {
 
 @Composable
 private fun TableBody(ui: TableUiState, text: TableText, fx: TableEffectsState, actions: TableActions, openMenu: () -> Unit) {
-    BoxWithConstraints(Modifier.fillMaxSize().safeDrawingPadding()) {
+    // Centred, with a maximum width: on a tablet the layout is otherwise a phone layout stretched
+    // across 1280 dp, leaving the left half of a landscape table empty.
+    BoxWithConstraints(Modifier.fillMaxSize().safeDrawingPadding(), contentAlignment = Alignment.TopCenter) {
         val fontScale = LocalDensity.current.fontScale
         // The alternate layout (GDN-098): seats as a list, stacked buttons, for narrow screens and large text.
         val compact = maxWidth < 360.dp || fontScale >= COMPACT_FONT_SCALE
         val landscape = !compact && maxWidth > maxHeight && maxWidth >= 600.dp
         val pad = Tokens.space(3)
         if (landscape) {
-            Row(Modifier.fillMaxSize().padding(pad), horizontalArrangement = Arrangement.spacedBy(pad)) {
+            Row(Modifier.widthIn(max = 1100.dp).fillMaxSize().padding(pad), horizontalArrangement = Arrangement.spacedBy(pad)) {
                 Column(Modifier.weight(0.42f)) {
                     Header(ui, text, openMenu)
                     Banner(ui, text, actions)
@@ -171,14 +174,20 @@ private fun TableBody(ui: TableUiState, text: TableText, fx: TableEffectsState, 
                 }
             }
         } else {
-            Column(Modifier.fillMaxSize().padding(horizontal = pad)) {
+            Column(Modifier.widthIn(max = 900.dp).fillMaxSize().padding(horizontal = pad)) {
                 Header(ui, text, openMenu)
                 Banner(ui, text, actions)
+                // Only the table scrolls. The hand and the action bar stay put: the hand is the
+                // primary control, and inside the scroll it began below the fold on a 27-card deal
+                // (and entirely off it at 130 % text) with nothing saying the table could scroll.
                 Column(Modifier.weight(1f).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(pad)) {
-                    TableCentre(ui, text, fx, compact)
-                    PlayerArea(ui, text, actions)
+                    TableCentre(ui, text, fx, compact, showTurn = false)
                     Spacer(Modifier.heightIn(min = Tokens.space(2)))
                 }
+                // Outside the scroll with the hand: what to beat must stay visible even when the
+                // seats and the trick are scrolled out of the way.
+                TurnLine(ui, text)
+                PlayerArea(ui, text, actions)
                 ActionBar(ui, text, actions, compact)
             }
         }
@@ -287,7 +296,7 @@ private fun FollowRequests(ui: TableUiState, actions: TableActions) {
 
 /** The other seats, the trick, the turn line and the latest announcement; or the result. */
 @Composable
-private fun ColumnScope.TableCentre(ui: TableUiState, text: TableText, fx: TableEffectsState, compact: Boolean) {
+private fun ColumnScope.TableCentre(ui: TableUiState, text: TableText, fx: TableEffectsState, compact: Boolean, showTurn: Boolean = true) {
     val byRelation = ui.seats.associateBy { it.relation }
     val highlightSeat = fx.highlight?.seat
     @Composable
@@ -309,7 +318,7 @@ private fun ColumnScope.TableCentre(ui: TableUiState, text: TableText, fx: Table
         }
         seat(SeatRelation.SELF, Modifier.fillMaxWidth())
     }
-    TurnLine(ui, text)
+    if (showTurn) TurnLine(ui, text)
     fx.announce?.let { a ->
         Text(
             text.cue(a),
