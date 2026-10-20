@@ -18,6 +18,20 @@ dependencies {
 tasks.test {
     // Tests read rules/profiles/*.json from the repository root; editing a profile must re-run them.
     inputs.dir(rootProject.file("rules/profiles")).withPropertyName("ruleProfiles").withPathSensitivity(PathSensitivity.RELATIVE)
+    // AuditRegressionIndexTest reads the implementation plan from the sibling dev-docs repository and the test
+    // sources of every module. Declare both, or an edit leaves the previous green result in place.
+    val plan = generateSequence(rootProject.rootDir) { it.parentFile }
+        .map { File(it, "dev-docs/implementation-plan.md") }
+        .firstOrNull { it.isFile }
+    if (plan != null) inputs.file(plan).withPropertyName("implementationPlan").withPathSensitivity(PathSensitivity.RELATIVE)
+    inputs.files(
+        listOf("core", "session", "app")
+            .flatMap { m -> listOf("test", "androidTest", "sharedTest").map { File(rootProject.rootDir, "$m/src/$it") } }
+            .filter { it.isDirectory }
+            // A FileTree, not the directory: inputs.files() fingerprints a directory as one opaque entry,
+            // so a changed test file inside it would otherwise leave the previous result in place.
+            .map { rootProject.fileTree(it) },
+    ).withPropertyName("siblingTestSources").withPathSensitivity(PathSensitivity.RELATIVE)
 }
 
 // WI-12 release gate helper (src/gate, cn.wpgd.app.core.gate.ProfileDigests): each rule profile's id,
