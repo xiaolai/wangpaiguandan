@@ -10,10 +10,12 @@ ROOT = Path(__file__).resolve().parents[1]
 def digest(path): return hashlib.sha256(path.read_bytes()).hexdigest()
 
 source = json.loads((ROOT / "design/import-manifest.json").read_text())
-for entry in source["files"]:
-    path = ROOT / "design/original" / entry["path"]
-    assert path.is_file(), f"Missing imported file: {path}"
-    assert digest(path) == entry["sha256"], f"Imported file changed: {path}"
+batches = [source, *source.get("later_imports", [])]
+for batch in batches:
+    for entry in batch["files"]:
+        path = ROOT / "design/original" / entry["path"]
+        assert path.is_file(), f"Missing imported file: {path}"
+        assert digest(path) == entry["sha256"], f"Imported file changed: {path}"
 assets = json.loads((ROOT / "design/baseline-assets-manifest.json").read_text())
 for entry in assets:
     assert digest(ROOT / "design/original" / entry["path"]) == entry["sha256"]
@@ -27,4 +29,4 @@ table_states = json.loads((ROOT / "design/table-state-inventory.json").read_text
 assert len(table_states) == 23
 assert len({item["id"] for item in table_states}) == len(table_states)
 assert DEST.read_text() == rendered(), "Native tokens drifted from JSON"
-print(f"Verified {len(source['files'])} unchanged design files, {len(assets)} baseline assets, 50 screen records, 23 table states and native token parity.")
+print(f"Verified {sum(len(batch['files']) for batch in batches)} unchanged design files, {len(assets)} baseline assets, 50 screen records, 23 table states and native token parity.")

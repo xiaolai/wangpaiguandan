@@ -518,9 +518,44 @@
       "origin": "project-authored match profile, packaged as an APK asset (app/build.gradle.kts)"
     },
     {
-      "path": "app/src/main/res/drawable/ic_launcher.xml",
-      "license": "MIT",
-      "origin": "project-authored vector launcher icon"
+      "path": "app/src/main/res/drawable/ic_launcher_background.xml",
+      "license": "OWNER-DECISION",
+      "origin": "design-team artwork, converted from design/original/icons/android-background.svg"
+    },
+    {
+      "path": "app/src/main/res/drawable/ic_launcher_foreground.xml",
+      "license": "OWNER-DECISION",
+      "origin": "design-team artwork, converted from design/original/icons/android-foreground.svg"
+    },
+    {
+      "path": "app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml",
+      "license": "OWNER-DECISION",
+      "origin": "adaptive icon composing the design-team layers"
+    },
+    {
+      "path": "app/src/main/res/drawable-mdpi/ic_launcher_monochrome.png",
+      "license": "OWNER-DECISION",
+      "origin": "design-team artwork, rendered from design/original/icons/android-monochrome.svg"
+    },
+    {
+      "path": "app/src/main/res/drawable-hdpi/ic_launcher_monochrome.png",
+      "license": "OWNER-DECISION",
+      "origin": "design-team artwork, rendered from design/original/icons/android-monochrome.svg"
+    },
+    {
+      "path": "app/src/main/res/drawable-xhdpi/ic_launcher_monochrome.png",
+      "license": "OWNER-DECISION",
+      "origin": "design-team artwork, rendered from design/original/icons/android-monochrome.svg"
+    },
+    {
+      "path": "app/src/main/res/drawable-xxhdpi/ic_launcher_monochrome.png",
+      "license": "OWNER-DECISION",
+      "origin": "design-team artwork, rendered from design/original/icons/android-monochrome.svg"
+    },
+    {
+      "path": "app/src/main/res/drawable-xxxhdpi/ic_launcher_monochrome.png",
+      "license": "OWNER-DECISION",
+      "origin": "design-team artwork, rendered from design/original/icons/android-monochrome.svg"
     },
     {
       "path": "app/src/main/res/values/strings.xml",

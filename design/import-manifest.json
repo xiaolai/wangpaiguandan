@@ -43,5 +43,58 @@
       "sha256": "8fe7df74405f3c55f49b7249c74ea1397e65d07dea2b1bd3b4a489bec2e28cbe",
       "bytes": 69150
     }
+  ],
+  "later_imports": [
+    {
+      "imported_at": "2026-10-20",
+      "source_archive": "Guandan mobile redesign (1).zip",
+      "archive_sha256": "fafe9f425cac521dd77664fef42b82d36262447d77612523c9c6040bebf3636e",
+      "note": "Platform icon set supplied later by the design team. ios-* and favicon.svg have no consumer yet: there is no iOS app target and no web build.",
+      "transform": "The embedded C2PA content-credential block (<metadata>, 7774 bytes in every file) and the xmlns:c2pa declaration were removed at the project owner's request. Each file renders pixel-identically before and after at 432 px, so the artwork is unchanged. source_sha256 records the file as supplied; sha256 records the file as stored, which is what the verifier checks.",
+      "files": [
+        {
+          "path": "icons/android-background.svg",
+          "source_sha256": "0298ecaf6e4a9ac93bc2076d3b5e7883eb9ae2d0ce6f75e94439ec0bf5b9ee80",
+          "sha256": "b0a915f4fe6e7d44cce84a24376ddf99235329cbc443d4ef37c9bc1299bc61ba",
+          "bytes": 150
+        },
+        {
+          "path": "icons/android-foreground.svg",
+          "source_sha256": "ea69e2cb74c3777dfde2e6d8d958e9124cb762d2b6d514d94813ef8849285384",
+          "sha256": "f2098f17df57ca5a51a9d124ca556e59de46468002b25ab8f6374cc175f967eb",
+          "bytes": 693
+        },
+        {
+          "path": "icons/android-monochrome.svg",
+          "source_sha256": "57af80c8b28c5f55eceec52d608c5e0f9f9b804d8f7426458d1ada2363104b3b",
+          "sha256": "b6b5f1aef5ea6b97bbed61b9f5ebe87e7e915876fdd276ed78f510f65d20459a",
+          "bytes": 965
+        },
+        {
+          "path": "icons/favicon.svg",
+          "source_sha256": "6187f0037ede227b740050529ac961088131e55a813761f22b9bd4cd364baa6c",
+          "sha256": "e8a89a7ee4ac78225843b41f182d568174b902c71dc07ba76dbdde4ca0574b4f",
+          "bytes": 701
+        },
+        {
+          "path": "icons/ios-dark.svg",
+          "source_sha256": "ad913d015ae8cd7c6e09950c2d5afd255beee77c2528ebc38ebaf33a80ddb033",
+          "sha256": "7559e3459868a78f1a762ee3730a0a5d13e0790d44f72cddc585b4fc8b178649",
+          "bytes": 681
+        },
+        {
+          "path": "icons/ios-light.svg",
+          "source_sha256": "01fbe8e89a3900baf73b6a62da83bc9fca900cb41545912dea96bb869ca2950b",
+          "sha256": "3b312c2d6ebda7dd8434b4df3c3a06f901fa1f71fb36f66d1851c78d10b92ebe",
+          "bytes": 681
+        },
+        {
+          "path": "icons/ios-tint.svg",
+          "source_sha256": "da1f5e26a459d0ef1d0bb8eb9afa051642e22d61d70955a7474a9fa3e279319c",
+          "sha256": "85a5bf937427b227cbeef2bec0e6e56fd891058f1e3067a09884a6c7cca2344d",
+          "bytes": 953
+        }
+      ]
+    }
   ]
 }

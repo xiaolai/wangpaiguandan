@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Launcher icon: adaptive, so every device the app supports (minSdk 26) composes the layers itself.
+     The themed-icon layer is a bitmap: its source SVG uses an <mask> to hide the back card behind the
+     front one, which a vector drawable cannot express. See tools/render_launcher_monochrome.py. -->
+<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+    <background android:drawable="@drawable/ic_launcher_background" />
+    <foreground android:drawable="@drawable/ic_launcher_foreground" />
+    <monochrome android:drawable="@drawable/ic_launcher_monochrome" />
+</adaptive-icon>

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Adaptive-icon foreground: two fanned cards, the "2" in vermilion.
+     Converted from design/original/icons/android-foreground.svg (hash pinned in
+     design/import-manifest.json). The SVG's translate/scale/rotate transforms map to nested
+     groups, and each rounded <rect> is written as the equivalent path. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp"
+    android:viewportWidth="108" android:viewportHeight="108">
+    <group android:translateX="54" android:translateY="54" android:scaleX="0.72" android:scaleY="0.72">
+        <group android:translateX="-50" android:translateY="-50">
+            <group android:rotation="-12" android:pivotX="40" android:pivotY="50">
+                <path
+                    android:fillColor="#ECE8DF"
+                    android:strokeColor="#141414"
+                    android:strokeWidth="3"
+                    android:pathData="M26,23.5h28a4.5,4.5 0 0 1 4.5,4.5v44a4.5,4.5 0 0 1 -4.5,4.5h-28a4.5,4.5 0 0 1 -4.5,-4.5v-44a4.5,4.5 0 0 1 4.5,-4.5z" />
+            </group>
+            <group android:rotation="9" android:pivotX="58" android:pivotY="50">
+                <path
+                    android:fillColor="#FFFFFF"
+                    android:strokeColor="#141414"
+                    android:strokeWidth="3"
+                    android:pathData="M44,23.5h28a4.5,4.5 0 0 1 4.5,4.5v44a4.5,4.5 0 0 1 -4.5,4.5h-28a4.5,4.5 0 0 1 -4.5,-4.5v-44a4.5,4.5 0 0 1 4.5,-4.5z" />
+                <group android:translateX="3" android:translateY="5">
+                    <path
+                        android:fillColor="#00000000"
+                        android:strokeColor="#B23620"
+                        android:strokeWidth="4.4"
+                        android:strokeLineCap="round"
+                        android:strokeLineJoin="round"
+                        android:pathData="M45,32.5C45,29 47.6,27 50.6,27C53.8,27 56,29.2 56,32C56,34.8 54.3,36.8 51.6,39.6L45.2,46.2H57" />
+                </group>
+            </group>
+        </group>
+    </group>
+</vector>
