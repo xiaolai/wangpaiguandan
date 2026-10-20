@@ -271,6 +271,8 @@ All files are in `rules/sources/`. Each new download has a sidecar `.md` with UR
 | NJMU | `nanjing-medical-univ-rules.doc` | `0765227c26c918f3bdb93cbeee7035ab1c483e517235430403aa8a8368ca393e` | `https://gonghui.njmu.edu.cn/_upload/article/files/5d/c8/858326da4e149f73e21ef98e9356/10310dd7-085d-4b97-abf2-b75ed3462411.doc` (hash matches) | `g1a-clause-check.md` |
 | YZU | `yangzhou-univ-rules.doc` | `298dd2e87d18e7c7767018ee6219290b16ffbb6b7f285b8fdd19a0b6d574c989` | **Origin not confirmed.** The Yangzhou URL found by search serves a different file (hash `4a5181e1…`). | `g1a-clause-check.md` |
 
+The documents themselves are not in this repository: the PDFs, Word files and HTML reposts were removed before publication, and `rules/sources/README.md` records why. This register keeps each file's name, hash and URL, so a copy can be obtained again and checked against the hash the citation was made from.
+
 Text extractions (`rules/sources/text/<Key>.txt`) were made with `textutil -convert txt` (`.doc`, `.html`) and `pdftotext -layout` (`.pdf`). Line numbers in Appendix A refer to those files.
 
 Not used as rule sources: Chinese Wikipedia 掼蛋 and English Wikipedia Guandan. English Wikipedia contradicts HA17 on one point: it says that at level 2, "2-2-3-3-4-4 cannot be a Tube", while HA17 (E28) says 22 33 44 is the **only** legal reading at level 2. This spec follows HA17 (R3.5); the reviewer should be aware of the conflict.

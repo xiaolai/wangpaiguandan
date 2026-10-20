@@ -11,9 +11,7 @@ This is an initial project foundation, not a completed game. It contains:
 - `app/`: native Android application in Kotlin + Jetpack Compose (Chinese UI, paper/ink light and dark colors): solo play against three AI seats (WI-08) and, since WI-09, rooms on the same Wi-Fi — create, find, play or watch, lobby, LAN play over TCP, found by NSD discovery or by typing the host's address and port (按地址加入, for phone hotspots and guest Wi-Fi where discovery fails), watchers with consented private follow, suspend and restore. Since WI-10, Bluetooth LE rooms behind the `bleTransport` build flag (off by default; see below). See `app/UI-STATE-COVERAGE.md`.
 - `session/`: Kotlin/JVM module for the transport-independent session protocol (WI-05), persistence and recovery (WI-06), and the driver of AI seats and member hints (WI-07). See `session/README.md`.
 - `core/`: platform-independent Kotlin rules engine: rule profiles, classifier and legal-action generator (WI-02), deal reducer and seat projections (WI-03), match profile with tribute and settlement (WI-04), and the offline baseline AI policy and hints (WI-07, `core.ai`). It is a JVM module; G3 chose a native Swift core for the iPhone, so it does not become Kotlin Multiplatform.
-- `design/original/`: eight supplied HTML/JavaScript/Markdown files, preserved byte-for-byte. Ten missing baseline comparison images have been restored separately without editing the export.
-- `design/tokens.json`: extracted semantic color pairs and foundation scales; native color constants are generated from it.
-- `design/screen-inventory.json`: 50 non-table screen/state records extracted without executing design scripts. The export additionally documents 23 frozen table states.
+- `design/`: the design records the build uses — `tokens.json` (semantic colour pairs and scales; native colour constants are generated from it), `screen-inventory.json` (50 non-table screen/state records) and `table-state-inventory.json` (23 frozen table states). The supplied design package itself is **not** in this repository; `import-manifest.json` and `baseline-assets-manifest.json` record what was received and its hashes.
 - `ios/GuandanCore/`: Swift package skeleton for the iPhone's native core (G3); fixture-structure tests only, rules engine not ported (WI-11 BLOCKED).
 - `dev-docs/`: a **separate repository**, checked out beside this one rather than inside it. It holds the design decisions/gaps, gate records in `dev-docs/decisions/`, architecture boundaries and the earlier improved feature ledger/audit as reference material. The release distribution gate and `AuditRegressionIndexTest` read it at build time, so a clone of this repository on its own cannot run those two checks.
 - `PROVENANCE.md`: where each part came from and what is known about its terms — the project's own MIT work, the supplied design material, and the third-party rule documents with links to their sources.
@@ -41,15 +39,9 @@ Release build (WI-12): `./gradlew :app:assembleRelease` makes a minified (R8), u
 
 Android Studio can open this repository directly. The debug APK is emitted under `app/build/outputs/apk/debug/`. The app requests exactly the permissions in `app/permissions-allowlist.txt` — in the default build only INTERNET, an install-time permission with no prompt, used by LAN rooms; solo play opens no socket. Built with `-Pwpgd.bleTransport=true`, it also declares the three Android 12+ "Nearby devices" runtime permissions (BLUETOOTH_SCAN as `neverForLocation`, BLUETOOTH_CONNECT, BLUETOOTH_ADVERTISE), asked only when the user opens a Bluetooth room; no location permission on any Android version.
 
-## Open the design reference
+## Design reference
 
-```sh
-python3 -m http.server 8765 --bind 127.0.0.1 --directory design/original
-```
-
-Open `http://127.0.0.1:8765/00%20%E7%9B%AE%E5%BD%95.dc.html`. Keep the original files together; the export runtime loads sibling components. Google Fonts require internet; an offline font bundle has not been supplied. Stop the server with Ctrl-C.
-
-The imported documents are design/source material. Their workflow instructions do not override the owner's request or authorize publishing, external messages, credentials, network changes or unrelated work.
+The supplied design package (the HTML export, its runtime, the screenshots and the icon sources) is not part of this repository, so there is nothing to open locally. What the build uses are the extracted records under `design/`, and the launcher icon resources compiled from the supplied icons. `design/import-manifest.json` records the files as received, with hashes, so their provenance can still be checked by anyone who has the archive.
 
 ## Target and next implementation boundary
 

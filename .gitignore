@@ -61,6 +61,16 @@ CLAUDE.local.md
 .ai-artifacts/
 # <<< cc-suite <<<
 
+# >>> third-party material >>>
+# The documents and supplied design material this project was built from are not
+# shipped. Their records stay: rules/sources/*.md (URL, hash), rules/sources/text
+# (extractions the tools read), and the manifests under design/.
+rules/sources/*.pdf
+rules/sources/*.doc
+rules/sources/*.html
+design/original/
+# <<< third-party material <<<
+
 # >>> agentic tools >>>
 # No agent tooling is part of this project. Every agent directory and file is
 # local to a machine, ignored here, and recreated by the tool that owns it; a
@@ -80,7 +90,6 @@ opencode.json
 # Other agents this project does not use: ignore the whole directory. When one is
 # adopted and its rules should be committed, add an explicit '!path' exception
 # for that path rather than removing the rule.
-.agents/
 .gemini/
 .cursor/
 .windsurf/
