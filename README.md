@@ -1,7 +1,5 @@
 # Wangpai Guandan
 
-Native mobile Guandan project initialized on 2026-10-14 from the design team's **Guandan mobile redesign.zip**.
-
 Version 0.0.1 (Android `versionName` 0.0.1, `versionCode` 1; shown in Settings → 诊断信息 as `app.version_name`). License: MIT (`LICENSE`, copyright Wangpaiguandan contributors); the imported design materials' terms are still an open owner decision (`release/PROJECT-LICENSE.md`).
 
 ## Current status
