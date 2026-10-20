@@ -60,3 +60,51 @@ CLAUDE.local.md
 **/*.findings.json
 .ai-artifacts/
 # <<< cc-suite <<<
+
+# >>> agentic tools >>>
+# No agent tooling is part of this project. Every agent directory and file is
+# local to a machine, ignored here, and recreated by the tool that owns it; a
+# fresh clone starts without them. Checkout-local AGENTS.md and CLAUDE.md are
+# ignored in .git/info/exclude instead, so the workspace rulebook stays outside
+# git rather than being ignored per repository.
+.claude/
+.agents/
+.codex/
+.grok/
+.cc-suite/
+.cc-suite.md
+.cc-suite-*.provenance.json
+.mcp.json
+opencode.json
+
+# Other agents this project does not use: ignore the whole directory. When one is
+# adopted and its rules should be committed, add an explicit '!path' exception
+# for that path rather than removing the rule.
+.agents/
+.gemini/
+.cursor/
+.windsurf/
+.continue/
+.opencode/
+.qwen/
+.crush/
+.amp/
+.roo/
+.cline/
+.kiro/
+.augment/
+.devin/
+.jules/
+.trae/
+.void/
+.tabby/
+.codeium/
+.sourcegraph/
+.supermaven/
+.pieces/
+
+# Aider writes its conversation history and tag cache beside the code it edits.
+.aider.chat.history.md
+.aider.input.history
+.aider.tags.cache.v*/
+# <<< agentic tools <<<
