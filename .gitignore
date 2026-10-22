@@ -74,9 +74,11 @@ design/original/
 # >>> agentic tools >>>
 # No agent tooling is part of this project. Every agent directory and file is
 # local to a machine, ignored here, and recreated by the tool that owns it; a
-# fresh clone starts without them. Checkout-local AGENTS.md and CLAUDE.md are
-# ignored in .git/info/exclude instead, so the workspace rulebook stays outside
-# git rather than being ignored per repository.
+# fresh clone starts without them. Checkout-local AGENTS.md is ignored in
+# .git/info/exclude instead, so the workspace rulebook stays outside git rather
+# than being ignored per repository. CLAUDE.md is ignored here, in the tracked
+# file: every checkout carries the workspace link, and .git/info/exclude does
+# not travel to a fresh clone, where the link would show as untracked.
 .claude/
 .agents/
 .codex/
@@ -86,6 +88,7 @@ design/original/
 .cc-suite-*.provenance.json
 .mcp.json
 opencode.json
+CLAUDE.md
 
 # Other agents this project does not use: ignore the whole directory. When one is
 # adopted and its rules should be committed, add an explicit '!path' exception
